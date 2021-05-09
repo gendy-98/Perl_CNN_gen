@@ -111,10 +111,10 @@ if(lc ($ARGV[0]) eq "float"){
 	wire [E-1:0] LargerExponent;
 	wire N1_larger;
 
-	assign sign1 = in1[Data_Width-1];
-	assign sign2 = in2[Data_Width-1];
-	assign Exponent1 = in1[Data_Width-2:Data_Width-E-1];
-	assign Exponent2 = in2[Data_Width-2:Data_Width-E-1];
+	assign sign1 = in1[$data_width-1];
+	assign sign2 = in2[$data_width-1];
+	assign Exponent1 = in1[$data_width-2:$data_width-E-1];
+	assign Exponent2 = in2[$data_width-2:$data_width-E-1];
 	assign Mantissa1 = in1[M-1:0];
 	assign Mantissa2 = in2[M-1:0];
 

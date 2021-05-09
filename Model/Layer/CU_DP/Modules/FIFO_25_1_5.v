@@ -2,7 +2,7 @@
 
 
 module 
- FIFO_25_1 #(parameter
+ FIFO_25_1_5 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 	ADDRESS_BITS 				= 11,

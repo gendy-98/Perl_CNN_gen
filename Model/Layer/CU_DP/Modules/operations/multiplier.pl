@@ -106,7 +106,7 @@ if(lc ($ARGV[0]) eq "float"){
 	);
 	
 	localparam [E-1:0] Bias = 2**(E-1)-1;   
-
+	localparam N = E + M + 1;
 	wire sign1,sign2,signOUT;
 	wire [E-1:0] Exponent1,Exponent2,ExponentOUT;
 	wire [M-1:0] Mantissa1,Mantissa2,MantissaOUT; 

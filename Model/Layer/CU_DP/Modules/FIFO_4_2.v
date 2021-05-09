@@ -4,7 +4,7 @@
 module 
  FIFO_4_2 #(parameter
 ///////////advanced parameters//////////
-	DATA_WIDTH 					= 32,
+	DATA_WIDTH 					= 28,
 	ADDRESS_BITS 				= 11,
 ///////////architecture parameters//////
 	IFM_SIZE 					= 32,

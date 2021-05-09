@@ -1,4 +1,3 @@
-
 `timescale 1ns / 1ps
 
 
@@ -6,7 +5,7 @@ module
  Float_Adder #(parameter
 	DATA_WIDTH = 32
 	,E = 8
-	,M = 27
+	,M = 23
 	)(
 	input [DATA_WIDTH - 1:0] in1,
 	input [DATA_WIDTH - 1:0] in2,
@@ -28,10 +27,10 @@ module
 	wire [E-1:0] LargerExponent;
 	wire N1_larger;
 
-	assign sign1 = in1[Data_Width-1];
-	assign sign2 = in2[Data_Width-1];
-	assign Exponent1 = in1[Data_Width-2:Data_Width-E-1];
-	assign Exponent2 = in2[Data_Width-2:Data_Width-E-1];
+	assign sign1 = in1[DATA_WIDTH-1];
+	assign sign2 = in2[DATA_WIDTH-1];
+	assign Exponent1 = in1[DATA_WIDTH-2:DATA_WIDTH-E-1];
+	assign Exponent2 = in2[DATA_WIDTH-2:DATA_WIDTH-E-1];
 	assign Mantissa1 = in1[M-1:0];
 	assign Mantissa2 = in2[M-1:0];
 

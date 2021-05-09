@@ -54,7 +54,7 @@ my $file_name;
 my $module_name;
 my $multi_name;
 my $num_outputs = $ARGV[5]*$ARGV[5];
-$module_name = "FIFO_$num_outputs$under_Score$ARGV[0]";
+$module_name = "FIFO_$num_outputs$under_Score$ARGV[0]$under_Score$ARGV[3]";
 
 
 
@@ -122,8 +122,8 @@ print $fh <<"DONATE";
 		begin
 DONATE
 if($ARGV[0] == 2){
-	print $fh "\t\t\tFIFO[0] <= fifo_data_in_2\n";
-	print $fh "\t\t\tFIFO[1] <= fifo_data_in\n";
+	print $fh "\t\t\tFIFO[0] <= fifo_data_in_2;\n";
+	print $fh "\t\t\tFIFO[1] <= fifo_data_in;\n";
 	for($i = 0;$i < (($ARGV[5] - 1)*$ARGV[3] + $ARGV[5])-3;$i = $i + 2){
 		print $fh "\t\t\tFIFO[${\($i+2)}] <= FIFO[$i];\n";
 		print $fh "\t\t\tFIFO[${\($i+3)}] <= FIFO[${\($i+1)}];\n";
