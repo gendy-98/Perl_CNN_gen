@@ -42,7 +42,7 @@ my $full_path = "../../Verilog_files/";
 my $file_name;
 my $module_name;
 
-$module_name = "singlePortMemory";
+$module_name = "single_port_memory";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name

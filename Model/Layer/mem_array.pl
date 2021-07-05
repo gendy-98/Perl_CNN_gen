@@ -58,6 +58,7 @@ my $module_name;
 my $IFM_number;
 
 $module_name = "mem_array_U$ARGV[1]_D$ARGV[5]"; #U for units and D for IFM Depth
+my $dual_port_name = "true_dual_port_memory";
 
 if($ARGV[1] == 1){
 	$IFM_number = 2;
@@ -341,9 +342,14 @@ DONATE
 
 my $accu_var = 1;
 
+chdir "./../../..";
+
+system("perl mem_unit.pl $ARGV[1]"); 
+
 ######################################################big loop
 for($i = 1;$i<ceil($IFM_number/$ARGV[1]);$i = $i + 1){
 	print $fh <<"DONATE";
+
 	
 mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M$i(  .clk(clk),
@@ -396,7 +402,7 @@ my $ifm_init_number = ($IFM_number - floor($IFM_number/$ARGV[1]) * $ARGV[1]);
 
 for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	print $fh <<"DONATE";
-	TrueDualPort_Memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
 	IFM$accu_var (
     .clk(clk),
 	

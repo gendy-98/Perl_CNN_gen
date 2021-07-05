@@ -64,6 +64,7 @@ my $divided_by;
 
   
 $module_name = "unitB";
+my $single_port_name = "single_port_memory";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
@@ -130,7 +131,7 @@ for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
 	wire [$data_width-1:0] accu_data_out;
 	wire [$data_width-1:0] relu_data_out;
 
-SinglePort_Memory #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ($ifm_depth/$number_of_units+1))) 
+$single_port_name #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ($ifm_depth/$number_of_units+1))) 
 	WM 
 	(
 	 .clk(clk),	

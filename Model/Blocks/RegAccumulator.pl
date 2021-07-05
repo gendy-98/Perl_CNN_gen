@@ -92,7 +92,7 @@ $module $module_name $parameter
 	assign Data_out = Data; 
 	
 	
-	$adder_name add ( .in1(Data_in), .in2(Data_out), .out(Data_out_FP) );
+	$adder_name add ( .in1(Data_in), .in2(Data_out), .out(Data_out_FP));
  
 	assign data_out_mux = bias_sel_reg ? Data_out_FP : data_bias;
 
