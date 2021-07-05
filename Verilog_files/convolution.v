@@ -7,11 +7,11 @@ module
 	DATA_WIDTH 			  = 32,
 	ADDRESS_BITS 		  = 15,
 	/////////////////////////////////////
-	IFM_SIZE              = 14,                                                
+	IFM_SIZE              = 32,                                                
 	IFM_DEPTH             = 3,
 	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS     = 2,
-	NUMBER_OF_UNITS       = 3,
+	NUMBER_OF_FILTERS     = 6,
+	NUMBER_OF_UNITS       = 1,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -51,8 +51,6 @@ module
 	input   [DATA_WIDTH - 1 : 0]    w23,if23,
 	input   [DATA_WIDTH - 1 : 0]    w24,if24,
 	input   [DATA_WIDTH - 1 : 0]    w25,if25,
-	input   [DATA_WIDTH - 1 : 0]    w26,if26,
-	input   [DATA_WIDTH - 1 : 0]    w27,if27,
 	output  [DATA_WIDTH - 1 : 0]    conv_data_out
 	);
 
@@ -81,8 +79,6 @@ module
 	wire	[DATA_WIDTH - 1 : 0]	mul_out_23;
 	wire	[DATA_WIDTH - 1 : 0]	mul_out_24;
 	wire	[DATA_WIDTH - 1 : 0]	mul_out_25;
-	wire	[DATA_WIDTH - 1 : 0]	mul_out_26;
-	wire	[DATA_WIDTH - 1 : 0]	mul_out_27;
 
 	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_1;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_2;
@@ -109,8 +105,6 @@ module
 	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_23;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_24;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_25;
-	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_26;
-	reg 	[DATA_WIDTH - 1 : 0]	reg_mul_out_27;
 
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_1;
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_2;
@@ -125,7 +119,6 @@ module
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_11;
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_12;
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_13;
-	wire	[DATA_WIDTH - 1 : 0]	adder_out_1_14;
 
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_2_1;
 	wire	[DATA_WIDTH - 1 : 0]	adder_out_2_2;
@@ -158,7 +151,6 @@ module
 	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_1_11;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_1_12;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_1_13;
-	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_1_14;
 
 	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_2_1;
 	reg 	[DATA_WIDTH - 1 : 0]	reg_adder_out_2_2;
@@ -206,8 +198,6 @@ module
 		reg_mul_out_23 <= 0;
 		reg_mul_out_24 <= 0;
 		reg_mul_out_25 <= 0;
-		reg_mul_out_26 <= 0;
-		reg_mul_out_27 <= 0;
 	end
     
     else if(conv_enable)
@@ -237,8 +227,6 @@ module
 		reg_mul_out_23 <= mul_out_23;
 		reg_mul_out_24 <= mul_out_24;
 		reg_mul_out_25 <= mul_out_25;
-		reg_mul_out_26 <= mul_out_26;
-		reg_mul_out_27 <= mul_out_27;
 	end
     
     always @(posedge clk, posedge reset)
@@ -258,7 +246,6 @@ module
 			reg_adder_out_1_11 <= 0;
 			reg_adder_out_1_12 <= 0;
 			reg_adder_out_1_13 <= 0;
-			reg_adder_out_1_14 <= 0;
 
 			reg_adder_out_2_1 <= 0;
 			reg_adder_out_2_2 <= 0;
@@ -295,7 +282,6 @@ module
 			reg_adder_out_1_11 <= adder_out_1_11;
 			reg_adder_out_1_12 <= adder_out_1_12;
 			reg_adder_out_1_13 <= adder_out_1_13;
-			reg_adder_out_1_14 <= adder_out_1_14;
 
 			reg_adder_out_2_1 <= adder_out_2_1;
 			reg_adder_out_2_2 <= adder_out_2_2;
@@ -343,8 +329,6 @@ module
 	Float_Multiplier	mul_23	(.in1(w23), .in2(if23), .out(mul_out_23));
 	Float_Multiplier	mul_24	(.in1(w24), .in2(if24), .out(mul_out_24));
 	Float_Multiplier	mul_25	(.in1(w25), .in2(if25), .out(mul_out_25));
-	Float_Multiplier	mul_26	(.in1(w26), .in2(if26), .out(mul_out_26));
-	Float_Multiplier	mul_27	(.in1(w27), .in2(if27), .out(mul_out_27));
 
 	Float_Adder		adr_1_1	(.in1(reg_mul_out_1), .in2(reg_mul_out_2), .out(adder_out_1_1));
 	Float_Adder		adr_1_2	(.in1(reg_mul_out_3), .in2(reg_mul_out_4), .out(adder_out_1_2));
@@ -358,9 +342,8 @@ module
 	Float_Adder		adr_1_10	(.in1(reg_mul_out_19), .in2(reg_mul_out_20), .out(adder_out_1_10));
 	Float_Adder		adr_1_11	(.in1(reg_mul_out_21), .in2(reg_mul_out_22), .out(adder_out_1_11));
 	Float_Adder		adr_1_12	(.in1(reg_mul_out_23), .in2(reg_mul_out_24), .out(adder_out_1_12));
-	Float_Adder		adr_1_13	(.in1(reg_mul_out_25), .in2(reg_mul_out_26), .out(adder_out_1_13));
 
-	assign adder_out_1_14 = reg_mul_out_27;
+	assign adder_out_1_13 = reg_mul_out_25;
 
 	Float_Adder		adr_2_1	(.in1(reg_adder_out_1_1), .in2(reg_adder_out_1_2), .out(adder_out_2_1));
 	Float_Adder		adr_2_2	(.in1(reg_adder_out_1_3), .in2(reg_adder_out_1_4), .out(adder_out_2_2));
@@ -368,7 +351,8 @@ module
 	Float_Adder		adr_2_4	(.in1(reg_adder_out_1_7), .in2(reg_adder_out_1_8), .out(adder_out_2_4));
 	Float_Adder		adr_2_5	(.in1(reg_adder_out_1_9), .in2(reg_adder_out_1_10), .out(adder_out_2_5));
 	Float_Adder		adr_2_6	(.in1(reg_adder_out_1_11), .in2(reg_adder_out_1_12), .out(adder_out_2_6));
-	Float_Adder		adr_2_7	(.in1(reg_adder_out_1_13), .in2(reg_adder_out_1_14), .out(adder_out_2_7));
+
+	assign adder_out_2_7 = reg_adder_out_1_13;
 
 	Float_Adder		adr_3_1	(.in1(reg_adder_out_2_1), .in2(reg_adder_out_2_2), .out(adder_out_3_1));
 	Float_Adder		adr_3_2	(.in1(reg_adder_out_2_3), .in2(reg_adder_out_2_4), .out(adder_out_3_2));

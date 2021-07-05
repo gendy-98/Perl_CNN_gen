@@ -2,12 +2,12 @@
 
 
 module 
- FIFO_25_2_32 #(parameter
+ FIFO_25_2_117 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
-	ADDRESS_BITS 				= 11,
+	ADDRESS_BITS 				= 17,
 ///////////architecture parameters//////
-	IFM_SIZE 					= 32,
+	IFM_SIZE 					= 28,
 	IFM_DEPTH 					= 3,
 	KERNAL_SIZE 				= 5,
 	NUMBER_OF_FILTERS 			= 6,
@@ -175,22 +175,6 @@ module
 			FIFO[114] <= 0;
 			FIFO[115] <= 0;
 			FIFO[116] <= 0;
-			FIFO[117] <= 0;
-			FIFO[118] <= 0;
-			FIFO[119] <= 0;
-			FIFO[120] <= 0;
-			FIFO[121] <= 0;
-			FIFO[122] <= 0;
-			FIFO[123] <= 0;
-			FIFO[124] <= 0;
-			FIFO[125] <= 0;
-			FIFO[126] <= 0;
-			FIFO[127] <= 0;
-			FIFO[128] <= 0;
-			FIFO[129] <= 0;
-			FIFO[130] <= 0;
-			FIFO[131] <= 0;
-			FIFO[132] <= 0;
 		end
 		else if(fifo_enable)
 		begin
@@ -311,22 +295,6 @@ module
 			FIFO[114] <= FIFO[112];
 			FIFO[115] <= FIFO[113];
 			FIFO[116] <= FIFO[114];
-			FIFO[117] <= FIFO[115];
-			FIFO[118] <= FIFO[116];
-			FIFO[119] <= FIFO[117];
-			FIFO[120] <= FIFO[118];
-			FIFO[121] <= FIFO[119];
-			FIFO[122] <= FIFO[120];
-			FIFO[123] <= FIFO[121];
-			FIFO[124] <= FIFO[122];
-			FIFO[125] <= FIFO[123];
-			FIFO[126] <= FIFO[124];
-			FIFO[127] <= FIFO[125];
-			FIFO[128] <= FIFO[126];
-			FIFO[129] <= FIFO[127];
-			FIFO[130] <= FIFO[128];
-			FIFO[131] <= FIFO[129];
-			FIFO[132] <= FIFO[130];
 		end
 	end
 

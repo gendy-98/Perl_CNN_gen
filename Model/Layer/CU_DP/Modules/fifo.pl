@@ -19,7 +19,6 @@ use feature "switch";
 #ARGV[6] NUMBER_OF_FILTERS
 #
 
-
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -46,7 +45,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-
+my $full_path = "../../../../Verilog_files/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -54,13 +53,14 @@ my $file_name;
 my $module_name;
 my $multi_name;
 my $num_outputs = $ARGV[5]*$ARGV[5];
-$module_name = "FIFO_$num_outputs$under_Score$ARGV[0]$under_Score$ARGV[3]";
+my $fifo_regs = (($ARGV[5] - 1)*$ARGV[3] + $ARGV[5]);
+$module_name = "FIFO_$num_outputs$under_Score$ARGV[0]$under_Score$fifo_regs";
 
 
 
 
 
-$file_name = $module_name . ".v";
+$file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
 

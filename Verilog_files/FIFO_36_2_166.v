@@ -2,14 +2,14 @@
 
 
 module 
- FIFO_25_2 #(parameter
+ FIFO_36_2_166 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
-	ADDRESS_BITS 				= 11,
+	ADDRESS_BITS 				= 17,
 ///////////architecture parameters//////
 	IFM_SIZE 					= 32,
 	IFM_DEPTH 					= 3,
-	KERNAL_SIZE 				= 5,
+	KERNAL_SIZE 				= 6,
 	NUMBER_OF_FILTERS 			= 6,
 ///////////generated parameters/////////
 	IFM_SIZE_NEXT           	= IFM_SIZE - KERNAL_SIZE + 1,
@@ -51,7 +51,18 @@ module
 	output [DATA_WIDTH-1:0] fifo_data_out_22,
 	output [DATA_WIDTH-1:0] fifo_data_out_23,
 	output [DATA_WIDTH-1:0] fifo_data_out_24,
-	output [DATA_WIDTH-1:0] fifo_data_out_25
+	output [DATA_WIDTH-1:0] fifo_data_out_25,
+	output [DATA_WIDTH-1:0] fifo_data_out_26,
+	output [DATA_WIDTH-1:0] fifo_data_out_27,
+	output [DATA_WIDTH-1:0] fifo_data_out_28,
+	output [DATA_WIDTH-1:0] fifo_data_out_29,
+	output [DATA_WIDTH-1:0] fifo_data_out_30,
+	output [DATA_WIDTH-1:0] fifo_data_out_31,
+	output [DATA_WIDTH-1:0] fifo_data_out_32,
+	output [DATA_WIDTH-1:0] fifo_data_out_33,
+	output [DATA_WIDTH-1:0] fifo_data_out_34,
+	output [DATA_WIDTH-1:0] fifo_data_out_35,
+	output [DATA_WIDTH-1:0] fifo_data_out_36
 	);
 	reg	[DATA_WIDTH-1:0] FIFO  [FIFO_SIZE-1:0] ;
 	always @ (posedge clk or posedge reset)
@@ -191,11 +202,44 @@ module
 			FIFO[130] <= 0;
 			FIFO[131] <= 0;
 			FIFO[132] <= 0;
+			FIFO[133] <= 0;
+			FIFO[134] <= 0;
+			FIFO[135] <= 0;
+			FIFO[136] <= 0;
+			FIFO[137] <= 0;
+			FIFO[138] <= 0;
+			FIFO[139] <= 0;
+			FIFO[140] <= 0;
+			FIFO[141] <= 0;
+			FIFO[142] <= 0;
+			FIFO[143] <= 0;
+			FIFO[144] <= 0;
+			FIFO[145] <= 0;
+			FIFO[146] <= 0;
+			FIFO[147] <= 0;
+			FIFO[148] <= 0;
+			FIFO[149] <= 0;
+			FIFO[150] <= 0;
+			FIFO[151] <= 0;
+			FIFO[152] <= 0;
+			FIFO[153] <= 0;
+			FIFO[154] <= 0;
+			FIFO[155] <= 0;
+			FIFO[156] <= 0;
+			FIFO[157] <= 0;
+			FIFO[158] <= 0;
+			FIFO[159] <= 0;
+			FIFO[160] <= 0;
+			FIFO[161] <= 0;
+			FIFO[162] <= 0;
+			FIFO[163] <= 0;
+			FIFO[164] <= 0;
+			FIFO[165] <= 0;
 		end
 		else if(fifo_enable)
 		begin
-			FIFO[0] <= fifo_data_in_2
-			FIFO[1] <= fifo_data_in
+			FIFO[0] <= fifo_data_in_2;
+			FIFO[1] <= fifo_data_in;
 			FIFO[2] <= FIFO[0];
 			FIFO[3] <= FIFO[1];
 			FIFO[4] <= FIFO[2];
@@ -327,35 +371,82 @@ module
 			FIFO[130] <= FIFO[128];
 			FIFO[131] <= FIFO[129];
 			FIFO[132] <= FIFO[130];
+			FIFO[133] <= FIFO[131];
+			FIFO[134] <= FIFO[132];
+			FIFO[135] <= FIFO[133];
+			FIFO[136] <= FIFO[134];
+			FIFO[137] <= FIFO[135];
+			FIFO[138] <= FIFO[136];
+			FIFO[139] <= FIFO[137];
+			FIFO[140] <= FIFO[138];
+			FIFO[141] <= FIFO[139];
+			FIFO[142] <= FIFO[140];
+			FIFO[143] <= FIFO[141];
+			FIFO[144] <= FIFO[142];
+			FIFO[145] <= FIFO[143];
+			FIFO[146] <= FIFO[144];
+			FIFO[147] <= FIFO[145];
+			FIFO[148] <= FIFO[146];
+			FIFO[149] <= FIFO[147];
+			FIFO[150] <= FIFO[148];
+			FIFO[151] <= FIFO[149];
+			FIFO[152] <= FIFO[150];
+			FIFO[153] <= FIFO[151];
+			FIFO[154] <= FIFO[152];
+			FIFO[155] <= FIFO[153];
+			FIFO[156] <= FIFO[154];
+			FIFO[157] <= FIFO[155];
+			FIFO[158] <= FIFO[156];
+			FIFO[159] <= FIFO[157];
+			FIFO[160] <= FIFO[158];
+			FIFO[161] <= FIFO[159];
+			FIFO[162] <= FIFO[160];
+			FIFO[163] <= FIFO[161];
+			FIFO[164] <= FIFO[162];
+			FIFO[165] <= FIFO[163];
 		end
 	end
+
 	assign    fifo_data_out_1 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-1)];
 	assign    fifo_data_out_2 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-2)];
 	assign    fifo_data_out_3 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-3)];
 	assign    fifo_data_out_4 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-4)];
 	assign    fifo_data_out_5 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_6 = FIFO[(KERNAL_SIZE-1)*IFM_SIZE+(KERNAL_SIZE-6)];
 	
-	assign    fifo_data_out_6 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-1)];
-	assign    fifo_data_out_7 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-2)];
-	assign    fifo_data_out_8 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-3)];
-	assign    fifo_data_out_9 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-4)];
-	assign    fifo_data_out_10 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_7 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-1)];
+	assign    fifo_data_out_8 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-2)];
+	assign    fifo_data_out_9 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-3)];
+	assign    fifo_data_out_10 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-4)];
+	assign    fifo_data_out_11 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_12 = FIFO[(KERNAL_SIZE-2)*IFM_SIZE+(KERNAL_SIZE-6)];
 	
-	assign    fifo_data_out_11 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-1)];
-	assign    fifo_data_out_12 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-2)];
-	assign    fifo_data_out_13 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-3)];
-	assign    fifo_data_out_14 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-4)];
-	assign    fifo_data_out_15 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_13 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-1)];
+	assign    fifo_data_out_14 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-2)];
+	assign    fifo_data_out_15 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-3)];
+	assign    fifo_data_out_16 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-4)];
+	assign    fifo_data_out_17 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_18 = FIFO[(KERNAL_SIZE-3)*IFM_SIZE+(KERNAL_SIZE-6)];
 	
-	assign    fifo_data_out_16 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-1)];
-	assign    fifo_data_out_17 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-2)];
-	assign    fifo_data_out_18 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-3)];
-	assign    fifo_data_out_19 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-4)];
-	assign    fifo_data_out_20 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_19 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-1)];
+	assign    fifo_data_out_20 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-2)];
+	assign    fifo_data_out_21 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-3)];
+	assign    fifo_data_out_22 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-4)];
+	assign    fifo_data_out_23 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_24 = FIFO[(KERNAL_SIZE-4)*IFM_SIZE+(KERNAL_SIZE-6)];
 	
-	assign    fifo_data_out_21 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-1)];
-	assign    fifo_data_out_22 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-2)];
-	assign    fifo_data_out_23 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-3)];
-	assign    fifo_data_out_24 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-4)];
-	assign    fifo_data_out_25 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_25 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-1)];
+	assign    fifo_data_out_26 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-2)];
+	assign    fifo_data_out_27 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-3)];
+	assign    fifo_data_out_28 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-4)];
+	assign    fifo_data_out_29 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_30 = FIFO[(KERNAL_SIZE-5)*IFM_SIZE+(KERNAL_SIZE-6)];
 	
+	assign    fifo_data_out_31 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-1)];
+	assign    fifo_data_out_32 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-2)];
+	assign    fifo_data_out_33 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-3)];
+	assign    fifo_data_out_34 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-4)];
+	assign    fifo_data_out_35 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-5)];
+	assign    fifo_data_out_36 = FIFO[(KERNAL_SIZE-6)*IFM_SIZE+(KERNAL_SIZE-6)];
+	
+endmodule

@@ -9,8 +9,8 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] Layer name    (A, B)
-#ARGV[1] Units number
+#ARGV[0] N/A
+#ARGV[1] Mul number
 #ARGV[2] Mul & Add type which (decimal, fixed, float) 
 #ARGV[3] DATA_WIDTH
 #ARGV[4] ADDRESS_BITS
@@ -48,7 +48,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-
+my $full_path = "../../../../Verilog_files/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -101,7 +101,7 @@ if(lc ($ARGV[2]) eq "float"){
  
 $module_name = "convolution";
 
-$file_name = $module_name . ".v";
+$file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   

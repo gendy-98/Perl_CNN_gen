@@ -5,7 +5,7 @@ module
  Float_Adder #(parameter
 	DATA_WIDTH = 32
 	,E = 8
-	,M = 23
+	,M = 24
 	)(
 	input [DATA_WIDTH - 1:0] in1,
 	input [DATA_WIDTH - 1:0] in2,

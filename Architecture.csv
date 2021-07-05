@@ -1,42 +1,63 @@
-layer name,conva1,,,,,,,
-kernal size ,5,,,,,,,
-stride,1,,,,,,,
-input size,32,,,,,,,
-input channels,3,,,,,,,
-output channels,6,,,,,,,
-layer name,pool1,,,,,,,
-kernal size ,2,,,,,,,
-stride,2,,,,,,,
-input size,28,,,,,,,
-input channels,6,,,,,,,
-output channels,6,,,,,,,
-layer name,convb,,,,,,,
-kernal size ,5,,,,,,,
-stride,1,,,,,,,
-input size,14,,,,,,,
-input channels,6,,,,,,,
-output channels,16,,,,,,,
-layer name,pool2,,,,,,,
-kernal size ,2,,,,,,,
-stride,2,,,,,,,
-input size,32,,,,,,,
-input channels,16,,,,,,,
-output channels,16,,,,,,,
-layer name,conva2,,,,,,,
-kernal size ,5,,,,,,,
-stride,1,,,,,,,
-input size,32,,,,,,,
-input channels,16,,,,,,,
-output channels,120,,,,,,,
-layer name,fc1,,,,,,,
-kernal size ,5,,,,,,,
-stride,1,,,,,,,
-input size,32,,,,,,,
-input channels,120,,,,,,,
-output channels,84,,,,,,,
-layer name,fc2,,,,,,,
-kernal size ,5,,,,,,,
-stride,1,,,,,,,
-input size,32,,,,,,,
-input channels,84,,,,,,,
-output channels,10,,,,,,,
+layer name,conv1
+kernal size ,5
+stride,1
+input size,32
+input channels,3
+output channels,6
+units number,1
+layer name,pool1
+kernal size ,2
+stride,2
+input size,28
+input channels,6
+output channels,6
+units number,1
+layer name,conv2
+kernal size ,5
+stride,1
+input size,14
+input channels,6
+output channels,16
+units number,1
+layer name,pool2
+kernal size ,2
+stride,2
+input size,32
+input channels,16
+output channels,16
+units number,1
+layer name,conv3
+kernal size ,5
+stride,1
+input size,32
+input channels,16
+output channels,120
+units number,1
+layer name,pool2
+kernal size ,2
+stride,2
+input size,32
+input channels,16
+output channels,16
+units number,1
+layer name,fc1
+kernal size ,5
+stride,1
+input size,32
+input channels,120
+output channels,84
+units number,1
+layer name,fc2
+kernal size ,5
+stride,1
+input size,32
+input channels,84
+output channels,10
+units number,1
+layer name,conv4
+kernal size ,5
+stride,1
+input size,32
+input channels,3
+output channels,6
+units number,1

@@ -45,7 +45,7 @@ my $end_module = "endmodule";
 my $i_p = "input";
 my $o_p = "output";
 my $under_Score = "_";
-
+my $full_path = "../../../../../Verilog_files/";
 #######################################################################################
 my $i = 0;
 
@@ -60,7 +60,7 @@ if(lc ($ARGV[0]) eq "float"){
 	$module_name = "Float_Multiplier";}
 
 
-$file_name = $module_name . ".v";
+$file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
 

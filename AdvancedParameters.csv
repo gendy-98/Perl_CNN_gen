@@ -1,36 +1,7 @@
-layer name,conva1,,,,
-kernal size ,5,,,,
-stride,1,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
-layer name,pool1,,,,
-kernal size ,2,,,,
-input size,32,,,,d
-input channels,3,,,,
-output channels,6,,,,
-layer name,convb,,,,
-kernal size ,5,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
-layer name,pool2,,,,
-kernal size ,5,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
-layer name,conva2,,,,
-kernal size ,5,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
-layer name,fc1,,,,
-kernal size ,5,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
-layer name,fc2,,,,
-kernal size ,5,,,,
-input size,32,,,,
-input channels,3,,,,
-output channels,6,,,,
+data width ,32
+riscv address bus,22
+address bits,15
+operation type,float
+mantissa,24
+exponent,8
+muls in conv,25
