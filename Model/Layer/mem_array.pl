@@ -351,7 +351,7 @@ for($i = 1;$i<ceil($IFM_number/$ARGV[1]);$i = $i + 1){
 	print $fh <<"DONATE";
 
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_$ARGV[1] #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M$i(  .clk(clk),
 DONATE
 

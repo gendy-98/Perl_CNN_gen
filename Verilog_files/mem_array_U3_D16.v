@@ -4,9 +4,9 @@
 module 
  mem_array_U3_D16 #(parameter
 ///////////advanced parameters//////////
-	DATA_WIDTH 					= 32,
+	DATA_WIDTH 				= 32,
 ///////////architecture parameters//////
-	IFM_SIZE              = 10,                                                
+	IFM_SIZE              = 32,                                                
     NUMBER_OF_IFM         = 16,
     NUMBER_OF_UNITS       = 3,
     ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE))
@@ -179,7 +179,7 @@ module
 	.dout_6(ifm_enable_write_previous_dMuxOut6)
 	);
 
-	demux_1_to_6_7bits d4(
+	demux_1_to_6_10bits d4(
 	.din(ifm_address_write_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_write_previous_dMuxOut1),
@@ -190,7 +190,7 @@ module
 	.dout_6(ifm_address_write_previous_dMuxOut6)
 	);
 
-	demux_1_to_6_7bits d5(
+	demux_1_to_6_10bits d5(
 	.din(ifm_address_read_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_previous_dMuxOut1),
@@ -201,7 +201,7 @@ module
 	.dout_6(ifm_address_read_previous_dMuxOut6)
 	);
 
-	demux_1_to_6_7bits d6(
+	demux_1_to_6_10bits d6(
 	.din(ifm_address_read_A_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_A_next_dMuxOut1),
@@ -212,7 +212,7 @@ module
 	.dout_6(ifm_address_read_A_next_dMuxOut6)
 	);
 
-	demux_1_to_6_7bits d7(
+	demux_1_to_6_10bits d7(
 	.din(ifm_address_read_B_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_B_next_dMuxOut1),
@@ -322,8 +322,9 @@ module
 		endcase
 		
 	end
+
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_3 #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M1(  .clk(clk),
       .Data_Input_A_Mem1 (data_in_from_previous1),
       .Data_Input_B_Mem1 ('b0),
@@ -347,8 +348,9 @@ M1(  .clk(clk),
       .Data_Output_A_Mem3 (Data_Output_A_Mem3),
       .Data_Output_B_Mem3 (Data_Output_B_Mem3)
 	  );
+
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_3 #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M2(  .clk(clk),
       .Data_Input_A_Mem1 (data_in_from_previous1),
       .Data_Input_B_Mem1 ('b0),
@@ -372,8 +374,9 @@ M2(  .clk(clk),
       .Data_Output_A_Mem3 (Data_Output_A_Mem6),
       .Data_Output_B_Mem3 (Data_Output_B_Mem6)
 	  );
+
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_3 #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M3(  .clk(clk),
       .Data_Input_A_Mem1 (data_in_from_previous1),
       .Data_Input_B_Mem1 ('b0),
@@ -397,8 +400,9 @@ M3(  .clk(clk),
       .Data_Output_A_Mem3 (Data_Output_A_Mem9),
       .Data_Output_B_Mem3 (Data_Output_B_Mem9)
 	  );
+
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_3 #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M4(  .clk(clk),
       .Data_Input_A_Mem1 (data_in_from_previous1),
       .Data_Input_B_Mem1 ('b0),
@@ -422,8 +426,9 @@ M4(  .clk(clk),
       .Data_Output_A_Mem3 (Data_Output_A_Mem12),
       .Data_Output_B_Mem3 (Data_Output_B_Mem12)
 	  );
+
 	
-mem_unit #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_3 #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M5(  .clk(clk),
       .Data_Input_A_Mem1 (data_in_from_previous1),
       .Data_Input_B_Mem1 ('b0),
@@ -447,7 +452,7 @@ M5(  .clk(clk),
       .Data_Output_A_Mem3 (Data_Output_A_Mem15),
       .Data_Output_B_Mem3 (Data_Output_B_Mem15)
 	  );
-	TrueDualPort_Memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	true_dual_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
 	IFM16 (
     .clk(clk),
 	

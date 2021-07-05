@@ -52,7 +52,7 @@ my $file_name;
 my $module_name;
 my $IFM_number;
 
-$module_name = "mem_unit"; 
+$module_name = "mem_unit_$ARGV[0]"; 
 
 my $dual_port_name = "true_dual_port_memory";
 
