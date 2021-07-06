@@ -18,7 +18,7 @@ module
     
 	assign data_out_mux = accu_enable ? data_in_from_next : data_bias;
 
-    FP_Adder D1 (.FP_in1 (data_in_from_conv), .FP_in2 (data_out_mux), .FP_out (accu_data_out));
+    Float_Adder D1 (.in1 (data_in_from_conv), .in2 (data_out_mux), .out (accu_data_out));
 
 endmodule
 

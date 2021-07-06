@@ -5,12 +5,12 @@ module
  unitA #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS			= 16,
+	ADDRESS_BITS			= 18,
 	/////////////////////////////////////
 	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 3,
+	IFM_DEPTH             = 6,
 	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS		= 6,
+	NUMBER_OF_FILTERS		= 3,
 	NUMBER_OF_UNITS 		= 3,
 	//////////////////////////////////////
 	NUMBER_OF_IFM           = IFM_DEPTH,
@@ -147,7 +147,7 @@ convolution #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH
 	 .clk(clk),
 	 .reset(reset),
 	 .conv_enable(conv_enable),
-	 .conv_data_out(conv_data_out),
+	 .conv_data_out(unit_data_out),
 		.w1(signal_w1),.if1(signal_if1),
 		.w2(signal_w2),.if2(signal_if2),
 		.w3(signal_w3),.if3(signal_if3),
@@ -173,6 +173,7 @@ convolution #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH
 		.w23(signal_w23),.if23(signal_if23),
 		.w24(signal_w24),.if24(signal_if24),
 		.w25(signal_w25),.if25(signal_if25)
+ 
 );
 
 

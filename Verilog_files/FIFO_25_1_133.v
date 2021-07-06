@@ -5,12 +5,12 @@ module
  FIFO_25_1_133 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
-	ADDRESS_BITS 				= 16,
+	ADDRESS_BITS 				= 18,
 ///////////architecture parameters//////
 	IFM_SIZE 					= 32,
-	IFM_DEPTH 					= 3,
+	IFM_DEPTH 					= 6,
 	KERNAL_SIZE 				= 5,
-	NUMBER_OF_FILTERS 			= 6,
+	NUMBER_OF_FILTERS 			= 3,
 ///////////generated parameters/////////
 	IFM_SIZE_NEXT           	= IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        	= $clog2(IFM_SIZE*IFM_SIZE),

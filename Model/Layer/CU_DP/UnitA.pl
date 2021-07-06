@@ -61,9 +61,8 @@ my @levels;
 my $levels_number;
 my $divided_by;
 
- 
+my $single_port_name = "single_port_memory"; 
 $module_name = "unitA";
-my $single_port_name = "single_port_memory";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
@@ -184,7 +183,7 @@ convolution #(.$data_width($data_width), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEP
 	 .clk(clk),
 	 .reset(reset),
 	 .conv_enable(conv_enable),
-	 .conv_data_out(conv_data_out),
+	 .conv_data_out(unit_data_out),
 DONATE
 
 for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
@@ -194,6 +193,7 @@ print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
 
 
  print $fh <<"DONATE";
+ 
 );
 
 

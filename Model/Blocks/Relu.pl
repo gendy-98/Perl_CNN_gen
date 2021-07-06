@@ -38,28 +38,11 @@ my $mem_size = "MEM_SIZE";
 my $full_path = "../../Verilog_files/";
 
 #######################################################################################
+
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
 
-
-
-
- if(lc ($ARGV[0]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[0]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[0]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
- 
-$module_name = "accumulator";
+$module_name = "relu";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
@@ -70,21 +53,15 @@ $module $module_name $parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH      = 32
 	)(
-	input clk,
-	input accu_enable,
-	input  [DATA_WIDTH-1:0] data_in_from_conv,
-	input  [DATA_WIDTH-1:0] data_bias,
-	input  [DATA_WIDTH-1:0] data_in_from_next,
-	output [DATA_WIDTH-1:0] accu_data_out
+	input relu_enable,
+    input [DATA_WIDTH-1:0] in,
+    output [DATA_WIDTH-1:0] out
     );
+   
+	assign out = ( (in[DATA_WIDTH-1]) & relu_enable ) ?  32'h00000000 : in ;
+    //assign out = in;
+endmodule 
 
-    wire [DATA_WIDTH-1:0] data_out_mux;
-    
-	assign data_out_mux = accu_enable ? data_in_from_next : data_bias;
-
-    $adder_name D1 (.in1 (data_in_from_conv), .in2 (data_out_mux), .out (accu_data_out));
-
-endmodule
 
 DONATE
 
