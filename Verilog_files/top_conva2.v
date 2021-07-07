@@ -1,107 +1,17 @@
-use strict;
-use warnings;
-use diagnostics;
-
-# say prints a line followed by a newline
-use feature 'say';
- 
-# Use a Perl version of switch called given when
-use feature "switch";
-
-#argumets 
-#ARGV[0] no of the conv 
-#ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
-
-######################################### CONSTANTS ###################################
-my $module = <<"DONATE";
 `timescale 1ns / 1ps
 
 
 module 
-DONATE
-my $parameter = "#(parameter";
-
-my $always_clk = <<"DONATE";
-always @ (posedge clk)
-    begin 
-DONATE
-my $end = "end";
-my $end_module = "endmodule";
-my $i_p = "input";
-my $o_p = "output";
-my $under_Score = "_";
-my $clog2 = "\$clog2";
-
-my $data_width = "DATA_WIDTH";
-my $address_bits = "ADDRESS_BITS";
-
-my $ifm_size = "IFM_SIZE";                                               
-my $ifm_depth = "IFM_DEPTH";
-my $kernal_size = "KERNAL_SIZE";
-my $number_of_filters = "NUMBER_OF_FILTERS";
-my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../Verilog_files/";
-#######################################################################################
-my $i = 0;
-my $j = 0;
-my $jj = 0;
-my $file_name;
-my $module_name;
-my $adder_name;
-my $mul_name;
-my $odd_flag;
-my $dummy_level;
-my @levels;
-my $levels_number;
-
-my $single_port_name = "single_port_memory";
-my $unit_name = "unitA";
-my $Relu_name = "relu";
-my $cu_name;
-my $dp_name;
-my $accumulator_name = "accumulator"; 
-$module_name = "top_conva$ARGV[0]";
-
-
- 
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
-
-
-$file_name = $full_path . $module_name . ".v";
-open my $fh, '>', $file_name
-  or die "Can't open file : $!";
-  
-  print $fh <<"DONATE";
-$module $module_name $parameter
+ top_conva2 #(parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[3],
-	$address_bits 		  = $ARGV[4],
+	DATA_WIDTH 			  = 32,
+	ADDRESS_BITS 		  = 16,
 	/////////////////////////////////////
-	$ifm_size              = $ARGV[5],                                                
-	$ifm_depth             = $ARGV[6],
-	$kernal_size           = $ARGV[7],
-	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
+	IFM_SIZE              = 32,                                                
+	IFM_DEPTH             = 3,
+	KERNAL_SIZE           = 5,
+	NUMBER_OF_FILTERS     = 6,
+	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -113,8 +23,8 @@ $module $module_name $parameter
 	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
 	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
 )(
-	$i_p 							clk,
-	$i_p 							reset,
+	input 							clk,
+	input 							reset,
 	
 	input [DATA_WIDTH-1:0]  riscv_data,
 	input [ADDRESS_BITS-1:0] riscv_address,
@@ -123,16 +33,9 @@ $module $module_name $parameter
 
 	input start_from_previous,
 	
-DONATE
-
-
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
-	print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_from_previous$i,
-DONATE
-}
-
-print $fh <<"DONATE";
+	input [DATA_WIDTH-1:0] data_in_from_previous1,
+	input [DATA_WIDTH-1:0] data_in_from_previous2,
+	input [DATA_WIDTH-1:0] data_in_from_previous3,
 	output                        ifm_enable_read_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 	output                        end_to_previous,
@@ -148,9 +51,9 @@ print $fh <<"DONATE";
 	output ifm_enable_write_next,
     //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
     //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
-	output start_to_next,
+	output start_to_next
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel
+	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel,  
     );
 	
 	wire fifo_enable;
@@ -170,15 +73,9 @@ print $fh <<"DONATE";
     
     
 	
-DONATE
-chdir "./CU_DP";
-system("perl CU_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
 
-$cu_name = "conva$ARGV[0]_CU";
-print $fh <<"DONATE";
-
-	$cu_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    CU_A$ARGV[0]
+	conva2_CU #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    CU_A2
     (
     .clk(clk),
     .reset(reset),
@@ -211,16 +108,9 @@ print $fh <<"DONATE";
     .start_to_next(start_to_next)
     );    
      
-DONATE
 
-
-system("perl DP_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
-
-$dp_name = "conva$ARGV[0]_DP";
-print $fh <<"DONATE";
-
-	$dp_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    DP_A$ARGV[0]
+	conva2_DP #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    DP_A2
 	(
     .clk(clk),
 	.reset(reset),
@@ -232,14 +122,9 @@ print $fh <<"DONATE";
     .accu_enable(accu_enable),
     .relu_enable(relu_enable),
 	
-DONATE
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
-	print $fh <<"DONATE";
-	.data_in_from_previous$i(data_in_from_previous$i),
-DONATE
-}
-
-print $fh <<"DONATE";
+	.data_in_from_previous1(data_in_from_previous1),
+	.data_in_from_previous2(data_in_from_previous2),
+	.data_in_from_previous3(data_in_from_previous3),
 
 	
     .wm_addr_sel(wm_addr_sel),
@@ -257,9 +142,3 @@ print $fh <<"DONATE";
 	.data_out_for_next(data_out_for_next)
     );
 	
-	
-endmodule	
-DONATE
-
-
-close $fh or die "Couldn't Close File : $!";

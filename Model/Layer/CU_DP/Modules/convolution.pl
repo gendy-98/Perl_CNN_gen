@@ -61,6 +61,7 @@ my $odd_flag;
 my $dummy_level;
 my @levels;
 my $levels_number;
+
 $dummy_level = $ARGV[1];
 
 

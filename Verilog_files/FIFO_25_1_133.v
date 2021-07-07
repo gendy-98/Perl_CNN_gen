@@ -8,9 +8,9 @@ module
 	ADDRESS_BITS 				= 18,
 ///////////architecture parameters//////
 	IFM_SIZE 					= 32,
-	IFM_DEPTH 					= 6,
+	IFM_DEPTH 					= 3,
 	KERNAL_SIZE 				= 5,
-	NUMBER_OF_FILTERS 			= 3,
+	NUMBER_OF_FILTERS 			= 6,
 ///////////generated parameters/////////
 	IFM_SIZE_NEXT           	= IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        	= $clog2(IFM_SIZE*IFM_SIZE),

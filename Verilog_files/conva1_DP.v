@@ -2,15 +2,15 @@
 
 
 module 
- conva2_DP #(parameter
+ conva1_DP #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS 		  = 16,
+	ADDRESS_BITS 		  = 18,
 	/////////////////////////////////////
 	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 3,
+	IFM_DEPTH             = 6,
 	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS     = 6,
+	NUMBER_OF_FILTERS     = 3,
 	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
@@ -32,9 +32,9 @@ module
 	input fifo_enable,
 	input conv_enable,
 	
-	
-	input accu_enable,
-	input relu_enable,
+	input [NUMBER_OF_IFM-1:0]    ifm_enable_write_previous,            
+	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
+    input                        ifm_enable_read_current,
 	
 	input                       wm_addr_sel,
     input                       wm_enable_read,
@@ -47,25 +47,17 @@ module
     input                                 bm_enable_write,
     input [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
     
-	
-	input [DATA_WIDTH-1:0] data_in_from_previous1,
-	input [DATA_WIDTH-1:0] data_in_from_previous2,
-	input [DATA_WIDTH-1:0] data_in_from_previous3,
-
-	input  [DATA_WIDTH-1:0] data_in_from_next,
-    output [DATA_WIDTH-1:0] data_out_for_next
-    );
-
+	output [DATA_WIDTH-1:0] data_out_for_next
+	);
+	wire [DATA_WIDTH-1:0] data_read_for_unit1;
+	wire [DATA_WIDTH-1:0] data_read_for_unit2;
+	wire [DATA_WIDTH-1:0] data_read_for_unit3;
 	wire [DATA_WIDTH-1:0] unit1_data_out;
 	wire [DATA_WIDTH-1:0] unit2_data_out;
 	wire [DATA_WIDTH-1:0] unit3_data_out;
  
-	wire [DATA_WIDTH-1:0] accu_data_out;
-	wire [DATA_WIDTH-1:0] relu_data_out;
-	
 	wire [DATA_WIDTH-1:0] data_bias;
 	
-
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
 	wire [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address;
 	
@@ -89,14 +81,64 @@ module
      .Enable_Read(bm_enable_read),	.Address(bm_address),
 	 .Data_Input(riscv_data),	.Data_Output(data_bias));
 	 
+	true_dual_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	IFM1 (
+    .clk(clk),
+    
+    .Data_Input_A(riscv_data),
+    .Address_A(riscv_address[ADDRESS_SIZE_IFM-1:0]),
+    .Enable_Write_A(ifm_enable_write_previous[0]),
+    .Enable_Read_A(1'b0), 
   
+    .Data_Input_B(32'b0),
+    .Address_B(ifm_address_read_current),
+    .Enable_Write_B(1'b0),
+    .Enable_Read_B(ifm_enable_read_current), 
+  
+    .Data_Output_A(),
+    .Data_Output_B(data_read_for_unit1)
+	);
+	true_dual_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	IFM2 (
+    .clk(clk),
+    
+    .Data_Input_A(riscv_data),
+    .Address_A(riscv_address[ADDRESS_SIZE_IFM-1:0]),
+    .Enable_Write_A(ifm_enable_write_previous[1]),
+    .Enable_Read_A(1'b0), 
+  
+    .Data_Input_B(32'b0),
+    .Address_B(ifm_address_read_current),
+    .Enable_Write_B(1'b0),
+    .Enable_Read_B(ifm_enable_read_current), 
+  
+    .Data_Output_A(),
+    .Data_Output_B(data_read_for_unit2)
+	);
+	true_dual_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	IFM3 (
+    .clk(clk),
+    
+    .Data_Input_A(riscv_data),
+    .Address_A(riscv_address[ADDRESS_SIZE_IFM-1:0]),
+    .Enable_Write_A(ifm_enable_write_previous[2]),
+    .Enable_Read_A(1'b0), 
+  
+    .Data_Input_B(32'b0),
+    .Address_B(ifm_address_read_current),
+    .Enable_Write_B(1'b0),
+    .Enable_Read_B(ifm_enable_read_current), 
+  
+    .Data_Output_A(),
+    .Data_Output_B(data_read_for_unit3)
+	);
 	unitA #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
     unit_1
     (
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous1),       
+    .unit_data_in(data_read_for_unit1),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -111,7 +153,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous2),       
+    .unit_data_in(data_read_for_unit2),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -126,7 +168,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous3),       
+    .unit_data_in(data_read_for_unit3),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          

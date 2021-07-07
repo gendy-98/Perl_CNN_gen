@@ -12,11 +12,8 @@ use feature "switch";
 #argumets 
 #ARGV[0] stride 
 #ARGV[1] DATA_WIDTH 
-#ARGV[2] ADDRESS_BITS
-#ARGV[3] IFM_SIZE
-#ARGV[4] IFM_DEPTH
-#ARGV[5] KERNAL_SIZE 
-#ARGV[6] NUMBER_OF_FILTERS
+#ARGV[2] IFM_SIZE
+#ARGV[3] KERNAL_SIZE 
 #
 
 ######################################### CONSTANTS ###################################
@@ -52,8 +49,8 @@ my $j = 0;
 my $file_name;
 my $module_name;
 my $multi_name;
-my $num_outputs = $ARGV[5]*$ARGV[5];
-my $fifo_regs = (($ARGV[5] - 1)*$ARGV[3] + $ARGV[5]);
+my $num_outputs = $ARGV[3]*$ARGV[3];
+my $fifo_regs = (($ARGV[3] - 1)*$ARGV[2] + $ARGV[3]);
 $module_name = "FIFO_$num_outputs$under_Score$ARGV[0]$under_Score$fifo_regs";
 
 
@@ -68,12 +65,12 @@ print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
 	$data_width 					= $ARGV[1],
-	$address_bits 				= $ARGV[2],
+	$address_bits 				= 18,
 ///////////architecture parameters//////
-	$ifm_size 					= $ARGV[3],
-	$ifm_depth 					= $ARGV[4],
-	$kernal_size 				= $ARGV[5],
-	$num_filters 			= $ARGV[6],
+	$ifm_size 					= $ARGV[2],
+	$ifm_depth 					= 3,
+	$kernal_size 				= $ARGV[3],
+	$num_filters 			= 6,
 ///////////generated parameters/////////
 	IFM_SIZE_NEXT           	= IFM_SIZE - $kernal_size + 1,
 	ADDRESS_SIZE_IFM        	= $clog2(IFM_SIZE*IFM_SIZE),
@@ -111,7 +108,7 @@ print $fh <<"DONATE";
 		begin
 DONATE
 
-for($i = 0;$i < ($ARGV[5] - 1)*$ARGV[3] + $ARGV[5];$i = $i + 1){
+for($i = 0;$i < ($ARGV[3] - 1)*$ARGV[2] + $ARGV[3];$i = $i + 1){
 	print $fh "\t\t\tFIFO[$i] <= 0;\n";
 	
 }
@@ -124,17 +121,17 @@ DONATE
 if($ARGV[0] == 2){
 	print $fh "\t\t\tFIFO[0] <= fifo_data_in_2;\n";
 	print $fh "\t\t\tFIFO[1] <= fifo_data_in;\n";
-	for($i = 0;$i < (($ARGV[5] - 1)*$ARGV[3] + $ARGV[5])-3;$i = $i + 2){
+	for($i = 0;$i < (($ARGV[3] - 1)*$ARGV[2] + $ARGV[3])-3;$i = $i + 2){
 		print $fh "\t\t\tFIFO[${\($i+2)}] <= FIFO[$i];\n";
 		print $fh "\t\t\tFIFO[${\($i+3)}] <= FIFO[${\($i+1)}];\n";
 	}
-	if($ARGV[5] % 2 != 0){
+	if($ARGV[3] % 2 != 0){
 		print $fh "\t\t\tFIFO[${\($i+2)}] <= FIFO[$i];\n";
 	}
 }
 else{
 	print $fh "\t\t\tFIFO[0] <= fifo_data_in;\n";
-	for($i = 0;$i < (($ARGV[5] - 1)*$ARGV[3] + $ARGV[5])-1;$i = $i + 1){
+	for($i = 0;$i < (($ARGV[3] - 1)*$ARGV[2] + $ARGV[3])-1;$i = $i + 1){
 		print $fh "\t\t\tFIFO[${\($i+1)}] <= FIFO[$i];\n";
 	}
 }
@@ -144,9 +141,9 @@ print $fh <<"DONATE";
 
 DONATE
 
-for($i = 1; $i <= $ARGV[5]; $i = $i + 1){
-	for($j = 1; $j <= $ARGV[5]; $j = $j + 1){
-		print $fh "\tassign    fifo_data_out_${\($j + ($i-1)*$ARGV[5])} = FIFO[($kernal_size-$i)*IFM_SIZE+($kernal_size-$j)];\n";
+for($i = 1; $i <= $ARGV[3]; $i = $i + 1){
+	for($j = 1; $j <= $ARGV[3]; $j = $j + 1){
+		print $fh "\tassign    fifo_data_out_${\($j + ($i-1)*$ARGV[3])} = FIFO[($kernal_size-$i)*IFM_SIZE+($kernal_size-$j)];\n";
 	}
 	print $fh "\t\n";
 }
