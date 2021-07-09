@@ -2,7 +2,7 @@
 
 
 module 
- top_conva2 #(parameter
+ top_conva3 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	ADDRESS_BITS 		  = 15,
@@ -74,8 +74,8 @@ module
     
 	
 
-	conva2_CU #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    CU_A2
+	conva3_CU #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    CU_A3
     (
     .clk(clk),
     .reset(reset),
@@ -109,8 +109,8 @@ module
     );    
      
 
-	conva2_DP #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    DP_A2
+	conva3_DP #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    DP_A3
 	(
     .clk(clk),
 	.reset(reset),

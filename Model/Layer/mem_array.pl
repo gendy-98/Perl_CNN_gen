@@ -56,16 +56,20 @@ my $m = 0;
 my $file_name;
 my $module_name;
 my $IFM_number;
+my $units;
 
-$module_name = "mem_array_U$ARGV[1]_D$ARGV[5]"; #U for units and D for IFM Depth
 my $dual_port_name = "true_dual_port_memory";
 
-if($ARGV[1] == 1){
+if($ARGV[0] == 1){
 	$IFM_number = 2;
+	$units = 1;
 }
 else{
 	$IFM_number = $ARGV[5];
+	$units = $ARGV[1];
 }
+
+$module_name = "mem_array_U${\($units)}_D$IFM_number"; #U for units and D for IFM Depth
 
 
 
@@ -79,8 +83,8 @@ $module $module_name $parameter
 	$data_width 					= $ARGV[2],
 ///////////architecture parameters//////
 	$ifm_size              = $ARGV[4],                                                
-    NUMBER_OF_IFM         = $ARGV[5],
-    NUMBER_OF_UNITS       = $ARGV[1],
+    NUMBER_OF_IFM         = $IFM_number,
+    NUMBER_OF_UNITS       = $units,
     ADDRESS_SIZE_IFM      = $clog2($ifm_size*$ifm_size))
 
 	)(
@@ -93,13 +97,13 @@ $module $module_name $parameter
 
 DONATE
 
-for($i = 1;$i <= $ARGV[1]; $i = $i + 1){
+for($i = 1;$i <= $units; $i = $i + 1){
 	print $fh <<"DONATE";
 	$i_p [$data_width-1:0] data_in_from_previous$i,
 DONATE
 }
 
-for($i = 1;$i <= $ARGV[1]; $i = $i + 1){
+for($i = 1;$i <= $units; $i = $i + 1){
 	print $fh <<"DONATE";
 	$o_p reg [$data_width-1:0] data_out_for_previous$i,
 DONATE
@@ -112,7 +116,7 @@ print $fh <<"DONATE";
 	$i_p [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_next,
 DONATE
 
-for($i = 1;$i < $ARGV[1]; $i = $i + 1){
+for($i = 1;$i < $units; $i = $i + 1){
 	print $fh <<"DONATE";
 	$o_p reg [$data_width-1:0] data_out_A_for_next$i,
 	$o_p reg [$data_width-1:0] data_out_B_for_next$i,
@@ -133,7 +137,9 @@ for($i = 1;$i <= $IFM_number; $i = $i + 1){
 DONATE
 }
 
-my $divisionOutput = ceil($IFM_number/$ARGV[1]);
+my $divisionOutput = ceil($IFM_number/$units);
+
+
 
 for($i = 1;$i <= $divisionOutput; $i = $i + 1){
 	print $fh <<"DONATE";
@@ -260,14 +266,14 @@ print $fh <<"DONATE";
         case(ifm_sel)
 DONATE
 $k = 1;
-$h = ($divisionOutput-1)*$ARGV[1]+1;
+$h = ($divisionOutput-1)*$units+1;
 for($i = 0;$i < $divisionOutput - 1; $i = $i + 1){
 	print $fh <<"DONATE";
 		${\(ceil(log($divisionOutput) / log(2)))}'d$i:
 		begin
 DONATE
-	for($j = 1;$j <= $ARGV[1]; $j = $j + 1){
-	   if($k <= $IFM_number){
+	for($j = 1;$j <= $units; $j = $j + 1){
+	   	if($k <= $IFM_number){
 			print $fh "\t\t\tdata_out_for_previous$j = Data_Output_B_Mem$k;\n";
 		}
 		else{
@@ -275,7 +281,7 @@ DONATE
 		}
 		$k = $k + 1;
 	}
-	for($j = 1;$j <= $ARGV[1]; $j = $j + 1){
+	for($j = 1;$j <= $units; $j = $j + 1){
 		if($h <= $IFM_number){
 			print $fh <<"DONATE";
 		
@@ -289,11 +295,12 @@ DONATE
 			data_out_A_for_next$j = 0;
 			data_out_B_for_next$j = 0;
 DONATE
-			if($h >= $divisionOutput*$ARGV[1]){
-				$h = 0;
-			}
+			
 		}
 		$h = $h + 1;
+		if($h > $divisionOutput*$units){
+				$h = 1;
+			}
 	}
 	print $fh "\t\tend\n";
 }
@@ -302,7 +309,7 @@ DONATE
 		default:
 		begin
 DONATE
-	for($j = 1;$j <= $ARGV[1]; $j = $j + 1){
+	for($j = 1;$j <= $units; $j = $j + 1){
 	   if($k <= $IFM_number){
 			print $fh "\t\t\tdata_out_for_previous$j = Data_Output_B_Mem$k;\n";
 		}
@@ -311,7 +318,7 @@ DONATE
 		}
 		$k = $k + 1;
 	}
-	for($j = 1;$j <= $ARGV[1]; $j = $j + 1){
+	for($j = 1;$j <= $units; $j = $j + 1){
 		if($h <= $IFM_number){
 			print $fh <<"DONATE";
 		
@@ -325,7 +332,7 @@ DONATE
 			data_out_A_for_next$j = 0;
 			data_out_B_for_next$j = 0;
 DONATE
-			if($h >= $divisionOutput*$ARGV[1]){
+			if($h >= $divisionOutput*$units){
 				$h = 0;
 			}
 		}
@@ -344,26 +351,38 @@ my $accu_var = 1;
 
 chdir "./../../..";
 
-system("perl mem_unit.pl $ARGV[1]"); 
+
+
+system("perl mem_unit.pl $units"); 
 
 ######################################################big loop
-for($i = 1;$i<ceil($IFM_number/$ARGV[1]);$i = $i + 1){
+my $loop_condition;
+
+if(($IFM_number/$units)  == ceil($IFM_number/$units)){
+	$loop_condition = ceil($IFM_number/$units);
+}
+else{
+	$loop_condition = floor($IFM_number/$units);
+}
+
+for($i = 1;$i <= $loop_condition;$i = $i + 1){
+
 	print $fh <<"DONATE";
 
 	
-mem_unit_$ARGV[1] #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
+mem_unit_$units #( .DATA_WIDTH(DATA_WIDTH),.IFM_SIZE(IFM_SIZE))
 M$i(  .clk(clk),
 DONATE
 
-for($j = 1;$j<=$ARGV[1];$j = $j + 1){
-	print $fh <<"DONATE";
+	for($j = 1;$j<=$units;$j = $j + 1){
+		print $fh <<"DONATE";
       .Data_Input_A_Mem$j (data_in_from_previous$j),
       .Data_Input_B_Mem$j ('b0),
 DONATE
 }
 
 
-	print $fh <<"DONATE";
+		print $fh <<"DONATE";
 	
       .Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut${\($i+1)} ),
       .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut${\($i+1)} ),  
@@ -371,7 +390,7 @@ DONATE
 
 
 
-	print $fh <<"DONATE";
+		print $fh <<"DONATE";
 	
       .Enable_Write_A_Mem (ifm_enable_write_previous_dMuxOut$i),
       .Enable_Read_A_Mem  (ifm_enable_read_A_next_dMuxOut${\($i+1)}),
@@ -381,25 +400,25 @@ DONATE
 DONATE
 
 
-for($m = 1;$m<$ARGV[1];$m = $m + 1){
-	print $fh <<"DONATE";
+	for($m = 1;$m<$units;$m = $m + 1){
+		print $fh <<"DONATE";
       .Data_Output_A_Mem$m (Data_Output_A_Mem$accu_var),
       .Data_Output_B_Mem$m (Data_Output_B_Mem$accu_var),
 DONATE
-	  $accu_var = $accu_var + 1;
-      }
+	  	$accu_var = $accu_var + 1;
+    }
 
-print $fh <<"DONATE";
+	print $fh <<"DONATE";
       .Data_Output_A_Mem$m (Data_Output_A_Mem$accu_var),
       .Data_Output_B_Mem$m (Data_Output_B_Mem$accu_var)
 	  );
 DONATE
-$accu_var = $accu_var + 1;
+	$accu_var = $accu_var + 1;
 
 }
 
-my $ifm_init_number = ($IFM_number - floor($IFM_number/$ARGV[1]) * $ARGV[1]); 
-
+my $ifm_init_number = ($IFM_number - floor($IFM_number/$units) * $units); 
+say $ifm_init_number;
 for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	print $fh <<"DONATE";
 	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 

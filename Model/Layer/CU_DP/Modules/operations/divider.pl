@@ -111,7 +111,7 @@ if(lc ($ARGV[0]) eq "float"){
 						(in2 == 32'b 01000001110010000000000000000000) ? (32'b 00111101001000111101011100001010) :
 						(32'b 00111100111000111011110011010011);
 	
-	$multi_name #(.DATA_WIDTH(DATA_WIDTH) .E(E), .M(M))	M1 ( .in1 (in1) ,.in2 (in2_rec),.out(out));
+	$multi_name #(.DATA_WIDTH(DATA_WIDTH), .E(E), .M(M))	M1 ( .in1 (in1) ,.in2 (in2_rec),.out(out));
 	
 
 $end_module

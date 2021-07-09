@@ -5,13 +5,13 @@ module
  convolution #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS 		  = 18,
+	ADDRESS_BITS 		  = 15,
 	/////////////////////////////////////
-	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 3,
-	KERNAL_SIZE           = 5,
+	IFM_SIZE              = 32,28,14,32,32,32,32,32,32,                                                
+	IFM_DEPTH             = 3,6,6,16,16,16,120,84,3,
+	KERNAL_SIZE           = 5,2,5,2,5,2,5,5,5,
 	NUMBER_OF_FILTERS     = 6,
-	NUMBER_OF_UNITS       = 3,
+	NUMBER_OF_UNITS       = 1,1,1,1,1,3,1,1,1,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),

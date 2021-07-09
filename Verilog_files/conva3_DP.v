@@ -2,7 +2,7 @@
 
 
 module 
- conva2_DP #(parameter
+ conva3_DP #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	ADDRESS_BITS 		  = 15,

@@ -2,7 +2,7 @@
 
 
 module 
- conva2_CU #(parameter
+ conva3_CU #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	ADDRESS_BITS 		  = 15,

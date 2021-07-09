@@ -113,12 +113,15 @@ DONATE
 
 
 for($i = 0; $i <$Array_number; $i = $i + 1){
+	if (index($Layers_names[$i], "pool") == -1) {
 	print $fh <<"DONATE";
 	$o_p [$UnitsInEachLayer[$i]-1:0] $Layers_names[$i]_wm_enable_write,
 DONATE
+	}
 }
 
 for($i = 0; $i <$Array_number; $i = $i + 1){
+	if (index($Layers_names[$i], "pool") == -1) {
 	if (index($Layers_names[$i], "convb") == -1) {
 	print $fh <<"DONATE";
 	$o_p $Layers_names[$i]_bm_enable_write,
@@ -129,6 +132,7 @@ else{
 	$o_p [$UnitsInEachLayer[$i]-1:0] $Layers_names[$i]_bm_enable_write,
 DONATE
 }
+	}
 }
 
 	print $fh <<"DONATE";

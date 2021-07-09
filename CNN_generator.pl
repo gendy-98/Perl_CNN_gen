@@ -63,7 +63,7 @@ $i = $i + 2;
 my $E_Exponent = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $muls_convolution = $AdvancedParameters_info[$i];
-######Special####
+
 
 
 
@@ -75,25 +75,45 @@ my $layers_len = @layers;
 my $layer_name;
 my $kernal_size;
 my $stride;
-my $input_size;
-my $input_channels;
-my $output_channels;
+my $ifm_size;
+my $ifm_depth;
+my $number_of_filters;
 my $units_number;
 
-my $ab_flag = 0;#false, 0 is a true, 1 is b
+
+my @units_num_r;
+my @layer_name_r;
+my @kernal_size_r;
+my @ifm_size_r;
+my @ifm_depth_r;
+my @number_of_filters_r;
+my @stride_r;
+
+my $ab_flag = 0;#false, 0 is a/ true, 1 is b
 
 #loop to know each layer
 for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_parameters){
 	$layer_name = $Architecture_info[$i + 1];
+	push @layer_name_r , $layer_name;
+	
 	$kernal_size = $Architecture_info[$i + 3];
+	push @kernal_size_r , $kernal_size;
+	
 	$stride = $Architecture_info[$i + 5];
-	$input_size = $Architecture_info[$i + 7];
-	$input_channels = $Architecture_info[$i + 9];
-	$output_channels = $Architecture_info[$i + 11];
+	push @stride_r , $stride; 
+	
+	$ifm_size = $Architecture_info[$i + 7];
+	push @ifm_size_r , $ifm_size;
+	
+	$ifm_depth = $Architecture_info[$i + 9];
+	push @ifm_depth_r , $ifm_depth;
+	
+	$number_of_filters = $Architecture_info[$i + 11];
+	push @number_of_filters_r , $number_of_filters;
 	$units_number = $Architecture_info[$i + 13];
-
+	push @units_num_r , $units_number;
+	
 	if($layer_name =~ /conv/){
-		
 		if($i == 0){
 			say "my name is conva_first.pl";
 			$ab_flag = $ab_flag + 1;
@@ -108,7 +128,7 @@ for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_param
 			}
 			
 		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
+		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
 	}
 	if($layer_name =~ /pool/){
 		if($ab_flag % 2){
@@ -117,7 +137,7 @@ for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_param
 		else{
 			say "my name is poolb.pl";
 		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
+		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
 	}
 	if($layer_name =~ /fc/){
 		$ab_flag = $ab_flag + 1;
@@ -127,15 +147,19 @@ for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_param
 		else{
 			say "my name is fcb.pl";
 		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
+		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
 	}
 
 }
 
-#chdir ".."
-chdir "./Model/Layer/CU_DP/Modules";
-system("perl convolution.pl $N_A $muls_convolution  $operation_type $data_width $address_bits $input_size $input_channels $kernal_size $output_channels $units_number");
+$units_number = join(",", @units_num_r);
+$layer_name = join(",", @layer_name_r);
+$kernal_size = join(",", @kernal_size_r);
+$ifm_size = join(",", @ifm_size_r);
+$ifm_depth = join(",", @ifm_depth_r);
+$number_of_filters = join(",", @number_of_filters_r);
+$stride = join(",", @stride_r);
 
-chdir "./operations";
-system("perl adder.pl $operation_type $data_width $M_Mantissa $E_Exponent");
+chdir "./Model";
+system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $operation_type");
 

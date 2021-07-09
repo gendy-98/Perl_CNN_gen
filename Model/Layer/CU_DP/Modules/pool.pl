@@ -12,9 +12,7 @@ use feature "switch";
 #ARGV[0] Units number
 #ARGV[1] Mul & Add type which (decimal, fixed, float) 
 #ARGV[2] DATA_WIDTH
-#ARGV[3] IFM_SIZE  
-#ARGV[4] IFM_DEPTH 
-#ARGV[5] KERNAL_SIZE  
+ 
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -118,17 +116,7 @@ open my $fh, '>', $file_name
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[2],
-	/////////////////////////////////////
-	$ifm_size              = $ARGV[3],                                                
-	$ifm_depth             = $ARGV[4],
-	$kernal_size           = $ARGV[5],
-	//////////////////////////////////////
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
-	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
+	$data_width 			  = $ARGV[2])
 	(
 	$i_p 							clk,
 	$i_p 							reset,
