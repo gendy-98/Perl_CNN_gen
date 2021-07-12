@@ -69,7 +69,8 @@ else{
 	$units = $ARGV[1];
 }
 
-$module_name = "mem_array_U${\($units)}_D$IFM_number"; #U for units and D for IFM Depth
+$module_name = "mem_array_U${\($units)}_D${\($IFM_number)}_S$ARGV[4]";
+#U for units and D for IFM Depth S IFM SIZE
 
 
 
@@ -418,7 +419,7 @@ DONATE
 }
 
 my $ifm_init_number = ($IFM_number - floor($IFM_number/$units) * $units); 
-say $ifm_init_number;
+
 for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	print $fh <<"DONATE";
 	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 

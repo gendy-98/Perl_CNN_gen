@@ -6,7 +6,7 @@ module
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	////////////////////////////////////
-	IFM_SIZE              = 10,                                                
+	IFM_SIZE              = 32,                                                
 	IFM_DEPTH             = 16,
 	KERNAL_SIZE           = 2
 )(

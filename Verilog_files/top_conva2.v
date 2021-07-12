@@ -7,10 +7,10 @@ module
 	DATA_WIDTH 			  = 32,
 	ADDRESS_BITS 		  = 15,
 	/////////////////////////////////////
-	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 16,
+	IFM_SIZE              = 14,                                                
+	IFM_DEPTH             = 6,
 	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS     = 120,
+	NUMBER_OF_FILTERS     = 16,
 	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
@@ -29,31 +29,30 @@ module
 	input [DATA_WIDTH-1:0]  riscv_data,
 	input [ADDRESS_BITS-1:0] riscv_address,
 	input [NUMBER_OF_UNITS-1:0] wm_enable_write,
-	input bm_enable_write,
+	input [NUMBER_OF_UNITS-1:0] bm_enable_write,
 
 	input start_from_previous,
 	
-	input [DATA_WIDTH-1:0] data_in_from_previous1,
-	input [DATA_WIDTH-1:0] data_in_from_previous2,
-	input [DATA_WIDTH-1:0] data_in_from_previous3,
+	input  [DATA_WIDTH-1:0]       data_in_from_previous,
 	output                        ifm_enable_read_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 	output                        end_to_previous,
 	
-	output                        ready, 
+	output                        conv_ready, 
 	input  end_from_next,
-	
-	input  [DATA_WIDTH-1:0] data_in_from_next,
-	
-	output [DATA_WIDTH-1:0] data_out_for_next,
-	
+		input  [DATA_WIDTH-1:0] data_in_from_next1,
+		input  [DATA_WIDTH-1:0] data_in_from_next2,
+		input  [DATA_WIDTH-1:0] data_in_from_next3,
+		input  [DATA_WIDTH-1:0] data_out_for_next1,
+		input  [DATA_WIDTH-1:0] data_out_for_next2,
+		input  [DATA_WIDTH-1:0] data_out_for_next3,
 	output ifm_enable_read_next,
 	output ifm_enable_write_next,
     //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
     //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel
+	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
     );
 	
 	wire fifo_enable;
@@ -74,17 +73,17 @@ module
     
 	
 
-	conva2_CU #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    CU_A2
+	convb2_CU #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    CU_B2
     (
     .clk(clk),
     .reset(reset),
     .end_from_next(end_from_next),
     .start_from_previous(start_from_previous),
     .end_to_previous(end_to_previous),
-    .ready(ready),
+    .conv_ready(conv_ready),
     
-    .ifm_sel(ifm_sel),
+    .ifm_sel_next(ifm_sel_next),
     .ifm_enable_read_current(ifm_enable_read_current),
     .ifm_address_read_current(ifm_address_read_current),
     
@@ -103,28 +102,32 @@ module
     .relu_enable(relu_enable),
     .ifm_enable_read_next(ifm_enable_read_next),
     .ifm_enable_write_next(ifm_enable_write_next),
-    //.ifm_address_read_next, 
-    //.ifm_address_write_next,
+    .ifm_address_read_next(ifm_address_read_next), 
+    .ifm_address_write_next(ifm_address_write_next),
     .start_to_next(start_to_next)
     );    
      
 
-	conva2_DP #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    DP_A2
+	convb2_DP #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+    DP_B2
 	(
     .clk(clk),
 	.reset(reset),
 	.riscv_data(riscv_data),
 	.riscv_address(riscv_address),
 	//////////////////////////////////////////////
+	.data_in_from_previous(data_in_from_previous),
 	.fifo_enable(fifo_enable),
 	.conv_enable(conv_enable),
     .accu_enable(accu_enable),
     .relu_enable(relu_enable),
 	
-	.data_in_from_previous1(data_in_from_previous1),
-	.data_in_from_previous2(data_in_from_previous2),
-	.data_in_from_previous3(data_in_from_previous3),
+	.data_in_from_next1(data_in_from_next1),
+	.data_out_for_next1(data_out_for_next1)
+	.data_in_from_next2(data_in_from_next2),
+	.data_out_for_next2(data_out_for_next2)
+	.data_in_from_next3(data_in_from_next3),
+	.data_out_for_next3(data_out_for_next3)
 
 	
     .wm_addr_sel(wm_addr_sel),
@@ -136,10 +139,9 @@ module
     .bm_addr_sel(bm_addr_sel),                                            
     .bm_enable_read(bm_enable_read),
     .bm_enable_write(bm_enable_write),
-    .bm_address_read_current(bm_address_read_current),
+    .bm_address_read_current(bm_address_read_current)
 	//////////////////////////////////////////////
-	.data_in_from_next(data_in_from_next),
-	.data_out_for_next(data_out_for_next)
+
     );
 	
 	

@@ -2,7 +2,7 @@
 
 
 module 
- mem_array_U1_D2 #(parameter
+ mem_array_U1_D2_S14 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 ///////////architecture parameters//////

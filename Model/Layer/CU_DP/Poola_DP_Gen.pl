@@ -13,7 +13,8 @@ use feature "switch";
 #ARGV[1] IFM_SIZE 14
 #ARGV[2] IFM_DEPTH 3
 #ARGV[3] KERNAL_SIZE 2
-#ARGV[4] STRIDE 2
+#ARGV[4] NO._OF_UNITS 1
+#ARGV[5] STRIDE 2
 
 
 
@@ -45,7 +46,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../../Verilog_files/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -53,61 +54,68 @@ my $jj = 0;
 my $file_name;
 my $module_name;
 
-$module_name = "poolb_unit";
+
+
+
+$module_name = "poola_dp_S$ARGV[5]";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
-print $fh <<"DONATE";
+  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
 	$data_width 			  = $ARGV[0],
-	/////////////////////////////////////
+	////////////////////////////////////
 	$ifm_size              = $ARGV[1],                                                
 	$ifm_depth             = $ARGV[2],
-	$kernal_size           = $ARGV[3],
-	//////////////////////////////////////
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
-    ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),     
-    FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
-    (
-
-	$i_p 					clk,
-	$i_p 					reset,
-	$i_p					fifo_enable,
-	$i_p					pool_enable,
-	$i_p [$data_width-1:0]	unit_data_in,
+	$kernal_size           = $ARGV[3]
+)(
+	$i_p 							clk,
+	$i_p 							reset,
+	
+	$i_p 							fifo_enable,
+	$i_p							pool_enable,
 DONATE
 
-if($ARGV[4] == 2){
-print $fh <<"DONATE";
-	$i_p [$data_width-1:0]  unit_data_in_2,
+if($ARGV[5] == 2){
+		print $fh <<"DONATE";
+	$i_p [$data_width-1:0] data_in_A,
+	$i_p [$data_width-1:0] data_in_B,
+DONATE
+	
+}
+else{
+		print $fh <<"DONATE";
+	$i_p [$data_width-1:0] data_in_A,
+DONATE
+	
+}
+
+	print $fh <<"DONATE";
+	output [DATA_WIDTH-1:0] data_out
+    );
+////////////////////////Signal declaration/////////////////
+	
+DONATE
+
+for($i=1; $i<= $ARGV[3]*$ARGV[3]; $i = $i + 1){
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] signal_if$i;
 DONATE
 }
 
-print $fh <<"DONATE";
-	$o_p [$data_width-1:0]  unit_data_out
-    );
-	
-DONATE
+
 
 my $num_outputs_of_fifo = $ARGV[3]*$ARGV[3];
 my $fifo_regs_of_fifo = (($ARGV[3] - 1)*$ARGV[1] + $ARGV[3]);
 my $module_name_of_fifo;
-$module_name_of_fifo = "FIFO_$num_outputs_of_fifo$under_Score$ARGV[4]$under_Score$fifo_regs_of_fifo";
+$module_name_of_fifo = "FIFO_$num_outputs_of_fifo$under_Score$ARGV[5]$under_Score$fifo_regs_of_fifo";
 
 
-for($i = 1; $i <= $num_outputs_of_fifo; $i = $i + 1){
-print $fh <<"DONATE";
-	wire [$data_width-1:0] signal_if$i;
-DONATE
-}
-
-chdir "./CU_DP/Modules";
-system("perl fifo.pl  $ARGV[4] $ARGV[0] $ARGV[1] $ARGV[3]");
+chdir "./Modules";
+system("perl fifo.pl  $ARGV[5] $ARGV[0] $ARGV[1] $ARGV[3]");
 
 
 print $fh <<"DONATE";
@@ -117,12 +125,12 @@ print $fh <<"DONATE";
 	.clk(clk),
 	.reset(reset),
 	.fifo_enable(fifo_enable),
-	.fifo_data_in(unit_data_in),
+	.fifo_data_in(data_in_A),
 	
 DONATE
-if($ARGV[4] == 2){
+if($ARGV[5] == 2){
 print $fh <<"DONATE";
-	.fifo_data_in_2(unit_data_in2),
+	.fifo_data_in_2(data_in_B),
 DONATE
 }
 
@@ -137,6 +145,12 @@ print $fh <<"DONATE";
 	);
 	
 DONATE
+
+
+
+
+
+
 
 print $fh <<"DONATE";
 	average_pooling #(.DATA_WIDTH(DATA_WIDTH))
@@ -154,7 +168,7 @@ DONATE
 }
 
 print $fh <<"DONATE";
-	.pool_data_out_reg(unit_data_out)
+	.pool_data_out_reg(data_out)
 	);
 		
 endmodule

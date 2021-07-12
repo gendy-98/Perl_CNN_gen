@@ -9,7 +9,7 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#No arguments needed 
+#ARGV[0] decimal/fixed/float
 #They get passed from higher layer
 #
 

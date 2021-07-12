@@ -2,11 +2,11 @@
 
 
 module 
- mem_array_U1_D2 #(parameter
+ mem_array_U1_D2_S28 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 ///////////architecture parameters//////
-	IFM_SIZE              = 14,                                                
+	IFM_SIZE              = 28,                                                
     NUMBER_OF_IFM         = 2,
     NUMBER_OF_UNITS       = 1,
     ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE))
@@ -83,28 +83,28 @@ module
 	.dout_2(ifm_enable_write_previous_dMuxOut2)
 	);
 
-	demux_1_to_2_8bits d4(
+	demux_1_to_2_10bits d4(
 	.din(ifm_address_write_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_write_previous_dMuxOut1),
 	.dout_2(ifm_address_write_previous_dMuxOut2)
 	);
 
-	demux_1_to_2_8bits d5(
+	demux_1_to_2_10bits d5(
 	.din(ifm_address_read_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_previous_dMuxOut1),
 	.dout_2(ifm_address_read_previous_dMuxOut2)
 	);
 
-	demux_1_to_2_8bits d6(
+	demux_1_to_2_10bits d6(
 	.din(ifm_address_read_A_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_A_next_dMuxOut1),
 	.dout_2(ifm_address_read_A_next_dMuxOut2)
 	);
 
-	demux_1_to_2_8bits d7(
+	demux_1_to_2_10bits d7(
 	.din(ifm_address_read_B_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_B_next_dMuxOut1),

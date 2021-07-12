@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use diagnostics;
+use POSIX;
 
 # say prints a line followed by a newline
 use feature 'say';
@@ -9,14 +10,14 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] DATA_WIDTH
-#ARGV[1] ADDRESS_BITS
-#ARGV[2] IFM_SIZE
-#ARGV[3] IFM_DEPTH
-#ARGV[4] KERNAL_SIZE
-#ARGV[5] NUMBER_OF_FILTERS 
-#ARGV[6] NUMBER_OF_UNITS
-#ARGV[7] Stride
+#ARGV[0] DATA_WIDTH 32
+#ARGV[1] ADDRESS_BITS 15
+#ARGV[2] IFM_SIZE 14
+#ARGV[3] IFM_DEPTH 3
+#ARGV[4] KERNAL_SIZE 5
+#ARGV[5] NUMBER_OF_FILTERS 6 
+#ARGV[6] NUMBER_OF_UNITS 3
+#ARGV[7] Stride 1
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -69,23 +70,20 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
+  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
+  
+  
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
 	$data_width 			  = $ARGV[0],
 	$address_bits			= $ARGV[1],
-	/////////////////////////////////////
-	$ifm_size              = $ARGV[2],                                                
+	/////////////////////////////////////  
+	$ifm_size              = $ARGV[2],
 	$ifm_depth             = $ARGV[3],
 	$kernal_size           = $ARGV[4],
 	$number_of_filters		= $ARGV[5],
-	$number_of_units 		= $ARGV[6],
-	//////////////////////////////////////
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
-	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
+	$number_of_units 		= $ARGV[6])
 	(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -121,6 +119,7 @@ output [DATA_WIDTH-1:0] unit_data_out
 
 DONATE
 
+
 for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
 	print $fh "\twire [$data_width-1:0]	signal_w$i;\n";
 }
@@ -130,7 +129,7 @@ for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
 	wire [$data_width-1:0] accu_data_out;
 	wire [$data_width-1:0] relu_data_out;
 
-SinglePort_Memory #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ($ifm_depth/$number_of_units+1))) 
+single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))) 
 	WM 
 	(
 	 .clk(clk),	
@@ -144,11 +143,13 @@ SinglePort_Memory #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters 
 
 DONATE
 
+
+
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[7] $ARGV[0] $ARGV[1] $ARGV[4] $ARGV[3] $ARGV[4] $ARGV[5]");
+system("perl fifo.pl  $ARGV[7] $ARGV[0] $ARGV[2] $ARGV[4]");
 
 my $num_outputs = $ARGV[4]*$ARGV[4];
-my $fifo_regs = (($ARGV[4] - 1)*$ARGV[4] + $ARGV[4]);
+my $fifo_regs = (($ARGV[4] - 1)*$ARGV[2] + $ARGV[4]);
 my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[7]$under_Score$fifo_regs";
 
  print $fh <<"DONATE";
@@ -160,6 +161,7 @@ $fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size))
 	 .fifo_enable(wm_fifo_enable),
 	 .fifo_data_in(wm_data_out),
 DONATE
+
 
 for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
 	print $fh "\t\t.fifo_data_out_$i(signal_w$i),\n";
@@ -183,26 +185,31 @@ for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
 }
 print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
 
-
  print $fh <<"DONATE";
 );
+
+DONATE
+
+ print $fh <<"DONATE";
+ accumulator #(.DATA_WIDTH(DATA_WIDTH))
+ accu_B
+ (
+     .clk(clk),
+     .accu_enable(accu_enable),
+	 .data_in_from_conv(conv_data_out),
+	 .data_bias(data_bias),
+     .data_in_from_next(data_in_from_next),
+     .accu_data_out(accu_data_out)
+ );
+ 
+ 
+relu  Active1 (.in(accu_data_out), .out(relu_data_out), .relu_enable(relu_enable));
+	
+assign unit_data_out = relu_data_out;
 
 
 $end_module
 DONATE
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

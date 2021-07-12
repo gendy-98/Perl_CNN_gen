@@ -1,8 +1,7 @@
-
-
 use strict;
 use warnings;
 use diagnostics;
+use POSIX;
 
 # say prints a line followed by a newline
 use feature 'say';
@@ -10,85 +9,293 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+#argumets 
+#ARGV[0] no of the conv 2
+#ARGV[1] Mul number 25
+#ARGV[2] Mul & Add type which (decimal, fixed, float) 
+#ARGV[3] DATA_WIDTH 32
+#ARGV[4] ADDRESS_BITS 15
+#ARGV[5] IFM_SIZE  32
+#ARGV[6] IFM_DEPTH 3
+#ARGV[7] KERNAL_SIZE  5
+#ARGV[8] NUMBER_OF_FILTERS 6
+#ARGV[9] NUMBER_OF_UNITS 3
+#ARGV[10] STRIDE 1
 
-my $number_of_parameters = 6*2;
-my $config_file = 'Book1.csv';
-my @config_info;
-my @dummy_info;
+######################################### CONSTANTS ###################################
+my $module = <<"DONATE";
+`timescale 1ns / 1ps
 
-my $info;
-open my $fh, '<', $config_file
-  or die "Can't open file : $!";
 
-while($info = <$fh>){
-	# Delete newline
-	chomp($info);
-	@dummy_info = split /,,/, $info;
-	push@config_info , split /,/, $dummy_info[0];
-  
+module 
+DONATE
+my $parameter = "#(parameter";
+
+my $always_clk = <<"DONATE";
+always @ (posedge clk)
+    begin 
+DONATE
+my $end = "end";
+my $end_module = "endmodule";
+my $i_p = "input";
+my $o_p = "output";
+my $under_Score = "_";
+my $clog2 = "\$clog2";
+
+my $data_width = "DATA_WIDTH";
+my $address_bits = "ADDRESS_BITS";
+
+my $ifm_size = "IFM_SIZE";                                               
+my $ifm_depth = "IFM_DEPTH";
+my $kernal_size = "KERNAL_SIZE";
+my $number_of_filters = "NUMBER_OF_FILTERS";
+my $number_of_units = "NUMBER_OF_UNITS";
+my $full_path = "../../../Verilog_files/";
+#######################################################################################
+my $i = 0;
+my $j = 0;
+my $jj = 0;
+my $file_name;
+my $module_name;
+my $adder_name;
+my $mul_name;
+my $odd_flag;
+my $dummy_level;
+my @levels;
+my $levels_number;
+
+my $single_port_name = "single_port_memory";
+my $unit_name = "unitA";
+my $Relu_name = "relu";
+my $accumulator_name = "accumulator"; 
+$module_name = "convb$ARGV[0]_DP";
+
+
+$odd_flag = 0;
+$dummy_level = $ARGV[9]; 
+ while($dummy_level  > 0)
+{
+	push @levels , $dummy_level;
+	if($dummy_level % 2 == 1){
+		if($odd_flag == 1){
+			$dummy_level = int($dummy_level / 2) + 1;
+			$odd_flag = 0;
+		}
+		else{
+			$dummy_level = int ($dummy_level / 2);
+			$odd_flag = 1;
+		}
+	}
+	else{	
+		$dummy_level = $dummy_level / 2;
+	}
 }
 
-# Close the file
-close $fh or die "Couldn't Close File : $!";
-
-
-my @layers;
-@layers = grep(/^layer name/i, @config_info); 
-
-
-
-my $layers_len = @layers;
-my $i;
-
-
-my $layer_name;
-my $kernal_size;
-my $stride;
-my $input_size;
-my $input_channels;
-my $output_channels;
-
-for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_parameters){
-	$layer_name = $config_info[$i + 1];
-	$kernal_size = $config_info[$i + 3];
-	$stride = $config_info[$i + 5];
-	$input_size = $config_info[$i + 7];
-	$input_channels = $config_info[$i + 9];
-	$output_channels = $config_info[$i + 11];
-	
-
-	if($layer_name eq 'conva1'){
-		say "my name";
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
-	}
-	if($layer_name eq 'pool1'){
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
-	}
-	if($layer_name eq 'convb'){
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $input_size $input_channels $output_channels");
-	}
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-my $test_file = 'habal_txt/test.txt';
-
-open $fh, '>', $test_file
-  or die "Can't open file : $!";
+$levels_number = @levels;
  
+ if(lc ($ARGV[2]) eq "decimal"){
+	$adder_name = "Dec_Adder";
+	$mul_name = "Dec_Multiplier";
+	}
+if(lc ($ARGV[2]) eq "fixed"){
+	$adder_name = "Fixed_Adder";
+	$mul_name = "Fixed_Multiplier";
+	}
+if(lc ($ARGV[2]) eq "float"){
+	$adder_name = "Float_Adder";
+	$mul_name = "Float_Multiplier";
+	}
 
-print $fh join ("\n",@config_info);
-# Close the file
-close $fh or die "Couldn't Close File : $!";
+
+
+$file_name = $full_path . $module_name . ".v";
+open my $fh, '>', $file_name
+  or die "Can't open file : $!";
+  
+  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[6]/$ARGV[7]);
+  
+  my $num_outputs = $ARGV[7] * $ARGV[7];
+  my $fifo_regs = (($ARGV[7] - 1)*$ARGV[5] + $ARGV[7]);
+  my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[10]$under_Score$fifo_regs";
+  
+  print $fh <<"DONATE";
+$module $module_name $parameter
+///////////advanced parameters//////////
+	$data_width 			  = $ARGV[3],
+	$address_bits 		  = $ARGV[4],
+	/////////////////////////////////////
+	$ifm_size              = $ARGV[5],                                                
+	$ifm_depth             = $ARGV[6],
+	$kernal_size           = $ARGV[7],
+	$number_of_filters     = $ARGV[8],
+	$number_of_units       = $ARGV[9],
+	//////////////////////////////////////
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(NUMBER_OF_FILTERS/NUMBER_OF_UNITS+1)),                               
+	NUMBER_OF_IFM           = IFM_DEPTH
+)(
+	input clk,
+	input reset,
+	input [DATA_WIDTH-1:0] riscv_data,
+	input [ADDRESS_BITS-1:0] riscv_address,
+	
+	input [DATA_WIDTH-1:0] data_in_from_previous,
+	
+	input fifo_enable,
+	input conv_enable,
+	input accu_enable,
+	input relu_enable,
+    
+    input                       wm_addr_sel,
+    input                       wm_enable_read,
+    input [NUMBER_OF_UNITS-1:0] wm_enable_write,
+    input [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
+    input                       wm_fifo_enable,
+   
+    input                                 bm_addr_sel,
+    input                                 bm_enable_read,
+    input                     [$ARGV[9]-1:0]     bm_enable_write,
+    input [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
+
+	
+DONATE
+
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+	print $fh <<"DONATE";
+	input  [DATA_WIDTH-1:0] data_in_from_next$i,
+DONATE
+}
+
+for ($i = 1; $i < $ARGV[9]; $i = $i + 1){
+	print $fh <<"DONATE";
+	output [DATA_WIDTH-1:0] data_out_for_next$i,
+DONATE
+}
+
+print $fh <<"DONATE";
+	output [DATA_WIDTH-1:0] data_out_for_next$i
+	);
+////////////////////////Signal declaration/////////////////
+
+DONATE
+
+ for ($i = 1; $i <= $ARGV[7]*$ARGV[7]; $i = $i + 1){
+	print $fh <<"DONATE";
+	wire	[DATA_WIDTH - 1 : 0]	signal_if$i;
+DONATE
+}
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] unit${\($i)}_data_out;
+DONATE
+}
+
+print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] accu_data_out;
+	wire [DATA_WIDTH-1:0] relu_data_out;
+DONATE
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] data_bias_$i;
+DONATE
+}
+
+ print $fh <<"DONATE";
+	    
+	wire [ADDRESS_SIZE_WM-1:0] wm_address;
+	wire [$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0] bm_address;
+	
+	assign wm_address = wm_addr_sel ? wm_address_read_current : riscv_address[ADDRESS_SIZE_WM-1:0];
+	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0];
+	
+DONATE
+
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+	print $fh <<"DONATE";
+	single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS) )
+	bm$i (
+	.clk(clk),	
+	.Enable_Write(bm_enable_write[${\($i-1)}]),
+    .Enable_Read(bm_enable_read),	
+	.Address(bm_address),
+	.Data_Input(riscv_data),	
+	.Data_Output(data_bias_$i)
+	);
+   
+DONATE
+}
+
+chdir "./Modules";
+system("perl fifo.pl  $ARGV[10] $ARGV[3] $ARGV[5] $ARGV[7]");
+
+
+ print $fh <<"DONATE";
+ 
+	$fifo_name #(.DATA_WIDTH(DATA_WIDTH), .$ifm_size($ifm_size), .$kernal_size($kernal_size) )
+	FIFO1 (
+	 .clk(clk),
+	 .reset(reset),
+	 .fifo_enable(fifo_enable),
+	 .fifo_data_in(data_in_from_previous),
+DONATE
+
+for ($i = 1; $i < $ARGV[7]*$ARGV[7]; $i = $i + 1){
+	print $fh <<"DONATE";
+	 .fifo_data_out_$i(signal_if$i),  
+DONATE
+}
+
+print $fh <<"DONATE";
+	 .fifo_data_out_$i(signal_if$i)
+	);
+	
+	
+DONATE
+
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+print $fh <<"DONATE";
+	unitB #(.DATA_WIDTH(DATA_WIDTH), .$address_bits($address_bits), .$ifm_size($ifm_size), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
+	convB_unit_$i
+	(
+    .clk(clk),                                 
+    .reset(reset),  
+    .riscv_data(riscv_data),
+    .data_in_from_next(data_in_from_next$i),
+	.data_bias(data_bias_$i), 
+DONATE
+
+for ($j = 1; $j <= $ARGV[7]*$ARGV[7]; $j = $j + 1){
+	print $fh <<"DONATE";
+	.signal_if$j(signal_if$j),
+DONATE
+}
+
+print $fh <<"DONATE";
+	.conv_enable(conv_enable),
+    .accu_enable(accu_enable),
+    .relu_enable(relu_enable),
+    .wm_enable_read(wm_enable_read),
+	.wm_enable_write(wm_enable_write[${\($i-1)}]), 
+	.wm_address(wm_address),
+    .wm_fifo_enable(wm_fifo_enable),          
+    .unit_data_out(unit1_data_out)   
+    );
+	
+DONATE
+}
+
+for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+print $fh <<"DONATE";
+assign data_out_for_next$i = unit1_data_out;
+DONATE
+}
+
+print $fh <<"DONATE";
+
+
+endmodule
+DONATE

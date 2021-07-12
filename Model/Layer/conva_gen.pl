@@ -17,8 +17,8 @@ use feature "switch";
 #ARGV[5] IFM_SIZE  
 #ARGV[6] IFM_DEPTH 
 #ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
+#ARGV[8] NUMBER_OF_FILTERS  filter_num
+#ARGV[9] NUMBER_OF_UNITS    layer_units
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";

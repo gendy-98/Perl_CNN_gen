@@ -2,89 +2,84 @@
 
 
 module 
- poolb_cu_U3 #(parameter
+ poola_cu_S2 #(parameter
 
-	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 16,
+	IFM_SIZE              = 28,                                                
 	KERNAL_SIZE           = 2,
-	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
-	NUMBER_OF_IFM_NEXT      = IFM_DEPTH,
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),    
-    FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE
-)(
-	input 							clk,
-	input 							reset,
-	input start_from_previous,
-    input conv_ready,
+    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),      
+    FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
+(
+    input clk,
+    input reset, 
+    input start_from_previous,
     input end_from_next,
     output reg end_to_previous,      
     output reg ifm_enable_read_A_current,
-	output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
-	output     ifm_enable_read_B_current,
-	output     [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
-	output reg fifo_enable,
+    output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+    output     ifm_enable_read_B_current,
+    output     [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
+output reg fifo_enable,
     output pool_enable,
     output ifm_enable_write_next,
-	output reg [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
-	output reg start_to_next,
-	output reg [$clog2(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
+    output reg [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
+    output reg start_to_next,
+    output reg ifm_sel_next
     );
        
     reg  start_ifm_address_read_current;
     wire ifm_address_read_current_tick;
     reg fifo_enable_sig1;
+    reg mem_empty; 
     wire signal_hold;
-    reg mem_empty;
-       
+  
     localparam [1:0]   IDLE   = 2'b00,
                        READ   = 2'b01,
                        FINISH = 2'b10,
-                       HOLD   = 2'b11;
+                       HOLD   = 2'b11;	  
+							  
+    reg [1:0] state_reg, state_next;  
 
-    reg [1:0] state_reg, state_next;
-              
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            state_reg <= IDLE;     
+            state_reg <= IDLE;       
         else
             state_reg <= state_next;
     end
-    
-    
+
     always @*
-    begin 
-        state_next = state_reg;
+    begin     
         
+		state_next = state_reg;
+		
         case(state_reg)
-         
+        
         IDLE : 
         begin
-        
             ifm_enable_read_A_current      = 1'b0;
             end_to_previous                = 1'b1; 
             fifo_enable_sig1               = 1'b0;    
-            start_ifm_address_read_current = 1'b0; 
-                              
+            start_ifm_address_read_current = 1'b0;   
+                            
             if(start_from_previous)
-                state_next = READ;         
+                state_next = READ;          
         end
-
+        
         READ : 
         begin 
             ifm_enable_read_A_current      = 1'b1;
-            end_to_previous                = 1'b0; 
+            end_to_previous                = 1'b0;
             fifo_enable_sig1               = 1'b1;    
-            start_ifm_address_read_current = 1'b1;  
+            start_ifm_address_read_current = 1'b1; 
             
-            if (signal_hold & ( ~mem_empty | ~conv_ready) )
+            if ( (signal_hold) & (~mem_empty) )
                 state_next = HOLD;
-            
+            // state_next = IDLE
             if (ifm_address_read_current_tick)
-                state_next = FINISH;
+                state_next = FINISH;        
         end
         
         FINISH : 
@@ -93,43 +88,42 @@ module
             end_to_previous                = 1'b1; 
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0; 
-             
+         
+             // state_next = IDLE
             if (start_from_previous)  
-                state_next = READ;                              
+                state_next = READ;        
         end
         
-        HOLD : 
+        HOLD :
         begin
+        
             ifm_enable_read_A_current      = 1'b0;
             end_to_previous                = 1'b0; 
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0;
-            state_next                     = state_reg;
-            
-            if ( mem_empty & conv_ready )
-                state_next = READ;
-		
-        end
 
+			// state_next = IDLE
+			if (mem_empty)  
+                state_next = READ;
+        
+        end
+        
         endcase
     end
-	
-	always @(posedge clk, posedge reset)
+  
+    always @(posedge clk, posedge reset)
     begin
         if(reset)
             ifm_sel_next <= 0;
-
-		else if(ifm_sel_next == 6-1 & start_to_next) //6 = ceil((NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS))
-		    ifm_sel_next <= 0;
         else if(start_to_next)
-            ifm_sel_next <= ifm_sel_next + 1'b1;      
-    end 
-    
-    always @(posedge clk)
-    begin
-        fifo_enable <= fifo_enable_sig1;
+            ifm_sel_next <= ~ifm_sel_next;     
     end
-    
+
+    always @(posedge clk)
+    begin 
+	    fifo_enable  <= fifo_enable_sig1;
+    end
+      
     always @(posedge clk, posedge reset)
     begin
         if(reset)
@@ -139,11 +133,17 @@ module
         else if(start_ifm_address_read_current)
             ifm_address_read_A_current <= ifm_address_read_A_current + 2'b10;      
     end
- 
+
 	assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-2);
 	assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE-6 );
-	assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
-    assign ifm_enable_read_B_current = ifm_enable_read_A_current; 
+    assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
+    assign ifm_enable_read_B_current = ifm_enable_read_A_current;
+delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
+	DBlock_3_1 (.clk(clk), .reset(reset), .Data_In(pool_enable), 
+		.Data_Out(ifm_enable_write_next)
+		);
+		
+
 
     
     ///////////////////////////////
@@ -266,15 +266,9 @@ module
     ////////////////////////////////
     /////// address write next//////
     ////////////////////////////////
+    wire ifm_address_write_next_tick;
 
-	assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
-    assign ifm_enable_read_B_current = ifm_enable_read_A_current; 
-delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
-	DBlock_3_1 (.clk(clk), .reset(reset), .Data_In(pool_enable), 
-		.Data_Out(ifm_enable_write_next)
-		);
-		
-	always @(posedge clk, posedge reset)
+    always @(posedge clk, posedge reset)
     begin
         if(reset)
             ifm_address_write_next <= 0; 
@@ -282,18 +276,19 @@ delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
             ifm_address_write_next <= 0;      
         else if(ifm_enable_write_next)
             ifm_address_write_next <= ifm_address_write_next + 1'b1;
-    end 
-	
+    end
+
     assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
 
-	////////////////////////////////
+    
+    ////////////////////////////////
     ///////// start to next ///////
     ///////////////////////////////   
-	
-	localparam  s0   = 1'b0,
-                s1   = 2'b1;	  
+
+    localparam  s0   = 1'b0,
+                s1   = 1'b1;	  
 							  
-    reg state_reg2, state_next2; 
+    reg state_reg2, state_next2;
     
     always @(posedge clk, posedge reset)
     begin
@@ -302,7 +297,7 @@ delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
         else
             state_reg2 <= state_next2;
     end
-
+        
     always @*
     begin     
         state_next2 = state_reg2;
@@ -338,5 +333,6 @@ delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
         endcase
     end
     
+
 endmodule
 
