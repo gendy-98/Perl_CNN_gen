@@ -9,7 +9,8 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] which adder (decimal, fixed, float) 
+#ARGV[0] ARITH_TYPE 1
+#ARGV[1] DATA_WIDTH 32
 #
 
 ######################################### CONSTANTS ###################################
@@ -33,27 +34,17 @@ my $under_Score = "_";
 my $clog2 = "\$clog2";
 
 my $data_width = "DATA_WIDTH";
+my $arith_type = "ARITH_TYPE";
 my $mem_size = "MEM_SIZE";
 my $full_path = "../../Verilog_files/";
 
 #######################################################################################
 
-my $reg_name = "Register"
-my $adder_name;
 my $file_name;
 my $module_name;
 
 
- if(lc ($ARGV[0]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	}
-if(lc ($ARGV[0]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	}
-if(lc ($ARGV[0]) eq "float"){
-	$adder_name = "Float_Adder";
-	}
-	
+
 $module_name = "Reg_Accumulator";
 
 $file_name = $full_path . $module_name . ".v";
@@ -63,38 +54,38 @@ open my $fh, '>', $file_name
 print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width = 32
+	$arith_type = $ARGV[0],
+	$data_width = $ARGV[1]
 	)(
 	input clk,
 	input reset, 
-	input [Data_Width-1:0] Data_in,
-	input [Data_Width-1:0] data_bias,
 	input Enable,
 	input bias_sel, 
-	output  [Data_Width-1:0] Data_out
+	input [$data_width-1:0] data_in_from_previous,
+	input [$data_width-1:0] data_bias,
+	output reg [DATA_WIDTH-1:0] reg_accu_data_out
 	);
-
-	reg [Data_Width-1:0] Data;
-	wire [Data_Width-1:0] Data_out_FP;
-	wire [Data_Width-1:0] data_out_mux;
-	wire bias_sel_reg;
+    
+    wire [DATA_WIDTH-1:0] data_out_mux;
+    wire [DATA_WIDTH-1:0] adder_data_out;
+    
+	assign data_out_mux = bias_sel ? data_bias : adder_data_out;
 	
-	$reg_name r1(.clk(clk), .reset(reset), .Data_in(bias_sel), .Enable(1), .Data_out(bias_sel_reg));
+DONATE
 	
-	always @(posedge clk ,posedge reset)
+	print $fh <<"DONATE";
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) add ( .in1(data_in_from_previous), .in2(reg_accu_data_out), .out(adder_data_out) );
+DONATE
+	
+	print $fh <<"DONATE";
+	
+    always @(posedge clk ,posedge reset)
     begin 
-		if (reset) 
-			Data <= 32'b0; 
-		else if (Enable) 
-			Data <= data_out_mux; 
+        if (reset) 
+            reg_accu_data_out <= {DATA_WIDTH{1'b0}}; 
+        else if (Enable) 
+            reg_accu_data_out <= data_out_mux; 
     end 
-	
-	assign Data_out = Data; 
-	
-	
-	$adder_name add ( .in1(Data_in), .in2(Data_out), .out(Data_out_FP));
- 
-	assign data_out_mux = bias_sel_reg ? Data_out_FP : data_bias;
 
 endmodule 
 DONATE

@@ -10,10 +10,11 @@ use feature "switch";
 
 
 #argumets 
-#ARGV[0] which divider (decimal, fixed, float) 
+#ARGV[0] ARITH_TYPE
 #ARGV[1] data_width
 #ARGV[2] M - Mantissa, precision
 #ARGV[3] E - Exponent, integer bits
+#ARGV[4] Number to divide by
 #
 
 
@@ -41,82 +42,45 @@ my $full_path = "../../../../../Verilog_files/";
 my $i = 0;
 
 my $file_name;
-my $module_name;
+my $module_name = "divider";
+my $arith_type = "ARITH_TYPE";
 my $multi_name;
-if(lc ($ARGV[0]) eq "decimal"){
-	$module_name = "Dec_Divider";
-	$multi_name = "Dec_Multiplier";
-}
-if(lc ($ARGV[0]) eq "fixed"){
-	$module_name = "Fixed_Divider";
-	$multi_name = "Fixed_Multiplier";
-}
-if(lc ($ARGV[0]) eq "float"){
-	$module_name = "Float_Divider";
-	$multi_name = "Float_Multiplier";
-}
+my $number_to_divide_by_fixed;
+my $number_to_divide_by_float;
 
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
 
+system("perl fixed_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2]");
+system("perl floating_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2]");
+
+if($ARGV[4] == 4){
+	$number_to_divide_by_fixed = "16'b000000_0100000000";
+	$number_to_divide_by_float = "32'b00111110100000000000000000000000";
+}
+
 print $fh <<"DONATE";
 $module $module_name $parameter
-	DATA_WIDTH = $ARGV[1]
-DONATE
-
-if(lc ($ARGV[0]) eq "decimal"){
-	print $fh <<"DONATE";
-	)(
-	$i_p [DATA_WIDTH - 1:0] in1,
-	$i_p [DATA_WIDTH - 1:0] in2,
-	$o_p [DATA_WIDTH - 1:0] out
-	);
-///////////////////////////////////////////////////////////////
-//////////////this code is not complete////////////////////////
-///////////////////////////////////////////////////////////////
-$end_module
-DONATE
-}
-if(lc ($ARGV[0]) eq "fixed"){
-	print $fh <<"DONATE";
-	,E = $ARGV[3]
-	,M = $ARGV[2]
-	)(
-	$i_p [DATA_WIDTH - 1:0] in1,
-	$i_p [DATA_WIDTH - 1:0] in2,
-	$o_p [DATA_WIDTH - 1:0] out
-	);
-///////////////////////////////////////////////////////////////
-//////////////this code is not complete////////////////////////
-///////////////////////////////////////////////////////////////
-$end_module
-DONATE
-}
-if(lc ($ARGV[0]) eq "float"){
-	print $fh <<"DONATE";
-	,E = $ARGV[3]
-	,M = $ARGV[2]
-	)(
-	$i_p [DATA_WIDTH - 1:0] in1,
-	$i_p [DATA_WIDTH - 1:0] in2,
-	$o_p [DATA_WIDTH - 1:0] out
-	);
-	wire  [DATA_WIDTH - 1:0] in2_rec;
-	 
-	assign  in2_rec =   (in2 == 32'b 01000000100000000000000000000000) ? (32'b 00111110100000000000000000000000) :
-						(in2 == 32'b 01000001000100000000000000000000) ? (32'b 00111101111000111000110110100100) :
-						(in2 == 32'b 01000001100000000000000000000000) ? (32'b 00111101100000000000000000000000) :
-						(in2 == 32'b 01000001110010000000000000000000) ? (32'b 00111101001000111101011100001010) :
-						(32'b 00111100111000111011110011010011);
+	$arith_type = $ARGV[0],
+	DATA_WIDTH = $ARGV[1],
+	E          = $ARGV[3],
+	M          = $ARGV[2]
+)
+	(
+    input [DATA_WIDTH-1:0] in1,
+    output  [DATA_WIDTH-1:0] out
+    );
 	
-	$multi_name #(.DATA_WIDTH(DATA_WIDTH), .E(E), .M(M))	M1 ( .in1 (in1) ,.in2 (in2_rec),.out(out));
+	generate
+		if (ARITH_TYPE)
+			fixed_point_mul    mul (.in1(in1), .in2($number_to_divide_by_fixed), .out(out));
+		else
+			floating_point_mul mul (.in1(in1), .in2($number_to_divide_by_float), .out(out));
+	endgenerate
 	
-
-$end_module
+endmodule
 DONATE
-}
-
 
 close $fh or die "Couldn't Close File : $!";
