@@ -8,9 +8,9 @@ module
 	)(
 	input clk,
 	input reset, 
-	input [Data_Width-1:0] Data_in,
+	input [DATA_WIDTH-1:0] Data_in,
 	input Enable, 
-	output reg [Data_Width-1:0] Data_out
+	output reg [DATA_WIDTH-1:0] Data_out
 	);
 
 	always @(posedge clk ,posedge reset)

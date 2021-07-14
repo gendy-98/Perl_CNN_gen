@@ -169,11 +169,11 @@ $module $module_name $parameter
     
     reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] filters_counter;
     wire filters_counter_tick;
-    
-    reg  [$clog2( (IFM_DEPTH/NUMBER_OF_UNITS)+1 )-1 : 0] depth_counter;
+    //ceil IFM_DEPTH/NUMBER_OF_UNITS
+    reg  [$clog2( ${\(ceil($ARGV[6]/$ARGV[9]))}-1 : 0] depth_counter;
     wire depth_counter_tick;
     
-    reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] psums_counter_next;
+    reg  [$clog2( ${\(ceil($ARGV[6]/$ARGV[9]))})-1 : 0] psums_counter_next;
     wire psums_counter_next_tick;
     
     wire start_internal;
@@ -511,7 +511,7 @@ $module $module_name $parameter
     // address write next //
     ////////////////////////
     
-     /*   
+    
 	always @(posedge clk, posedge reset)
     begin
         if(reset)
@@ -524,7 +524,7 @@ $module $module_name $parameter
     
     assign ifm_address_write_next = ifm_address_read_next - 1;
     assign address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
-   */  
+     
 DONATE
 
 
@@ -564,11 +564,7 @@ DONATE
  
 print $fh <<"DONATE";   
 
- always @(posedge clk)
-    begin
-        start_to_next <= psums_counter_next_tick;
-    end
-  /*   localparam  s0   = 1'b0,
+    localparam  s0   = 1'b0,
                  s1   = 2'b1;	  
 							  
     reg state_reg2, state_next2; 
@@ -590,7 +586,7 @@ print $fh <<"DONATE";
         s0 : 
         begin
             start_to_next = 1'b0;
-            if(address_write_next_tick)
+            if(psums_counter_next_tick)
                 state_next2 = s1;          
         end
         
@@ -612,7 +608,7 @@ print $fh <<"DONATE";
         
         endcase
     end
-    */
+    
 endmodule
 
 DONATE

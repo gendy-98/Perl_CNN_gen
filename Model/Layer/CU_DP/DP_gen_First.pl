@@ -11,14 +11,15 @@ use feature "switch";
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
+#ARGV[2] ARITH_TYPE
 #ARGV[3] DATA_WIDTH
 #ARGV[4] ADDRESS_BITS
 #ARGV[5] IFM_SIZE  
 #ARGV[6] IFM_DEPTH 
 #ARGV[7] KERNAL_SIZE  
 #ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
+#ARGV[9] RGB 0gray 1 rgb
+#
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -61,36 +62,13 @@ my $odd_flag;
 my $dummy_level;
 my @levels;
 my $levels_number;
-
-my $single_port_name = "single_port_memory";
 my $dual_port_name = "true_dual_port_memory";
+my $single_port_name = "single_port_memory";
 my $unit_name = "unitA";
 my $Relu_name = "relu";
 my $accumulator_name = "accumulator"; 
 $module_name = "conva$ARGV[0]_DP";
 
-
-$odd_flag = 0;
-$dummy_level = $ARGV[9]; 
- while($dummy_level  > 0)
-{
-	push @levels , $dummy_level;
-	if($dummy_level % 2 == 1){
-		if($odd_flag == 1){
-			$dummy_level = int($dummy_level / 2) + 1;
-			$odd_flag = 0;
-		}
-		else{
-			$dummy_level = int ($dummy_level / 2);
-			$odd_flag = 1;
-		}
-	}
-	else{	
-		$dummy_level = $dummy_level / 2;
-	}
-}
-
-$levels_number = @levels;
  
  if(lc ($ARGV[2]) eq "decimal"){
 	$adder_name = "Dec_Adder";
@@ -121,7 +99,8 @@ $module $module_name $parameter
 	$ifm_depth             = $ARGV[6],
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
+	$number_of_units       = 3
+    ARITH_TYPE              = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -133,109 +112,94 @@ $module $module_name $parameter
 	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
 	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
 )(
-	$i_p 							clk,
-	$i_p 							reset,
-	
-	input [DATA_WIDTH-1:0] 			riscv_data,
-	input [ADDRESS_BITS-1:0] 		riscv_address,
+	input clk,
+	input reset,
+	input [DATA_WIDTH-1:0] riscv_data,
+	input [ADDRESS_BITS-1:0] riscv_address,
 	
 	input fifo_enable,
 	input conv_enable,
-	
+    
 	input [NUMBER_OF_IFM-1:0]    ifm_enable_write_previous,            
 	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
     input                        ifm_enable_read_current,
-	
-	input                       wm_addr_sel,
+    
+    input                       wm_addr_sel,
     input                       wm_enable_read,
     input [NUMBER_OF_UNITS-1:0] wm_enable_write,
     input [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
     input                       wm_fifo_enable,
-
-	input                                 bm_addr_sel,
+    
+    input                                 bm_addr_sel,
     input                                 bm_enable_read,
     input                                 bm_enable_write,
     input [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
-    
-	output [DATA_WIDTH-1:0] data_out_for_next
-	);
-DONATE
 
-
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
-	print $fh <<"DONATE";
-	wire [DATA_WIDTH-1:0] data_read_for_unit$i;
-DONATE
-}
-
-
- 
- 
- for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
-	print $fh <<"DONATE";
-	wire [DATA_WIDTH-1:0] unit${\($i)}_data_out;
-DONATE
-}
-
-
- print $fh <<"DONATE";
- 
-	wire [DATA_WIDTH-1:0] data_bias;
+    output [DATA_WIDTH-1:0] data_out_for_next
+    );
 	
+////////////////////////Signal declaration/////////////////
+
+DONATE
+
+if($ARGV[9] == 1){#rgb
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] data_read_for_unit1;
+	wire [DATA_WIDTH-1:0] data_read_for_unit2;
+	wire [DATA_WIDTH-1:0] data_read_for_unit3;
+DONATE
+}
+else{#gray
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] data_read_for_unit1;
+DONATE
+}
+
+if($ARGV[9] == 1){#rgb
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] unit1_data_out;
+	wire [DATA_WIDTH-1:0] unit2_data_out;
+	wire [DATA_WIDTH-1:0] unit3_data_out;
+DONATE
+}
+else{#gray
+	print $fh <<"DONATE";
+	wire [DATA_WIDTH-1:0] unit1_data_out;
+DONATE
+}
+
+
+
+if($ARGV[9] == 1){
+	print $fh <<"DONATE";
+ 
+	reg [DATA_WIDTH-1:0] partial_sum1;
+	reg [DATA_WIDTH-1:0] partial_sum2;
+	reg [DATA_WIDTH-1:0] full_sum;
+	wire [DATA_WIDTH-1:0] full_sum_reg;
+
+DONATE
+}
+
+ print $fh <<"DONATE";	
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
 	wire [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address;
 	
-DONATE
- 
-
-############################dol el partial sum####################################	
-$odd_flag = 0;
-for ($i = 1; $i < $levels_number; $i = $i + 1){
-	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
-	for($j = 1; $j <= $levels[$i] + ($odd_flag % 2);$j = $j + 1){
-		print $fh "\twire\t[DATA_WIDTH - 1 : 0]	adder_out_$i$under_Score$j;\n";
-	}
-	print $fh "\n";
-}
- 
- 
-
- $odd_flag = 0;
-for ($i = 1; $i < $levels_number; $i = $i + 1){
-	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
-	for($j = 1; $j <= $levels[$i] + ($odd_flag % 2);$j = $j + 1){
-		print $fh "\treg \t[DATA_WIDTH - 1 : 0]	reg_adder_out_$i$under_Score$j;\n";
-	}
-	print $fh "\n";
-}
-##################################################################################
-
-print $fh <<"DONATE";   
-
 	assign wm_address = wm_addr_sel ? wm_address_read_current : riscv_address[ADDRESS_SIZE_WM-1:0];
 	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2(NUMBER_OF_FILTERS)-1:0];
-
-
-DONATE
-
-print $fh <<"DONATE"; 
-
-	$single_port_name #(.MEM_SIZE (NUMBER_OF_FILTERS)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
+    
+    SinglePort_Memory #(.MEM_SIZE (NUMBER_OF_FILTERS)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
      .Enable_Read(bm_enable_read),	.Address(bm_address),
 	 .Data_Input(riscv_data),	.Data_Output(data_bias));
 	 
-DONATE
 
-
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
-print $fh <<"DONATE"; 
-	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
-	IFM$i (
+	TrueDualPort_Memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	convA1_IFM1 (
     .clk(clk),
     
     .Data_Input_A(riscv_data),
     .Address_A(riscv_address[ADDRESS_SIZE_IFM-1:0]),
-    .Enable_Write_A(ifm_enable_write_previous[${\($i-1)}]),
+    .Enable_Write_A(ifm_enable_write_previous[0]),
     .Enable_Read_A(1'b0), 
   
     .Data_Input_B(32'b0),
@@ -244,107 +208,144 @@ print $fh <<"DONATE";
     .Enable_Read_B(ifm_enable_read_current), 
   
     .Data_Output_A(),
-    .Data_Output_B(data_read_for_unit$i)
+    .Data_Output_B(data_read_for_unit1)
+	);
+	  
+DONATE
+
+if($ARGV[9] == 1){
+	print $fh <<"DONATE";
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	convA1_IFM2 (
+    .clk(clk),
+    
+    .Data_Input_A(riscv_data),
+    .Address_A(riscv_address),
+    .Enable_Write_A(ifm_enable_write_previous[1]),
+    .Enable_Read_A(0), 
+  
+    .Data_Input_B(0),
+    .Address_B(ifm_address_read_current),
+    .Enable_Write_B(0),
+    .Enable_Read_B(ifm_enable_read_current), 
+  
+    .Data_Output_A(),
+    .Data_Output_B(data_read_for_unit2)
+	);
+	
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	convA1_IFM3 (
+    .clk(clk),
+    
+    .Data_Input_A(riscv_data),
+    .Address_A(riscv_address),
+    .Enable_Write_A(ifm_enable_write_previous[2]),
+    .Enable_Read_A(0), 
+  
+    .Data_Input_B(0),
+    .Address_B(ifm_address_read_current),
+    .Enable_Write_B(0),
+    .Enable_Read_B(ifm_enable_read_current), 
+  
+    .Data_Output_A(),
+    .Data_Output_B(data_read_for_unit3)
 	);
 DONATE
 }
 
-
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 print $fh <<"DONATE"; 
-	$unit_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
-    unit_$i
+    $unit_name 
+    convA1_unit_1
     (
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_read_for_unit$i),       
+    .unit_data_in(data_read_for_unit1),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
-    .wm_enable_write(wm_enable_write[${\($i-1)}]),          
-    .wm_address(wm_address), 
-    .wm_fifo_enable(wm_fifo_enable),         
-    .unit_data_out(unit${\($i)}_data_out)   
+    .wm_enable_write(wm_enable_write[0]),          
+    .wm_address(wm_address),
+    .wm_fifo_enable(wm_fifo_enable),
+    .unit_data_out(unit1_data_out)   
     );
-DONATE
-}
-
-
-
-print $fh <<"DONATE";
-
-    
-    always @(posedge clk)
-    begin
-		
-DONATE
-
-
-$odd_flag = 0;
-for ($i = 1; $i < $levels_number; $i = $i + 1){
-	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
-	for($j = 1; $j <= $levels[$i] + ($odd_flag % 2);$j = $j + 1){
-		print $fh "\t\t\treg_adder_out_$i$under_Score$j <= adder_out_$i$under_Score$j;\n";
-	}
-	print $fh "\n";
-}
-
-
-print $fh <<"DONATE";   
-	end
-
-DONATE
-
-
-$i = 1;
-	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
-	$jj = 1;
-	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
-		
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(unit${\($jj)}_data_out), .in2(unit${\($jj+1)}_data_out), .out(adder_out_$i$under_Score$j));\n";
-		$jj = $jj + 2;
-	}
-	if($odd_flag % 2){
-		print $fh "\n\tassign adder_out_$i$under_Score$j = unit${\($jj)}_data_out;\n";
-	}
-	print $fh "\n";
-
-
-for ($i = 2; $i < $levels_number; $i = $i + 1){
-	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
-	$jj = 1;
-	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(reg_adder_out_${\($i-1)}$under_Score$jj), .in2(reg_adder_out_${\($i-1)}$under_Score${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
-		$jj = $jj + 2;
-	}
-	if($odd_flag % 2){
-		print $fh "\n\tassign adder_out_$i$under_Score$j = reg_adder_out_${\($i-1)}$under_Score$jj;\n";
-	}
-	print $fh "\n";
-}
-
-print $fh <<"DONATE";  
-	$accumulator_name #(.DATA_WIDTH(DATA_WIDTH))
-    accu
-    (
-     .clk(clk),
-     .accu_enable(accu_enable),
-	 .data_in_from_conv(reg_adder_out_${\($i-1)}$under_Score${\($jj-2)}),
-	 .data_bias(data_bias),
-     .data_in_from_next(data_in_from_next),
-     .accu_data_out(accu_data_out)
-     );
-DONATE
-
-
-print $fh <<"DONATE";   
-
-	$Relu_name  Active1 (.in(accu_data_out), .out (relu_data_out), .relu_enable(relu_enable));
 	
-    assign data_out_for_next = relu_data_out;	   	 
+DONATE
+
+
+if($ARGV[9] == 1){
+	print $fh <<"DONATE";
+	$unit_name 
+    convA1_unit_2
+    (
+    .clk(clk),                                 
+    .reset(reset),  
+    .riscv_data(riscv_data),                             
+    .unit_data_in(data_read_for_unit2),       
+    .fifo_enable(fifo_enable),                         
+    .conv_enable(conv_enable),  
+    .wm_enable_read(wm_enable_read),          
+    .wm_enable_write(wm_enable_write[1]),          
+    .wm_address(wm_address),
+    .wm_fifo_enable(wm_fifo_enable),          
+    .unit_data_out(unit2_data_out)   
+    );
+    
+    $unit_name 
+    convA1_unit_3
+    (
+    .clk(clk),                                 
+    .reset(reset),  
+    .riscv_data(riscv_data),                             
+    .unit_data_in(data_read_for_unit3),       
+    .fifo_enable(fifo_enable),                         
+    .conv_enable(conv_enable),    
+    .wm_enable_read(wm_enable_read),          
+    .wm_enable_write(wm_enable_write[2]),         
+    .wm_address(wm_address),
+    .wm_fifo_enable(wm_fifo_enable),          
+    .unit_data_out(unit3_data_out)   
+    );
+	
+	
+DONATE
+}
+
+
+if($ARGV[9] == 1){
+	print $fh <<"DONATE";
+	
+	always @(posedge clk)
+	begin
+	   partial_sum1 <= unit1_data_out + unit2_data_out;
+	   partial_sum2 <= unit3_data_out + data_bias;
+	   full_sum     <= full_sum_reg;
+	end
+	
+DONATE
+
+}	
+
+
+if($ARGV[9] == 1){#rgb
+	print $fh <<"DONATE";
+	
+	adder #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH)) Add (.in1 (partial_sum1), .in2 (partial_sum2), .out (full_sum_reg));
+	relu  Active1 (.in(full_sum),.out (data_out_for_next), .relu_enable(1'b1)); 
+	
+endmodule
+DONATE
+}
+
+else{#gray
+
+	print $fh <<"DONATE";   
+	relu  Active1 (.in(unit1_data_out),.out (data_out_for_next), .relu_enable(1'b1)); 
+ 	 
 	
 endmodule
 
 DONATE
+}
+
 close $fh or die "Couldn't Close File : $!";

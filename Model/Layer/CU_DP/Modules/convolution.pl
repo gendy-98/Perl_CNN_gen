@@ -9,16 +9,9 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] N/A
-#ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
+#ARGV[0] Mul_number
+#ARGV[1] ARITH_TYPE
+#ARGV[2] DATA_WIDTH
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -41,13 +34,7 @@ my $under_Score = "_";
 my $clog2 = "\$clog2";
 
 my $data_width = "DATA_WIDTH";
-my $address_bits = "ADDRESS_BITS";
 
-my $ifm_size = "IFM_SIZE";                                               
-my $ifm_depth = "IFM_DEPTH";
-my $kernal_size = "KERNAL_SIZE";
-my $number_of_filters = "NUMBER_OF_FILTERS";
-my $number_of_units = "NUMBER_OF_UNITS";
 my $full_path = "../../../../Verilog_files/";
 #######################################################################################
 my $i = 0;
@@ -55,14 +42,15 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
 my $levels_number;
+my $arith_type = "ARITH_TYPE";
 
-$dummy_level = $ARGV[1];
+$dummy_level = $ARGV[0];
 
 
 $odd_flag = 0;
@@ -87,18 +75,18 @@ while($dummy_level  > 0)
 
 $levels_number = @levels;
  
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
+# if(lc ($ARGV[1]) eq "decimal"){
+#	$adder_name = "Dec_Adder";
+#	$mul_name = "Dec_Multiplier";
+#	}
+#if(lc ($ARGV[1]) eq "fixed"){
+#	$adder_name = "Fixed_Adder";
+#	$mul_name = "Fixed_Multiplier";
+#	}
+#if(lc ($ARGV[1]) eq "float"){
+#	$adder_name = "Float_Adder";
+#	$mul_name = "Float_Multiplier";
+#	}
  
 $module_name = "convolution";
 
@@ -109,25 +97,10 @@ open my $fh, '>', $file_name
   print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[3],
-	$address_bits 		  = $ARGV[4],
-	/////////////////////////////////////
-	$ifm_size              = $ARGV[5],                                                
-	$ifm_depth             = $ARGV[6],
-	$kernal_size           = $ARGV[7],
-	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
-	//////////////////////////////////////
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
-	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	// ADDRESS_SIZE_WM Differs between A and B but it doesn't matter in this file 
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT =$clog2(NUMBER_OF_IFM_NEXT)
-)(
+	$data_width 			  = $ARGV[2],
+	$arith_type 			  = $ARGV[1]
+	//////////////////////////////////////                     
+)( 
 	$i_p 							clk,
 	$i_p 							reset,
 	$i_p 							conv_enable,
@@ -221,7 +194,7 @@ for ($i = 1; $i < $levels_number; $i = $i + 1){
 print $fh "\t\tend\n\tend\n\n";
 
 for($i=1;$i <= $levels[0] ; $i = $i + 1){
-	print $fh "\t$mul_name\tmul_$i\t(.in1(w$i), .in2(if$i), .out(mul_out_$i));\n";
+	print $fh "\t$mul_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\tmul_$i\t(.in1(w$i), .in2(if$i), .out(mul_out_$i));\n";
 }
 
 print $fh "\n";
@@ -232,7 +205,7 @@ $i = 1;
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
 		
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(reg_mul_out_$jj), .in2(reg_mul_out_${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
+		print $fh "\t$adder_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(reg_mul_out_$jj), .in2(reg_mul_out_${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){
@@ -245,7 +218,7 @@ for ($i = 2; $i < $levels_number; $i = $i + 1){
 	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(reg_adder_out_${\($i-1)}$under_Score$jj), .in2(reg_adder_out_${\($i-1)}$under_Score${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
+		print $fh "\t$adder_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(reg_adder_out_${\($i-1)}$under_Score$jj), .in2(reg_adder_out_${\($i-1)}$under_Score${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){

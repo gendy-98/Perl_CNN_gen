@@ -1,7 +1,8 @@
 data width ,32
 riscv address bus,22
 address bits,15
-operation type,float
+operation type,0
 mantissa,24
 exponent,8
 muls in conv,25
+divided by,4

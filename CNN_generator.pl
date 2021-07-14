@@ -56,17 +56,36 @@ my $riscv_address_bus = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $address_bits = $AdvancedParameters_info[$i];
 $i = $i + 2;
-my $operation_type = $AdvancedParameters_info[$i]; ##float or fixed
+my $arith_type = $AdvancedParameters_info[$i]; ##float or fixed //ghyart di kanet $operation_type
 $i = $i + 2;
 my $M_Mantissa = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $E_Exponent = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $muls_convolution = $AdvancedParameters_info[$i];
+$i = $i + 2;
+my $divided_by = $AdvancedParameters_info[$i];
 
 
-
-
+my $float_oldver = "float";
+###################################################
+####       FILES THAT WOULD RUN ONLY ONCE      ####
+###################################################
+chdir "./Model/Blocks";
+system("perl accumulator.pl $float_oldver");
+system("perl duelportmemory.pl");
+system("perl RegAccumulator.pl $data_width $arith_type");
+system("perl Register.pl");
+system("perl Relu.pl");
+system("perl singleportmemory.pl");
+chdir "../Layer/CU_DP/Modules";
+system("perl convolution.pl $muls_convolution $arith_type $data_width");
+chdir "./operations";
+system("perl adder.pl $arith_type $data_width $M_Mantissa $E_Exponent");
+system("perl divider.pl $arith_type $data_width $M_Mantissa $E_Exponent $divided_by");
+system("perl multiplier.pl $arith_type $data_width $M_Mantissa $E_Exponent ");
+chdir "../../../..";
+###################################################
 #layer extraction part
 my @layers;
 @layers = grep(/^layer name/i, @Architecture_info); 
@@ -113,43 +132,6 @@ for($i = 0; $i < $layers_len * $number_of_parameters; $i = $i + $number_of_param
 	$units_number = $Architecture_info[$i + 13];
 	push @units_num_r , $units_number;
 	
-	if($layer_name =~ /conv/){
-		if($i == 0){
-			say "my name is conva_first.pl";
-			$ab_flag = $ab_flag + 1;
-		}
-		else{
-			$ab_flag = $ab_flag + 1;
-			if($ab_flag % 2){
-				say "my name is conva.pl";
-			}
-			else{
-				say "my name is convb.pl";
-			}
-			
-		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
-	}
-	if($layer_name =~ /pool/){
-		if($ab_flag % 2){
-			say "my name is poola.pl";
-		}
-		else{
-			say "my name is poolb.pl";
-		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
-	}
-	if($layer_name =~ /fc/){
-		$ab_flag = $ab_flag + 1;
-		if($ab_flag % 2){
-			say "my name is fca.pl";
-		}
-		else{
-			say "my name is fcb.pl";
-		}
-		#system("perl conva1.pl  $layer_name $kernal_size $stride $ifm_size $ifm_depth $number_of_filters");
-	}
-
 }
 
 $units_number = join(",", @units_num_r);
@@ -161,5 +143,5 @@ $number_of_filters = join(",", @number_of_filters_r);
 $stride = join(",", @stride_r);
 
 chdir "./Model";
-system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $operation_type");
+system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $float_oldver");
 

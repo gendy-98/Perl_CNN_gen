@@ -1,17 +1,106 @@
+use strict;
+use warnings;
+use diagnostics;
+
+# say prints a line followed by a newline
+use feature 'say';
+ 
+# Use a Perl version of switch called given when
+use feature "switch";
+
+#argumets 
+#ARGV[0] no of the conv 
+#ARGV[1] Mul number
+#ARGV[2] ARITH_TYPE
+#ARGV[3] DATA_WIDTH
+#ARGV[4] ADDRESS_BITS
+#ARGV[5] IFM_SIZE  
+#ARGV[6] IFM_DEPTH 
+#ARGV[7] KERNAL_SIZE  
+#ARGV[8] NUMBER_OF_FILTERS
+#ARGV[9] RGB 0gray 1 rgb
+#
+
+######################################### CONSTANTS ###################################
+my $module = <<"DONATE";
 `timescale 1ns / 1ps
 
 
 module 
- conva2_CU #(parameter
+DONATE
+my $parameter = "#(parameter";
+
+my $always_clk = <<"DONATE";
+always @ (posedge clk)
+    begin 
+DONATE
+my $end = "end";
+my $end_module = "endmodule";
+my $i_p = "input";
+my $o_p = "output";
+my $under_Score = "_";
+my $clog2 = "\$clog2";
+
+my $data_width = "DATA_WIDTH";
+my $address_bits = "ADDRESS_BITS";
+
+my $ifm_size = "IFM_SIZE";                                               
+my $ifm_depth = "IFM_DEPTH";
+my $kernal_size = "KERNAL_SIZE";
+my $number_of_filters = "NUMBER_OF_FILTERS";
+my $number_of_units = "NUMBER_OF_UNITS";
+my $full_path = "../../../Verilog_files/";
+#######################################################################################
+my $i = 0;
+my $j = 0;
+my $jj = 0;
+my $file_name;
+my $module_name;
+my $adder_name;
+my $mul_name;
+my $odd_flag;
+my $dummy_level;
+my @levels;
+my $levels_number;
+my $dual_port_name = "true_dual_port_memory";
+my $single_port_name = "single_port_memory";
+my $unit_name = "unitA";
+my $Relu_name = "relu";
+my $accumulator_name = "accumulator"; 
+$module_name = "conva$ARGV[0]_CU";
+
+ 
+ if(lc ($ARGV[2]) eq "decimal"){
+	$adder_name = "Dec_Adder";
+	$mul_name = "Dec_Multiplier";
+	}
+if(lc ($ARGV[2]) eq "fixed"){
+	$adder_name = "Fixed_Adder";
+	$mul_name = "Fixed_Multiplier";
+	}
+if(lc ($ARGV[2]) eq "float"){
+	$adder_name = "Float_Adder";
+	$mul_name = "Float_Multiplier";
+	}
+
+
+
+$file_name = $full_path . $module_name . ".v";
+open my $fh, '>', $file_name
+  or die "Can't open file : $!";
+  
+  print $fh <<"DONATE";
+$module $module_name $parameter
 ///////////advanced parameters//////////
-	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS 		  = 15,
+	$data_width 			  = $ARGV[3],
+	$address_bits 		  = $ARGV[4],
 	/////////////////////////////////////
-	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 16,
-	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS     = 120,
-	NUMBER_OF_UNITS       = 3,
+	$ifm_size              = $ARGV[5],                                                
+	$ifm_depth             = $ARGV[6],
+	$kernal_size           = $ARGV[7],
+	$number_of_filters     = $ARGV[8],
+	$number_of_units       = 3
+    ARITH_TYPE              = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -23,63 +112,60 @@ module
 	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
 	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
 )(
-	input 							clk,
-	input 							reset,
-	
-	input  end_from_next,
+	nput  clk,
+    input  reset,
+   
+    input  end_from_next,
     input  start_from_previous,
-    output reg end_to_previous,
-    output ready,
-	output reg [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1 : 0] ifm_sel,
+    
     output reg ifm_enable_read_current,
     output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
-
+    
     output reg wm_addr_sel,
     output reg wm_enable_read,
-    output reg [ADDRESS_SIZE_WM-1:0]  wm_address_read_current,
+    output reg [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
     output reg wm_fifo_enable,
-
+    
     output reg bm_addr_sel,
     output reg bm_enable_read,
     output reg [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
-    
+      
     output reg fifo_enable,
     output conv_enable,
-    output accu_enable,
-    output relu_enable,
-    output ifm_enable_read_next,
     output ifm_enable_write_next,
-    //output reg  [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
-    //output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
-    output reg start_to_next
+    output reg [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
+    output reg start_to_next,
+    output reg ifm_sel_next,
+    output ready
+    
     );
-	  reg  ifm_start_counter_read_address;
+	
+////////////////////////Signal declaration/////////////////
+
+ 
+    reg  ifm_start_counter_read_address;
     wire ifm_address_read_current_tick;
-    reg  ifm_address_read_current_tick_delayed;
+            
+    reg  fifo_enable_sig1;
+    reg  [$clog2(NUMBER_OF_FILTERS) : 0] filters_counter;
+    wire filters_counter_tick;
+    reg start_internal;
+    wire start;
     wire no_more_start_flag;
     
-    reg  fifo_enable_sig1;
-    
-    reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] filters_counter;
-    wire filters_counter_tick;
-    
-    reg  [$clog2( (IFM_DEPTH/NUMBER_OF_UNITS)+1 )-1 : 0] depth_counter;
-    wire depth_counter_tick;
-    
-    reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] psums_counter_next;
-    wire psums_counter_next_tick;
-    
-    wire start_internal;
-    wire start;
-    
+    reg mem_empty; 
     wire signal_hold;
-
+    
+    reg Enable1_reg,Enable2_reg,Enable3_reg,Enable4_reg,Enable5_reg,Enable6_reg,Enable7_reg,Enable8_reg;
+    wire ifm_address_write_next_tick;
+    
+    
     assign start = start_from_previous | start_internal;
-
+    
     localparam [1:0]   IDLE   = 2'b00,
                        READ   = 2'b01,
                        FINISH = 2'b10,
-					   HOLD   = 2'b11;
+                       HOLD   = 2'b11;
                       
     reg [1:0] state_reg, state_next;  
               
@@ -100,94 +186,90 @@ module
         IDLE : 
         begin
         
-        ifm_enable_read_current        = 1'b0;
-        ifm_start_counter_read_address = 1'b0;
+            ifm_enable_read_current        = 1'b0;
+            ifm_start_counter_read_address = 1'b0;
     
-        wm_addr_sel                    = 1'b0;
-        
-        bm_addr_sel                    = 1'b0;
-        bm_enable_read                 = 1'b0;
-        
-        fifo_enable_sig1               = 1'b0;
-        
-        end_to_previous                = 1'b1;
-        
-        if(start)
-            state_next = READ;
+            wm_addr_sel                    = 1'b0;
+            
+            bm_addr_sel                    = 1'b0;
+            bm_enable_read                 = 1'b0;
+      
+            fifo_enable_sig1               = 1'b0;
+              
+            if(start_from_previous)
+                state_next = READ;
       
         end                    
  
         READ : 
         begin // Read From Memory 
-		
-        ifm_enable_read_current        = 1'b1;
-        ifm_start_counter_read_address = 1'b1;
-        
-        wm_addr_sel                    = 1'b1;
-        
-        bm_addr_sel                    = 1'b1;
-        bm_enable_read                 = 1'b1;
-      
-        fifo_enable_sig1               = 1'b1;
-		
-		end_to_previous                = 1'b0;
-        
-        if(filters_counter_tick)
-            state_next = IDLE;        
-	    else if(ifm_address_read_current_tick)
-            state_next = FINISH;
-			
+            ifm_enable_read_current        = 1'b1;
+            ifm_start_counter_read_address = 1'b1;
+    
+            wm_addr_sel                    = 1'b1;
+            
+            bm_addr_sel                    = 1'b1;
+            bm_enable_read                 = 1'b1;
+            
+            fifo_enable_sig1               = 1'b1;
+            
+            if( (signal_hold) & (~mem_empty) )
+                state_next = HOLD;
+            
+            else if(filters_counter_tick)
+                state_next = IDLE;
+                    
+	        else if(ifm_address_read_current_tick)
+                state_next = FINISH;
+            
         end
                 
         FINISH : 
         begin 
-
-        ifm_enable_read_current        = 1'b0;
-        ifm_start_counter_read_address = 1'b0;
+            ifm_enable_read_current        = 1'b0;
+            ifm_start_counter_read_address = 1'b0;
     
-        wm_addr_sel                    = 1'b1;
-        
-        bm_addr_sel                    = 1'b1;
-        bm_enable_read                 = 1'b0;
+            wm_addr_sel                    = 1'b1;
       
-        fifo_enable_sig1               = 1'b0;
-        
-        end_to_previous                = 1'b1;// & ~no_more_start_flag;
-
-	     if(start)
-             state_next = READ;
+            bm_addr_sel                    = 1'b1;
+            bm_enable_read                 = 1'b0;
+            
+            fifo_enable_sig1               = 1'b0;
+            
+               
+	        if(start)
+               state_next = READ;
         end
         
         HOLD :
         begin
-
-        ifm_enable_read_current        = 1'b0;
-        ifm_start_counter_read_address = 1'b0;
+            ifm_enable_read_current        = 1'b0;
+            ifm_start_counter_read_address = 1'b0;
     
-        wm_addr_sel                    = 1'b0;
-        
-        bm_addr_sel                    = 1'b0;
-        bm_enable_read                 = 1'b0;
-      
-        fifo_enable_sig1               = 1'b0;
-        
-        end_to_previous                = 1'b0;
-        
-        end
+            wm_addr_sel                    = 1'b1;
+            
+            bm_addr_sel                    = 1'b1;
+            bm_enable_read                 = 1'b0;
+            
+            fifo_enable_sig1               = 1'b0;
+            
+            if(mem_empty)  
+                state_next = READ;
+        end                 
         
         endcase
-    end       
+    end  
+
+    assign ready = (state_reg == IDLE);
     
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_sel <= 0;
-        else if(ifm_sel == ( (NUMBER_OF_IFM/NUMBER_OF_UNITS +1) -1) & start)
-            ifm_sel <= 0;  
-        else if(start)
-            ifm_sel <= ifm_sel + 1'b1; 
-    end 
-
+            ifm_sel_next <= 1'b0;
+        else if(start_to_next)
+            ifm_sel_next <= ~ifm_sel_next;
+    end
+    
     always @(posedge clk, posedge reset)
     begin
         if(reset)
@@ -201,7 +283,7 @@ module
     assign ifm_address_read_current_tick = (ifm_address_read_current == IFM_SIZE*IFM_SIZE-1);
     assign signal_hold = ( ifm_address_read_current == FIFO_SIZE-3 );
     
-     always @(posedge clk, posedge reset)
+    always @(posedge clk, posedge reset)
     begin
         if(reset)
             wm_enable_read <= 1'b0;
@@ -219,65 +301,34 @@ module
             wm_address_read_current <= wm_address_read_current + 1'b1;
         else if(state_reg==IDLE) 
             wm_address_read_current <= 0;      
-    end
-          
+    end 
+    
     always @(posedge clk, posedge reset)
     begin
         if(reset)
             bm_address_read_current <= 0;
-        else if(bm_address_read_current == (NUMBER_OF_FILTERS-1) & ifm_enable_write_next)
+        else if(bm_address_read_current == (NUMBER_OF_FILTERS-1) & ifm_address_write_next_tick)
             bm_address_read_current <= 0;
-        else if(ifm_enable_write_next)
+        else if(ifm_address_write_next_tick)
             bm_address_read_current <= bm_address_read_current + 1'b1;      
     end
     
-        
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            depth_counter <= 0;
-        else if(depth_counter == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_address_read_current_tick)
-            depth_counter <= 0;  
+            filters_counter <= 0;
+        else if( (filters_counter == (NUMBER_OF_FILTERS-1) & ifm_address_read_current_tick) )
+            filters_counter <= 0;
         else if(ifm_address_read_current_tick)
-            depth_counter <= depth_counter + 1'b1; 
-    end 
-    
-    assign depth_counter_tick = (depth_counter == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_address_read_current_tick);
-    
-    always @(posedge clk, posedge reset)
-    begin
-        if(reset)
-            filters_counter <= 0;
-        else if(filters_counter == (NUMBER_OF_FILTERS-1) & depth_counter_tick)
-            filters_counter <= 0;
-        else if(depth_counter_tick)
             filters_counter <= filters_counter + 1'b1;
     end
     
-    assign filters_counter_tick = (filters_counter == (NUMBER_OF_FILTERS-1) & depth_counter_tick);
-    
-    always @(posedge clk, posedge reset)
-    begin
-        if(reset)
-            psums_counter_next <= 0;
-        else if(psums_counter_next == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_enable_write_next)
-            psums_counter_next <= 0 ;
-        else if(ifm_enable_write_next)
-            psums_counter_next <= psums_counter_next + 1'b1;      
-    end
-    assign psums_counter_next_tick = (psums_counter_next == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_enable_write_next);
-    
-    assign accu_enable = ( psums_counter_next != 0 );
-    assign relu_enable = ( psums_counter_next == (IFM_DEPTH/NUMBER_OF_UNITS +1) -1 );
- 
-	assign no_more_start_flag = |filters_counter;
-    assign ready = ~no_more_start_flag;
-    assign start_internal = no_more_start_flag & ifm_address_read_current_tick_delayed;
-
+    assign filters_counter_tick = ( filters_counter == (NUMBER_OF_FILTERS-1) & ifm_address_read_current_tick );
+        
     always @(posedge clk)
     begin
-        fifo_enable <= fifo_enable_sig1;
-        ifm_address_read_current_tick_delayed <= ifm_address_read_current_tick;
+        fifo_enable    <= fifo_enable_sig1;
+        start_internal <= ifm_address_read_current_tick;
         wm_fifo_enable <= wm_enable_read;
     end 
     
@@ -404,41 +455,64 @@ module
     // address write next //
     ////////////////////////
     
-     /*   
-	always @(posedge clk, posedge reset)
+    always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
-        else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
-            ifm_address_read_next <= 0;      
+            ifm_address_write_next <= 0; 
+        else if(ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
+            ifm_address_write_next <= 0;      
         else if(ifm_enable_write_next)
-            ifm_address_read_next <= ifm_address_write_next + 1'b1;
+            ifm_address_write_next <= ifm_address_write_next + 1'b1;
     end
-    
-    assign ifm_address_write_next = ifm_address_read_next - 1;
-    assign address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
-   */  
 
-delay_7_1 #(.DATA_WIDTH(1), .delay_cycles(7))
-	DBlock_7_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
+    assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
+        
+DONATE
+
+$dummy_level = $ARGV[1]; 
+
+
+
+$levels_number = ceil(log($dummy_level)/log(2));
+
+my $delay_cycles = $levels_number;
+
+
+$dummy_level = $ARGV[9]; 
+
+$levels_number = ceil(log($dummy_level)/log(2));
+
+
+
+$delay_cycles = $delay_cycles + $levels_number + 1;
+
+
+
+my $signal_bits = 1;
+chdir "./Modules";
+system("perl delay.pl $delay_cycles $signal_bits");
+
+my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
+ 
+ 
+print $fh <<"DONATE";   
+
+$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
 		
+DONATE
 
-delay_1_1 #(.DATA_WIDTH(1), .delay_cycles(1))
-	DBlock_1_1 (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
-		.Data_Out(ifm_enable_write_next)
-		);
-		
+print $fh <<"DONATE";   
+//////////////////////////
+    ////// start to next /////
+    //////////////////////////
 
- always @(posedge clk)
-    begin
-        start_to_next <= psums_counter_next_tick;
-    end
-  /*   localparam  s0   = 1'b0,
-                 s1   = 2'b1;	  
+    localparam  s0   = 1'b0,
+                s1   = 1'b1;	  
 							  
-    reg state_reg2, state_next2; 
+    reg state_reg2, state_next2;
     
     always @(posedge clk, posedge reset)
     begin
@@ -447,7 +521,7 @@ delay_1_1 #(.DATA_WIDTH(1), .delay_cycles(1))
         else
             state_reg2 <= state_next2;
     end
-
+        
     always @*
     begin     
         state_next2 = state_reg2;
@@ -457,7 +531,8 @@ delay_1_1 #(.DATA_WIDTH(1), .delay_cycles(1))
         s0 : 
         begin
             start_to_next = 1'b0;
-            if(address_write_next_tick)
+            mem_empty     = 1'b1;
+            if(ifm_address_write_next_tick)
                 state_next2 = s1;          
         end
         
@@ -467,18 +542,22 @@ delay_1_1 #(.DATA_WIDTH(1), .delay_cycles(1))
             if ( end_from_next )
             begin
                 start_to_next = 1'b1;
+                mem_empty     = 1'b1;
                 state_next2    = s0;
             end
             
             else 
             begin
                 start_to_next = 1'b0;
+                mem_empty     = 1'b0;
                 state_next2    = s1;  
             end      
         end
         
         endcase
     end
-    */
+    
 endmodule
+DONATE
 
+close $fh or die "Couldn't Close File : $!";
