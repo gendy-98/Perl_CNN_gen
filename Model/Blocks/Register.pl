@@ -63,7 +63,7 @@ $module $module_name $parameter
 	always @(posedge clk ,posedge reset)
 	begin
 	if (reset)
-		Data_out<= 32'b0; 
+		Data_out<= {DATA_WIDTH{1'b0}};
 	else if (Enable)
 		Data_out <= Data_in;
 	end		

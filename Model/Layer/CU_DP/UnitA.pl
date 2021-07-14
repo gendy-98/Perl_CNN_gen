@@ -12,11 +12,9 @@ use feature "switch";
 #ARGV[0] DATA_WIDTH
 #ARGV[1] ADDRESS_BITS
 #ARGV[2] IFM_SIZE
-#ARGV[3] IFM_DEPTH
-#ARGV[4] KERNAL_SIZE
-#ARGV[5] NUMBER_OF_FILTERS 
-#ARGV[6] Stride
-#ARGV[7] ARITH_TYPE
+#ARGV[3] KERNAL_SIZE
+#ARGV[4] Stride
+#ARGV[5] ARITH_TYPE
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -75,10 +73,10 @@ $module $module_name $parameter
 	$address_bits			= $ARGV[1],
 	/////////////////////////////////////
 	$ifm_size              = $ARGV[2],                                                
-	$ifm_depth             = $ARGV[3],
-	$kernal_size           = $ARGV[4],
-	$number_of_filters		= $ARGV[5],
-	ARITH_TYPE				= $ARGV[7],
+	$ifm_depth             = 3,//
+	$kernal_size           = $ARGV[3],
+	$number_of_filters		= 6,//
+	ARITH_TYPE				= $ARGV[5],
 	//////////////////////////////////////
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
@@ -108,7 +106,7 @@ $module $module_name $parameter
 DONATE
 
 
-for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i <= ($ARGV[3]*$ARGV[3]); $i = $i + 1){
 	print $fh "\twire [$data_width-1:0]	signal_if$i,\tsignal_w$i;\n";
 }
 
@@ -132,15 +130,15 @@ DONATE
 
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[6] $ARGV[0] $ARGV[2] $ARGV[4] ");
+system("perl fc_fifo.pl  ${\($ARGV[3]*$ARGV[3])} $ARGV[0] ");
 
-my $num_outputs = $ARGV[4]*$ARGV[4];
-my $fifo_regs = (($ARGV[4] - 1)*$ARGV[2] + $ARGV[4]);
-my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[6]$under_Score$fifo_regs";
+my $num_outputs = $ARGV[3]*$ARGV[3];
+my $fifo_regs = (($ARGV[3] - 1)*$ARGV[2] + $ARGV[3]);
+my $fifo_name = "fo_fifo_${\($ARGV[3]*$ARGV[3])}";
 
- print $fh <<"DONATE";
+print $fh <<"DONATE";
 
-$fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size), .IFM_SIZE(IFM_SIZE))
+$fifo_name #(.$data_width($data_width))
 	WM_FIFO (
 	 .clk(clk),
 	 .reset(reset),
@@ -148,22 +146,22 @@ $fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size), .IFM_SIZE(I
 	 .fifo_data_in(wm_data_out),
 DONATE
 
-for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i < ($ARGV[3]*$ARGV[3]); $i = $i + 1){
 	print $fh "\t\t.fifo_data_out_$i(signal_w$i),\n";
 }
 print $fh "\t\t.fifo_data_out_$i(signal_w$i)\n";
 
 
-system("perl fifo.pl  $ARGV[6] $ARGV[0] $ARGV[2] $ARGV[4] ");
+system("perl fifo.pl  $ARGV[4] $ARGV[0] $ARGV[2] $ARGV[3] ");
 
-$num_outputs = $ARGV[4]*$ARGV[4];
-$fifo_regs = (($ARGV[4] - 1)*$ARGV[2] + $ARGV[4]);
-$fifo_name = "FIFO_$num_outputs$under_Score$ARGV[6]$under_Score$fifo_regs";
+$num_outputs = $ARGV[3]*$ARGV[3];
+$fifo_regs = (($ARGV[3] - 1)*$ARGV[2] + $ARGV[3]);
+$fifo_name = "FIFO_$num_outputs$under_Score$ARGV[4]$under_Score$fifo_regs";
 
 
  print $fh <<"DONATE";
 );
-$fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size))
+$fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size), .IFM_SIZE(IFM_SIZE))
 	FIFO1 (
 	 .clk(clk),
 	 .reset(reset),
@@ -171,7 +169,7 @@ $fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size))
 	 .fifo_data_in(unit_data_in),	
 DONATE
 
-for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i < ($ARGV[3]*$ARGV[3]); $i = $i + 1){
 	print $fh "\t\t.fifo_data_out_$i(signal_if$i),\n";
 }
 print $fh "\t\t.fifo_data_out_$i(signal_if$i)\n";
@@ -189,7 +187,7 @@ convolution #(.$data_width($data_width), .ARITH_TYPE(ARITH_TYPE))
 	 .conv_data_out(unit_data_out),
 DONATE
 
-for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i < ($ARGV[3]*$ARGV[3]); $i = $i + 1){
 	print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i),\n";
 }
 print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
@@ -202,20 +200,6 @@ print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
 
 $end_module
 DONATE
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

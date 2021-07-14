@@ -2,25 +2,15 @@
 
 
 module 
- FIFO_25_1_61 #(parameter
+ FIFO_25_1_133 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
-	ADDRESS_BITS 				= 18,
 ///////////architecture parameters//////
-	IFM_SIZE 					= 14,
-	IFM_DEPTH 					= 3,
+	IFM_SIZE 					= 32,
 	KERNAL_SIZE 				= 5,
-	NUMBER_OF_FILTERS 			= 6,
 ///////////generated parameters/////////
-	IFM_SIZE_NEXT           	= IFM_SIZE - KERNAL_SIZE + 1,
-	ADDRESS_SIZE_IFM        	= $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   	= $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         	= $clog2(IFM_DEPTH*NUMBER_OF_FILTERS),
-	NUMBER_OF_IFM           	= IFM_DEPTH,      
-	FIFO_SIZE               	= (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
-	NUMBER_OF_IFM_NEXT      	= NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            	= KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	FIFO_SIZE               	= (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,            
+
 	)(
 	input clk,
 	input reset,
@@ -118,6 +108,78 @@ module
 			FIFO[58] <= 0;
 			FIFO[59] <= 0;
 			FIFO[60] <= 0;
+			FIFO[61] <= 0;
+			FIFO[62] <= 0;
+			FIFO[63] <= 0;
+			FIFO[64] <= 0;
+			FIFO[65] <= 0;
+			FIFO[66] <= 0;
+			FIFO[67] <= 0;
+			FIFO[68] <= 0;
+			FIFO[69] <= 0;
+			FIFO[70] <= 0;
+			FIFO[71] <= 0;
+			FIFO[72] <= 0;
+			FIFO[73] <= 0;
+			FIFO[74] <= 0;
+			FIFO[75] <= 0;
+			FIFO[76] <= 0;
+			FIFO[77] <= 0;
+			FIFO[78] <= 0;
+			FIFO[79] <= 0;
+			FIFO[80] <= 0;
+			FIFO[81] <= 0;
+			FIFO[82] <= 0;
+			FIFO[83] <= 0;
+			FIFO[84] <= 0;
+			FIFO[85] <= 0;
+			FIFO[86] <= 0;
+			FIFO[87] <= 0;
+			FIFO[88] <= 0;
+			FIFO[89] <= 0;
+			FIFO[90] <= 0;
+			FIFO[91] <= 0;
+			FIFO[92] <= 0;
+			FIFO[93] <= 0;
+			FIFO[94] <= 0;
+			FIFO[95] <= 0;
+			FIFO[96] <= 0;
+			FIFO[97] <= 0;
+			FIFO[98] <= 0;
+			FIFO[99] <= 0;
+			FIFO[100] <= 0;
+			FIFO[101] <= 0;
+			FIFO[102] <= 0;
+			FIFO[103] <= 0;
+			FIFO[104] <= 0;
+			FIFO[105] <= 0;
+			FIFO[106] <= 0;
+			FIFO[107] <= 0;
+			FIFO[108] <= 0;
+			FIFO[109] <= 0;
+			FIFO[110] <= 0;
+			FIFO[111] <= 0;
+			FIFO[112] <= 0;
+			FIFO[113] <= 0;
+			FIFO[114] <= 0;
+			FIFO[115] <= 0;
+			FIFO[116] <= 0;
+			FIFO[117] <= 0;
+			FIFO[118] <= 0;
+			FIFO[119] <= 0;
+			FIFO[120] <= 0;
+			FIFO[121] <= 0;
+			FIFO[122] <= 0;
+			FIFO[123] <= 0;
+			FIFO[124] <= 0;
+			FIFO[125] <= 0;
+			FIFO[126] <= 0;
+			FIFO[127] <= 0;
+			FIFO[128] <= 0;
+			FIFO[129] <= 0;
+			FIFO[130] <= 0;
+			FIFO[131] <= 0;
+			FIFO[132] <= 0;
 		end
 		else if(fifo_enable)
 		begin
@@ -182,6 +244,78 @@ module
 			FIFO[58] <= FIFO[57];
 			FIFO[59] <= FIFO[58];
 			FIFO[60] <= FIFO[59];
+			FIFO[61] <= FIFO[60];
+			FIFO[62] <= FIFO[61];
+			FIFO[63] <= FIFO[62];
+			FIFO[64] <= FIFO[63];
+			FIFO[65] <= FIFO[64];
+			FIFO[66] <= FIFO[65];
+			FIFO[67] <= FIFO[66];
+			FIFO[68] <= FIFO[67];
+			FIFO[69] <= FIFO[68];
+			FIFO[70] <= FIFO[69];
+			FIFO[71] <= FIFO[70];
+			FIFO[72] <= FIFO[71];
+			FIFO[73] <= FIFO[72];
+			FIFO[74] <= FIFO[73];
+			FIFO[75] <= FIFO[74];
+			FIFO[76] <= FIFO[75];
+			FIFO[77] <= FIFO[76];
+			FIFO[78] <= FIFO[77];
+			FIFO[79] <= FIFO[78];
+			FIFO[80] <= FIFO[79];
+			FIFO[81] <= FIFO[80];
+			FIFO[82] <= FIFO[81];
+			FIFO[83] <= FIFO[82];
+			FIFO[84] <= FIFO[83];
+			FIFO[85] <= FIFO[84];
+			FIFO[86] <= FIFO[85];
+			FIFO[87] <= FIFO[86];
+			FIFO[88] <= FIFO[87];
+			FIFO[89] <= FIFO[88];
+			FIFO[90] <= FIFO[89];
+			FIFO[91] <= FIFO[90];
+			FIFO[92] <= FIFO[91];
+			FIFO[93] <= FIFO[92];
+			FIFO[94] <= FIFO[93];
+			FIFO[95] <= FIFO[94];
+			FIFO[96] <= FIFO[95];
+			FIFO[97] <= FIFO[96];
+			FIFO[98] <= FIFO[97];
+			FIFO[99] <= FIFO[98];
+			FIFO[100] <= FIFO[99];
+			FIFO[101] <= FIFO[100];
+			FIFO[102] <= FIFO[101];
+			FIFO[103] <= FIFO[102];
+			FIFO[104] <= FIFO[103];
+			FIFO[105] <= FIFO[104];
+			FIFO[106] <= FIFO[105];
+			FIFO[107] <= FIFO[106];
+			FIFO[108] <= FIFO[107];
+			FIFO[109] <= FIFO[108];
+			FIFO[110] <= FIFO[109];
+			FIFO[111] <= FIFO[110];
+			FIFO[112] <= FIFO[111];
+			FIFO[113] <= FIFO[112];
+			FIFO[114] <= FIFO[113];
+			FIFO[115] <= FIFO[114];
+			FIFO[116] <= FIFO[115];
+			FIFO[117] <= FIFO[116];
+			FIFO[118] <= FIFO[117];
+			FIFO[119] <= FIFO[118];
+			FIFO[120] <= FIFO[119];
+			FIFO[121] <= FIFO[120];
+			FIFO[122] <= FIFO[121];
+			FIFO[123] <= FIFO[122];
+			FIFO[124] <= FIFO[123];
+			FIFO[125] <= FIFO[124];
+			FIFO[126] <= FIFO[125];
+			FIFO[127] <= FIFO[126];
+			FIFO[128] <= FIFO[127];
+			FIFO[129] <= FIFO[128];
+			FIFO[130] <= FIFO[129];
+			FIFO[131] <= FIFO[130];
+			FIFO[132] <= FIFO[131];
 		end
 	end
 
