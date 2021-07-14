@@ -1,8 +1,8 @@
-data width ,32
-riscv address bus,22
-address bits,15
-operation type,0
-mantissa,24
-exponent,8
-muls in conv,25
-divided by,4
+data width ,32,,,,
+riscv address bus,22,,,,
+address bits,15,,,,
+operation type,0,,,0 float,1 fixed
+mantissa,24,,,,
+exponent,8,,,,
+muls in conv,25,,,,
+divided by,4,,,,

@@ -65,22 +65,12 @@ print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
 	$data_width 					= $ARGV[1],
-	$address_bits 				= 18,
 ///////////architecture parameters//////
 	$ifm_size 					= $ARGV[2],
-	$ifm_depth 					= 3,
 	$kernal_size 				= $ARGV[3],
-	$num_filters 			= 6,
 ///////////generated parameters/////////
-	IFM_SIZE_NEXT           	= IFM_SIZE - $kernal_size + 1,
-	ADDRESS_SIZE_IFM        	= $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   	= $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         	= $clog2(IFM_DEPTH*NUMBER_OF_FILTERS),
-	NUMBER_OF_IFM           	= IFM_DEPTH,      
-	FIFO_SIZE               	= ($kernal_size-1)*IFM_SIZE + $kernal_size,
-	NUMBER_OF_IFM_NEXT      	= NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            	= $kernal_size*$kernal_size,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	FIFO_SIZE               	= ($kernal_size-1)*IFM_SIZE + $kernal_size,            
+
 	)(
 	$i_p clk,
 	$i_p reset,

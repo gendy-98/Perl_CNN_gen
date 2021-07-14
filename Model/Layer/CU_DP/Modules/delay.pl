@@ -34,7 +34,7 @@ my $o_p = "output";
 my $under_Score = "_";
 my $clog2 = "\$clog2";
 
-my $data_width = "DATA_WIDTH";
+my $data_width = "SIG_DATA_WIDTH";
 my $address_bits = "ADDRESS_BITS";
 my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";

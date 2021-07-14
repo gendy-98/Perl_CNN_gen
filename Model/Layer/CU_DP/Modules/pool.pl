@@ -10,7 +10,7 @@ use feature "switch";
 
 #argumets 
 #ARGV[0] Units number
-#ARGV[1] Mul & Add type which (decimal, fixed, float) 
+#ARGV[1] ARITH_TYPE
 #ARGV[2] DATA_WIDTH
  
 
@@ -49,8 +49,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $div_name;
+my $adder_name = "adder";
+my $div_name = "divider";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -94,18 +94,7 @@ while($dummy_level  > 0)
 
 $levels_number = @levels;
  
- if(lc ($ARGV[1]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$div_name = "Dec_Divider";
-	}
-if(lc ($ARGV[1]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$div_name = "Fixed_Divider";
-	}
-if(lc ($ARGV[1]) eq "float"){
-	$adder_name = "Float_Adder";
-	$div_name = "Float_Divider";
-	}
+
  
 $module_name = "average_pooling";
 
@@ -155,7 +144,7 @@ $i = 1;
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
 		
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(pool_data_in_$jj), .in2(pool_data_in_${\($jj+1)}), .out(sum_$i$under_Score$j));\n";
+		print $fh "\t$adder_name  #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(pool_data_in_$jj), .in2(pool_data_in_${\($jj+1)}), .out(sum_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){
@@ -167,7 +156,7 @@ for ($i = 2; $i < $levels_number; $i = $i + 1){
 	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(reg_sum_${\($i-1)}$under_Score$jj), .in2(reg_sum_${\($i-1)}$under_Score${\($jj+1)}), .out(sum_$i$under_Score$j));\n";
+		print $fh "\t$adder_name  #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(reg_sum_${\($i-1)}$under_Score$jj), .in2(reg_sum_${\($i-1)}$under_Score${\($jj+1)}), .out(sum_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){
@@ -264,7 +253,7 @@ print $fh <<"DONATE";
 DONATE
 
 print $fh <<"DONATE";
-	$div_name div ( .in1(reg_sum_${\($i-1)}$under_Score${\($jj-2)}), .in2($divided_by), .out(avgIFM) );
+	$div_name  #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) div ( .in1(reg_sum_${\($i-1)}$under_Score${\($jj-2)}), .in2($divided_by), .out(avgIFM) );
 
     
 endmodule

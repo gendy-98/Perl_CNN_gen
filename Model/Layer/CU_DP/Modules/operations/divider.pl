@@ -75,9 +75,9 @@ $module $module_name $parameter
 	
 	generate
 		if (ARITH_TYPE)
-			fixed_point_mul    mul (.in1(in1), .in2($number_to_divide_by_fixed), .out(out));
+			fixed_point_mul    #(.DATA_WIDTH(DATA_WIDTH), .E(E), .M(M)) mul (.in1(in1), .in2($number_to_divide_by_fixed), .out(out));
 		else
-			floating_point_mul mul (.in1(in1), .in2($number_to_divide_by_float), .out(out));
+			floating_point_mul #(.DATA_WIDTH(DATA_WIDTH), .E(E), .M(M)) mul (.in1(in1), .in2($number_to_divide_by_float), .out(out));
 	endgenerate
 	
 endmodule

@@ -9,7 +9,8 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] decimal/fixed/float
+#ARGV[0] ARITH_TYPE
+#ARGV[1] DATA_WIDTH
 #They get passed from higher layer
 #
 
@@ -40,25 +41,10 @@ my $full_path = "../../Verilog_files/";
 #######################################################################################
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 
 
-
-
- if(lc ($ARGV[0]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[0]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[0]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
- 
 $module_name = "accumulator";
 
 $file_name = $full_path . $module_name . ".v";
@@ -68,7 +54,7 @@ open my $fh, '>', $file_name
 print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	DATA_WIDTH      = 32
+	DATA_WIDTH      = $ARGV[1]
 	)(
 	input clk,
 	input accu_enable,
@@ -82,7 +68,7 @@ $module $module_name $parameter
     
 	assign data_out_mux = accu_enable ? data_in_from_next : data_bias;
 
-    $adder_name D1 (.in1 (data_in_from_conv), .in2 (data_out_mux), .out (accu_data_out));
+    $adder_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) D1 (.in1 (data_in_from_conv), .in2 (data_out_mux), .out (accu_data_out));
 
 endmodule
 
