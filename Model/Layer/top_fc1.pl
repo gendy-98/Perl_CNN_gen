@@ -18,6 +18,8 @@ use POSIX; # for ceil and floor
 #ARGV[3] NUMBER_OF_WM 84
 #ARGV[4] ADDRESS_BITS 16
 #ARGV[5] ARITH_TYPE = 1
+#ARGV[6] FC_number 1
+#ARGV[7] Is it the last FC? (1 Yes/0 No) 0
 #
 
 ######################################### CONSTANTS ###################################
@@ -57,9 +59,9 @@ my $m = 0;
 my $file_name;
 my $module_name;
 my $IFM_number;
+my $FC_number = $ARGV[6];
 
-
-$module_name = "top_fc1_W$ARGV[3]"; #W for stride
+$module_name = "top_fcA_$ARGV[6]"; #ARGV[6] is the fc number
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
@@ -93,12 +95,26 @@ $module $module_name $parameter
     output end_to_previous,
     output enable_read_current,
     output enable_write_next,
-    output start_to_next,
+
     output bias_sel,
     
     ////////////////////////////////////////// for next  
 DONATE
 
+if($ARGV[7] == 0){
+
+	print $fh <<"DONATE";
+    output start_to_next,
+DONATE
+
+}
+else{
+	
+	print $fh <<"DONATE";
+    output output_ready,
+DONATE
+	
+}
 
 for($i = 1; $i <= $ARGV[3]; $i = $i + 1 ){
 
@@ -131,7 +147,7 @@ DONATE
 
 print $fh <<"DONATE";
 
-	FC1_CU #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
+	FCA${\($FC_number)}_CU #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
     CU
     (
     .clk(clk),
@@ -146,14 +162,29 @@ print $fh <<"DONATE";
     .enable_write_next (enable_write_next),
     .fc_output_ready (fc_output_ready),
     .bias_sel(bias_sel),
+DONATE
+
+if($ARGV[7] == 0){
+
+	print $fh <<"DONATE";
     .start_to_next (start_to_next)  
    );
 DONATE
 
+}
+else{
+	
+	print $fh <<"DONATE";
+	.output_ready (output_ready)  
+   );
+DONATE
+	
+}
+
 
 print $fh <<"DONATE";
 
-	FC1_DP #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
+	FCA${\($FC_number)}_DP #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
     DP
 	(
     .clk(clk),

@@ -15,6 +15,7 @@ use feature "switch";
 #ARGV[3] STRIDE 2
 #ARGV[4] NO._OF_UNITS 3
 #ARGV[5] KERNAL_SIZE 2
+#ARGV[6] ARITH_TYPE
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -68,6 +69,7 @@ $module $module_name $parameter
 	////////////////////////////////////
 	$ifm_size              = $ARGV[1],                                                
 	$ifm_depth             = $ARGV[2],
+	ARITH_TYPE 				= $ARGV[6],
 	$kernal_size           = $ARGV[5]
 )(
 	$i_p 							clk,
@@ -106,7 +108,11 @@ DONATE
 if($ARGV[3] == 2){
 for($i=1; $i<= $ARGV[4]; $i = $i + 1){
 	print $fh <<"DONATE";
-	$pool_unit_name #(.$data_width($data_width), .$ifm_size($ifm_size), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size))
+	$pool_unit_name #(.$data_width($data_width), 
+	.$ifm_size($ifm_size), 
+	.$ifm_depth($ifm_depth), 
+	.ARITH_TYPE(ARITH_TYPE),
+	.$kernal_size($kernal_size))
     unit$i(
     .clk(clk),
 	.reset(reset),
@@ -123,7 +129,11 @@ DONATE
 else{
 	for($i=1; $i<= $ARGV[4]; $i = $i + 1){
 	print $fh <<"DONATE";
-	$pool_unit_name #(.$data_width($data_width), .$ifm_size($ifm_size), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size))
+	$pool_unit_name #(.$data_width($data_width), 
+	.$ifm_size($ifm_size), 
+	.$ifm_depth($ifm_depth), 
+	.ARITH_TYPE(ARITH_TYPE),
+	.$kernal_size($kernal_size))
     unit$i(
     .clk(clk),
 	.reset(reset),

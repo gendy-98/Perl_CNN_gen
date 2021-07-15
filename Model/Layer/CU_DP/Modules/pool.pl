@@ -105,7 +105,9 @@ open my $fh, '>', $file_name
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[2])
+	$data_width 			  = $ARGV[2]
+	ARITH_TYPE				 = $ARGV[1]
+	)
 	(
 	$i_p 							clk,
 	$i_p 							reset,

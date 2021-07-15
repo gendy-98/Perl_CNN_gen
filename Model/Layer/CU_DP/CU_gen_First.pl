@@ -8,17 +8,18 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+use POSIX;
+
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
-#ARGV[2] ARITH_TYPE
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] RGB 0gray 1 rgb
+#ARGV[2] DATA_WIDTH
+#ARGV[3] ADDRESS_BITS
+#ARGV[4] IFM_SIZE  
+#ARGV[5] IFM_DEPTH 
+#ARGV[6] KERNAL_SIZE  
+#ARGV[7] NUMBER_OF_FILTERS
+#ARGV[8] RGB
 #
 
 ######################################### CONSTANTS ###################################
@@ -56,8 +57,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -70,19 +71,6 @@ my $accumulator_name = "accumulator";
 $module_name = "conva$ARGV[0]_CU";
 
  
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -92,14 +80,14 @@ open my $fh, '>', $file_name
   print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[3],
-	$address_bits 		  = $ARGV[4],
+	$data_width 			  = $ARGV[2],
+	$address_bits 		  = $ARGV[3],
 	/////////////////////////////////////
-	$ifm_size              = $ARGV[5],                                                
-	$ifm_depth             = $ARGV[6],
-	$kernal_size           = $ARGV[7],
-	$number_of_filters     = $ARGV[8],
-	$number_of_units       = 3
+	$ifm_size              = $ARGV[4],                                                
+	$ifm_depth             = $ARGV[5],
+	$kernal_size           = $ARGV[6],
+	$number_of_filters     = $ARGV[7],
+	$number_of_units       = 3,
     ARITH_TYPE              = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
@@ -478,7 +466,13 @@ $levels_number = ceil(log($dummy_level)/log(2));
 my $delay_cycles = $levels_number;
 
 
-$dummy_level = $ARGV[9]; 
+if($ARGV[8] == 1){#rgb
+    $dummy_level = 3; 
+}
+else{#gray
+    $dummy_level = 1; 
+}
+
 
 $levels_number = ceil(log($dummy_level)/log(2));
 
@@ -497,7 +491,7 @@ my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SEG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);

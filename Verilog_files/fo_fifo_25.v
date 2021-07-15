@@ -40,36 +40,36 @@ module
 	reg	[DATA_WIDTH-1:0] FIFO  [REGS_NUM-1:0] ;
 	always @ (posedge clk or posedge reset)
     begin
-		if(fifo_enable)
+		if(reset)
 		begin
 
-			FIFO[0] <= 0;
-			FIFO[1] <= 0;
-			FIFO[2] <= 0;
-			FIFO[3] <= 0;
-			FIFO[4] <= 0;
-			FIFO[5] <= 0;
-			FIFO[6] <= 0;
-			FIFO[7] <= 0;
-			FIFO[8] <= 0;
-			FIFO[9] <= 0;
-			FIFO[10] <= 0;
-			FIFO[11] <= 0;
-			FIFO[12] <= 0;
-			FIFO[13] <= 0;
-			FIFO[14] <= 0;
-			FIFO[15] <= 0;
-			FIFO[16] <= 0;
-			FIFO[17] <= 0;
-			FIFO[18] <= 0;
-			FIFO[19] <= 0;
-			FIFO[20] <= 0;
-			FIFO[21] <= 0;
-			FIFO[22] <= 0;
-			FIFO[23] <= 0;
-			FIFO[24] <= 0;
+			FIFO[0] <= {DATA_WIDTH{1'b0}};
+			FIFO[1] <= {DATA_WIDTH{1'b0}};
+			FIFO[2] <= {DATA_WIDTH{1'b0}};
+			FIFO[3] <= {DATA_WIDTH{1'b0}};
+			FIFO[4] <= {DATA_WIDTH{1'b0}};
+			FIFO[5] <= {DATA_WIDTH{1'b0}};
+			FIFO[6] <= {DATA_WIDTH{1'b0}};
+			FIFO[7] <= {DATA_WIDTH{1'b0}};
+			FIFO[8] <= {DATA_WIDTH{1'b0}};
+			FIFO[9] <= {DATA_WIDTH{1'b0}};
+			FIFO[10] <= {DATA_WIDTH{1'b0}};
+			FIFO[11] <= {DATA_WIDTH{1'b0}};
+			FIFO[12] <= {DATA_WIDTH{1'b0}};
+			FIFO[13] <= {DATA_WIDTH{1'b0}};
+			FIFO[14] <= {DATA_WIDTH{1'b0}};
+			FIFO[15] <= {DATA_WIDTH{1'b0}};
+			FIFO[16] <= {DATA_WIDTH{1'b0}};
+			FIFO[17] <= {DATA_WIDTH{1'b0}};
+			FIFO[18] <= {DATA_WIDTH{1'b0}};
+			FIFO[19] <= {DATA_WIDTH{1'b0}};
+			FIFO[20] <= {DATA_WIDTH{1'b0}};
+			FIFO[21] <= {DATA_WIDTH{1'b0}};
+			FIFO[22] <= {DATA_WIDTH{1'b0}};
+			FIFO[23] <= {DATA_WIDTH{1'b0}};
+			FIFO[24] <= {DATA_WIDTH{1'b0}};
 		end
-        if(fifo_enable)
+        else if(fifo_enable)
 		begin
 			FIFO[0] <= fifo_data_in;
 			FIFO[1] <= FIFO[0];

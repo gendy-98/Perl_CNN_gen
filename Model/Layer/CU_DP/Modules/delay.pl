@@ -83,7 +83,7 @@ print $fh <<"DONATE";
 DONATE
 
 for($i = 0;$i < $ARGV[0]; $i = $i + 1){
-	print $fh "\t\t\tFIFO[$i] <= 0;\n";
+	print $fh "\t\t\tFIFO[$i] <= {SIG_DATA_WIDTH{1'b0}};\n";
 	
 }
 

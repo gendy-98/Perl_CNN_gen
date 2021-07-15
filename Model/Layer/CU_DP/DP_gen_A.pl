@@ -10,8 +10,8 @@ use feature "switch";
 
 #argumets 
 #ARGV[0] no of the conv 
-#ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
+#ARGV[1] Mul number//
+#ARGV[2] ARITH_TYPE
 #ARGV[3] DATA_WIDTH
 #ARGV[4] ADDRESS_BITS
 #ARGV[5] IFM_SIZE  
@@ -55,8 +55,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -90,20 +90,6 @@ $dummy_level = $ARGV[9];
 }
 
 $levels_number = @levels;
- 
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -121,6 +107,7 @@ $module $module_name $parameter
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
 	$number_of_units       = $ARGV[9],
+	ARITH_TYPE 			   = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -228,17 +215,36 @@ DONATE
 
 print $fh <<"DONATE"; 
 
-	$single_port_name #(.MEM_SIZE (NUMBER_OF_FILTERS)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
+	$single_port_name #(.MEM_SIZE (NUMBER_OF_FILTERS), .DATA_WIDTH(DATA_WIDTH)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
      .Enable_Read(bm_enable_read),	.Address(bm_address),
 	 .Data_Input(riscv_data),	.Data_Output(data_bias));
 	 
   
 DONATE
+#ARGV[0] no of the conv 
+#ARGV[1] Mul number//
+#ARGV[2] ARITH_TYPE
+#ARGV[3] DATA_WIDTH
+#ARGV[4] ADDRESS_BITS
+#ARGV[5] IFM_SIZE  
+#ARGV[6] IFM_DEPTH 
+#ARGV[7] KERNAL_SIZE  
+#ARGV[8] NUMBER_OF_FILTERS
+#ARGV[9] NUMBER_OF_UNITS
+#ARGV[10]stride
 
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9]");
+$unit_name = "unitA_$ARGV[2]";
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 print $fh <<"DONATE"; 
-	$unit_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+	$unit_name #(
+		.DATA_WIDTH(DATA_WIDTH), 
+		.IFM_SIZE(IFM_SIZE), 
+		.IFM_DEPTH(IFM_DEPTH), 
+		.KERNAL_SIZE(KERNAL_SIZE), 
+		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
+		.ARITH_TYPE(ARITH_TYPE))
     unit_$i
     (
     .clk(clk),                                 
@@ -288,7 +294,7 @@ $i = 1;
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
 		
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(unit${\($jj)}_data_out), .in2(unit${\($jj+1)}_data_out), .out(adder_out_$i$under_Score$j));\n";
+		print $fh "\t$adder_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(unit${\($jj)}_data_out), .in2(unit${\($jj+1)}_data_out), .out(adder_out_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){
@@ -301,7 +307,7 @@ for ($i = 2; $i < $levels_number; $i = $i + 1){
 	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
 	$jj = 1;
 	for($j = 1; $j <= $levels[$i] ;$j = $j + 1){
-		print $fh "\t$adder_name\t\tadr_$i$under_Score$j\t(.in1(reg_adder_out_${\($i-1)}$under_Score$jj), .in2(reg_adder_out_${\($i-1)}$under_Score${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
+		print $fh "\t$adder_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))\t\tadr_$i$under_Score$j\t(.in1(reg_adder_out_${\($i-1)}$under_Score$jj), .in2(reg_adder_out_${\($i-1)}$under_Score${\($jj+1)}), .out(adder_out_$i$under_Score$j));\n";
 		$jj = $jj + 2;
 	}
 	if($odd_flag % 2){
@@ -311,7 +317,7 @@ for ($i = 2; $i < $levels_number; $i = $i + 1){
 }
 
 print $fh <<"DONATE";  
-	$accumulator_name #(.DATA_WIDTH(DATA_WIDTH))
+	$accumulator_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
     accu
     (
      .clk(clk),
@@ -326,7 +332,7 @@ DONATE
 
 print $fh <<"DONATE";   
 
-	$Relu_name  Active1 (.in(accu_data_out), .out (relu_data_out), .relu_enable(relu_enable));
+	$Relu_name #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(accu_data_out), .out (relu_data_out), .relu_enable(relu_enable));
 	
     assign data_out_for_next = relu_data_out;	   	 
 	

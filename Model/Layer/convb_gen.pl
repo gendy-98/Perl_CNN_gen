@@ -9,16 +9,16 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] no of the conv 
-#ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS  filter_num
-#ARGV[9] NUMBER_OF_UNITS    layer_units
+#ARGV[0] no of the conv 2
+#ARGV[1] Mul number 25
+#ARGV[2] ARITH_TYPE 0
+#ARGV[3] DATA_WIDTH 32
+#ARGV[4] ADDRESS_BITS 15
+#ARGV[5] IFM_SIZE  32
+#ARGV[6] IFM_DEPTH 3
+#ARGV[7] KERNAL_SIZE 5  
+#ARGV[8] NUMBER_OF_FILTERS 6 filter_num
+#ARGV[9] NUMBER_OF_UNITS  3  layer_units
 #ARGV[10] STRIDE 1
 #
 
@@ -70,22 +70,8 @@ my $Relu_name = "relu";
 my $cu_name;
 my $dp_name;
 my $accumulator_name = "accumulator"; 
-$module_name = "top_conva$ARGV[0]";
+$module_name = "top_convb$ARGV[0]";
 
-
- 
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
 
 
 
@@ -96,6 +82,7 @@ open my $fh, '>', $file_name
   print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
+	ARITH_TYPE				= $ARGV[2],
 	$data_width 			  = $ARGV[3],
 	$address_bits 		  = $ARGV[4],
 	/////////////////////////////////////
@@ -109,11 +96,8 @@ $module $module_name $parameter
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
 	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS
 )(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -135,7 +119,7 @@ print $fh <<"DONATE";
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 	output                        end_to_previous,
 	
-	output                        conv_ready, 
+	input                        conv_ready, 
 	input  end_from_next,
 DONATE
 
@@ -154,8 +138,8 @@ DONATE
 print $fh <<"DONATE";
 	output ifm_enable_read_next,
 	output ifm_enable_write_next,
-    //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
-    //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
+    output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
+    output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
 	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
@@ -180,12 +164,12 @@ print $fh <<"DONATE";
 	
 DONATE
 chdir "./CU_DP";
-system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
+system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9]");
 
 $cu_name = "convb$ARGV[0]_CU";
 print $fh <<"DONATE";
 
-	$cu_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+	$cu_name #(.IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
     CU_B$ARGV[0]
     (
     .clk(clk),
@@ -222,12 +206,12 @@ print $fh <<"DONATE";
 DONATE
 
 
-system("perl DP_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] ");
+system("perl DP_gen_B.pl $ARGV[0] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] ");
 
 $dp_name = "convb$ARGV[0]_DP";
 print $fh <<"DONATE";
 
-	$dp_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+	$dp_name #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .ADDRESS_BITS(ADDRESS_BITS), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
     DP_B$ARGV[0]
 	(
     .clk(clk),
@@ -245,7 +229,7 @@ DONATE
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
 	.data_in_from_next$i(data_in_from_next$i),
-	.data_out_for_next$i(data_out_for_next$i)
+	.data_out_for_next$i(data_out_for_next$i),
 DONATE
 }
 

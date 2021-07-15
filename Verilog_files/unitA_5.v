@@ -2,22 +2,17 @@
 
 
 module 
- unitA #(parameter
+ unitA_5 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS			= 16,
 	/////////////////////////////////////
-	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 3,//
+	IFM_SIZE              = 5,                                                
+	IFM_DEPTH             = 16 ,
 	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS		= 6,//
+	NUMBER_OF_FILTERS		= 120,
 	ARITH_TYPE				= 0,
-	//////////////////////////////////////
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
-	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*6)      
+
 	(
 	input 							clk,
 	input 							reset,
@@ -32,7 +27,7 @@ module
 	input 							wm_enable_write,
 	input 							wm_fifo_enable,
 	
-	input 	[ADDRESS_BITS-1:0]		wm_address,
+	input 	[ADDRESS_SIZE_WM-1:0]		wm_address,
 	output 	[DATA_WIDTH-1:0]		unit_data_out
 	);
 ////////////////////////Signal declaration/////////////////
@@ -64,7 +59,7 @@ module
 	wire [DATA_WIDTH-1:0]	signal_if24,	signal_w24;
 	wire [DATA_WIDTH-1:0]	signal_if25,	signal_w25;
 
-single_port_memory #(.MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * NUMBER_OF_FILTERS * (IFM_DEPTH/NUMBER_OF_UNITS+1)), .DATA_WIDTH(DATA_WIDTH)) 
+single_port_memory #(.MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * NUMBER_OF_FILTERS * 6 ), .DATA_WIDTH(DATA_WIDTH)) 
 	WM 
 	(
 	 .clk(clk),	
@@ -109,7 +104,7 @@ fo_fifo_25 #(.DATA_WIDTH(DATA_WIDTH))
 		.fifo_data_out_24(signal_w24),
 		.fifo_data_out_25(signal_w25)
 );
-FIFO_25_1_133 #(.DATA_WIDTH(DATA_WIDTH), .KERNAL_SIZE(KERNAL_SIZE), .IFM_SIZE(IFM_SIZE))
+FIFO_25_1_25 #(.DATA_WIDTH(DATA_WIDTH), .KERNAL_SIZE(KERNAL_SIZE), .IFM_SIZE(IFM_SIZE))
 	FIFO1 (
 	 .clk(clk),
 	 .reset(reset),

@@ -53,8 +53,9 @@ open my $fh, '>', $file_name
 
 print $fh <<"DONATE";
 $module $module_name $parameter
-///////////advanced parameters//////////
-	DATA_WIDTH      = $ARGV[1]
+    ///////////advanced parameters//////////
+	DATA_WIDTH      = $ARGV[1],
+	ARITH_TYPE      = $ARGV[0]
 	)(
 	input clk,
 	input accu_enable,

@@ -147,7 +147,7 @@ print $fh <<"DONATE";
     begin
 DONATE
 for($i=1;$i <= $levels[0] ; $i = $i + 1){
-	print $fh "\t\treg_mul_out_$i <= 0;\n";
+	print $fh "\t\treg_mul_out_$i <= {DATA_WIDTH{1'b0}};\n";
 }
 print $fh <<"DONATE";
 	end
@@ -171,7 +171,7 @@ $odd_flag = 0;
 for ($i = 1; $i < $levels_number; $i = $i + 1){
 	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
 	for($j = 1; $j <= $levels[$i] + ($odd_flag % 2);$j = $j + 1){
-		print $fh "\t\t\treg_adder_out_$i$under_Score$j <= 0;\n";
+		print $fh "\t\t\treg_adder_out_$i$under_Score$j <= {DATA_WIDTH{1'b0}};\n";
 	}
 	print $fh "\n";
 }

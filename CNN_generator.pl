@@ -72,7 +72,7 @@ my $float_oldver = "float";
 ####       FILES THAT WOULD RUN ONLY ONCE      ####
 ###################################################
 chdir "./Model/Blocks";
-system("perl accumulator.pl $float_oldver");
+system("perl accumulator.pl $arith_type $data_width");
 system("perl duelportmemory.pl");
 system("perl RegAccumulator.pl $data_width $arith_type");
 system("perl Register.pl");
@@ -143,5 +143,5 @@ $number_of_filters = join(",", @number_of_filters_r);
 $stride = join(",", @stride_r);
 
 chdir "./Model";
-system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $float_oldver");
+system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $arith_type");
 

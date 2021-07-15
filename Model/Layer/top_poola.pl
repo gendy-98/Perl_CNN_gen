@@ -18,6 +18,9 @@ use POSIX; # for ceil and floor
 #ARGV[3] KERNAL_SIZE 2
 #ARGV[4] NO._OF_UNITS 1
 #ARGV[5] STRIDE 2
+#ARGV[6] ARITH_TYPE
+
+
 
 
 ######################################### CONSTANTS ###################################
@@ -59,22 +62,14 @@ my $module_name;
 my $IFM_number;
 
 chdir "./CU_DP";
-#ARGV[0] IFM_SIZE 
-#ARGV[1] KERNAL_SIZE 
-#ARGV[2] STRIDE 
+
 system("perl Poola_CU_Gen.pl  $ARGV[1] $ARGV[3] $ARGV[5]");
 
 
-#ARGV[0] DATA_WIDTH 
-#ARGV[1] IFM_SIZE 
-#ARGV[2] IFM_DEPTH 
-#ARGV[3] KERNAL_SIZE 
-#ARGV[4] NO._OF_UNITS 1
-#ARGV[5] STRIDE 2
 
 
 
-system("perl Poola_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5]");
+system("perl Poola_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6]");
 
 chdir "..";
 
@@ -92,6 +87,7 @@ $module $module_name $parameter
 ///////////architecture parameters//////
 	$ifm_size              = $ARGV[1],
 	$ifm_depth				= $ARGV[2],
+    ARITH_TYPE 				= $ARGV[6],
 	$kernal_size			= $ARGV[3],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
@@ -202,7 +198,11 @@ DONATE
 }
 
 print $fh <<"DONATE";
-    poola_dp_S$ARGV[5] #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE))
+    poola_dp_S$ARGV[5] #(.DATA_WIDTH(DATA_WIDTH), 
+    .IFM_SIZE(IFM_SIZE), 
+    .ARITH_TYPE(ARITH_TYPE),
+    .IFM_DEPTH(IFM_DEPTH), 
+    .KERNAL_SIZE(KERNAL_SIZE))
     DP
 	(
 	.clk(clk),

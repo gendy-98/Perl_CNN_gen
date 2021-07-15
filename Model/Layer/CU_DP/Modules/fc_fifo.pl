@@ -90,18 +90,18 @@ print $fh <<"DONATE";
 	reg	[$data_width-1:0] FIFO  [REGS_NUM-1:0] ;
 	always @ (posedge clk or posedge reset)
     begin
-		if(fifo_enable)
+		if(reset)
 		begin
 
 DONATE
 
 for($i = 0;$i < $ARGV[0];$i = $i + 1){
-	print $fh "\t\t\tFIFO[${\($i)}] <= 0;\n";
+	print $fh "\t\t\tFIFO[${\($i)}] <= {DATA_WIDTH{1'b0}};\n";
 }
 
 print $fh <<"DONATE";
 		end
-        if(fifo_enable)
+        else if(fifo_enable)
 		begin
 DONATE
 

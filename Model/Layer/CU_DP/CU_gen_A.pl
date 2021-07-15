@@ -11,14 +11,12 @@ use POSIX;
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
+#ARGV[2] DATA_WIDTH
+#ARGV[3] IFM_SIZE  
+#ARGV[4] IFM_DEPTH 
+#ARGV[5] KERNAL_SIZE  
+#ARGV[6] NUMBER_OF_FILTERS
+#ARGV[7] NUMBER_OF_UNITS
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -55,8 +53,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -79,7 +77,7 @@ $levels_number = ceil(log($dummy_level)/log(2));
 my $delay_cycles = $levels_number;
 
 
-$dummy_level = $ARGV[9]; 
+$dummy_level = $ARGV[7]; 
 
 $levels_number = ceil(log($dummy_level)/log(2));
 
@@ -89,19 +87,6 @@ $delay_cycles = $delay_cycles + $levels_number;
 
 
 
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -110,25 +95,23 @@ open my $fh, '>', $file_name
   
 print $fh <<"DONATE";
 $module $module_name $parameter
-///////////advanced parameters//////////
-	$data_width 			  = $ARGV[3],
-	$address_bits 		  = $ARGV[4],
+    ///////////advanced parameters///////
+	$data_width 			= $ARGV[2],
+	$address_bits 		    = $ARGV[4],
 	/////////////////////////////////////
-	$ifm_size              = $ARGV[5],                                                
-	$ifm_depth             = $ARGV[6],
-	$kernal_size           = $ARGV[7],
-	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
+	$ifm_size               = $ARGV[3],                                                
+	$ifm_depth              = $ARGV[4],
+	$kernal_size            = $ARGV[5],
+	$number_of_filters      = $ARGV[6],
+	$number_of_units        = $ARGV[7],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),
+	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	NUMBER_OF_IFM           = IFM_DEPTH
 )(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -137,18 +120,19 @@ $module $module_name $parameter
     input  start_from_previous,
     output reg end_to_previous,
     output ready,
-	output reg [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1 : 0] ifm_sel,
+	output reg [$clog2(${\(ceil($ARGV[4]/$ARGV[7]))} )-1 : 0] ifm_sel_previous,
+	output reg                    ifm_sel_next,
     output reg ifm_enable_read_current,
     output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 
     output reg wm_addr_sel,
     output reg wm_enable_read,
-    output reg [ADDRESS_SIZE_WM-1:0]  wm_address_read_current,
+    output reg [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
     output reg wm_fifo_enable,
 
     output reg bm_addr_sel,
     output reg bm_enable_read,
-    output reg [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
+    output reg [ADDRESS_SIZE_BM-1:0] bm_address_read_current,
     
     output reg fifo_enable,
     output conv_enable,
@@ -156,8 +140,8 @@ $module $module_name $parameter
     output relu_enable,
     output ifm_enable_read_next,
     output ifm_enable_write_next,
-    //output reg  [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
-    //output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
+    output reg  [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
+    output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
     output reg start_to_next
     );
 	  reg  ifm_start_counter_read_address;
@@ -170,10 +154,10 @@ $module $module_name $parameter
     reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] filters_counter;
     wire filters_counter_tick;
     //ceil IFM_DEPTH/NUMBER_OF_UNITS
-    reg  [$clog2( ${\(ceil($ARGV[6]/$ARGV[9]))}-1 : 0] depth_counter;
+    reg  [$clog2( ${\(ceil($ARGV[4]/$ARGV[7]))} )-1 : 0] depth_counter;
     wire depth_counter_tick;
     
-    reg  [$clog2( ${\(ceil($ARGV[6]/$ARGV[9]))})-1 : 0] psums_counter_next;
+    reg  [$clog2( ${\(ceil($ARGV[4]/$ARGV[7]))} )-1 : 0] psums_counter_next;
     wire psums_counter_next_tick;
     
     wire start_internal;
@@ -259,7 +243,7 @@ $module $module_name $parameter
       
         fifo_enable_sig1               = 1'b0;
         
-        end_to_previous                = 1'b1;// & ~no_more_start_flag;
+        end_to_previous                = 1'b1;
 
 	     if(start)
              state_next = READ;
@@ -288,19 +272,27 @@ $module $module_name $parameter
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_sel <= 0;
-        else if(ifm_sel == ( (NUMBER_OF_IFM/NUMBER_OF_UNITS +1) -1) & start)
-            ifm_sel <= 0;  
+            ifm_sel_previous <= 0;
+        else if(ifm_sel_previous ==  ${\(ceil($ARGV[4]/$ARGV[7]))}  -1 & start)
+            ifm_sel_previous <= 0;  
         else if(start)
-            ifm_sel <= ifm_sel + 1'b1; 
+            ifm_sel_previous <= ifm_sel_previous + 1'b1; 
     end 
+	
+	always @(posedge clk, posedge reset)
+    begin
+        if(reset)
+            ifm_sel_next <= 1'b0;
+        else if(start_to_next)
+            ifm_sel_next <= ~ifm_sel_next;
+    end
 
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_address_read_current <= 0;
+            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}};
         else if(ifm_address_read_current == IFM_SIZE*IFM_SIZE-1)
-            ifm_address_read_current <= 0 ;
+            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}} ;
         else if(ifm_start_counter_read_address)
             ifm_address_read_current <= (ifm_address_read_current + 1'b1);      
     end
@@ -321,19 +313,19 @@ $module $module_name $parameter
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            wm_address_read_current <= 0;
+            wm_address_read_current <= {ADDRESS_SIZE_WM{1'b0}};
         else if(wm_enable_read)
             wm_address_read_current <= wm_address_read_current + 1'b1;
         else if(state_reg==IDLE) 
-            wm_address_read_current <= 0;      
+            wm_address_read_current <= {ADDRESS_SIZE_WM{1'b0}};      
     end
           
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            bm_address_read_current <= 0;
+            bm_address_read_current <= {ADDRESS_SIZE_BM{1'b0}};
         else if(bm_address_read_current == (NUMBER_OF_FILTERS-1) & ifm_enable_write_next)
-            bm_address_read_current <= 0;
+            bm_address_read_current <= {ADDRESS_SIZE_BM{1'b0}};
         else if(ifm_enable_write_next)
             bm_address_read_current <= bm_address_read_current + 1'b1;      
     end
@@ -343,13 +335,13 @@ $module $module_name $parameter
     begin
         if(reset)
             depth_counter <= 0;
-        else if(depth_counter == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_address_read_current_tick)
+        else if(depth_counter == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & ifm_address_read_current_tick)
             depth_counter <= 0;  
         else if(ifm_address_read_current_tick)
             depth_counter <= depth_counter + 1'b1; 
     end 
     
-    assign depth_counter_tick = (depth_counter == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_address_read_current_tick);
+    assign depth_counter_tick = (depth_counter == ( ${\(ceil($ARGV[4]/$ARGV[7]))} -1) & ifm_address_read_current_tick);
     
     always @(posedge clk, posedge reset)
     begin
@@ -367,15 +359,15 @@ $module $module_name $parameter
     begin
         if(reset)
             psums_counter_next <= 0;
-        else if(psums_counter_next == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_enable_write_next)
+        else if(psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & ifm_enable_write_next)
             psums_counter_next <= 0 ;
         else if(ifm_enable_write_next)
             psums_counter_next <= psums_counter_next + 1'b1;      
     end
-    assign psums_counter_next_tick = (psums_counter_next == ( (IFM_DEPTH/NUMBER_OF_UNITS +1) -1) & ifm_enable_write_next);
+    assign psums_counter_next_tick = (psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & ifm_enable_write_next);
     
     assign accu_enable = ( psums_counter_next != 0 );
-    assign relu_enable = ( psums_counter_next == (IFM_DEPTH/NUMBER_OF_UNITS +1) -1 );
+    assign relu_enable = ( psums_counter_next == ${\(ceil($ARGV[4]/$ARGV[7]))}  -1 );
  
 	assign no_more_start_flag = |filters_counter;
     assign ready = ~no_more_start_flag;
@@ -391,14 +383,18 @@ $module $module_name $parameter
     ///////////////////////
     // FIFO Control Unit //
     ///////////////////////
+	localparam COUNTER_FIFO_SIZE      = $clog2(FIFO_SIZE);
+	localparam COUNTER_READY_SIZE     = $clog2(IFM_SIZE-(KERNAL_SIZE-1));
+	localparam COUNTER_NOT_READY_SIZE = $clog2(KERNAL_SIZE-1);
+	
     reg start_counter_fifo;
-    reg [$clog2(FIFO_SIZE)-1:0] counter_fifo;
+    reg [COUNTER_FIFO_SIZE-1:0] counter_fifo;
     wire counter_fifo_tick;
     reg start_counter_ready;
-    reg [$clog2(IFM_SIZE-(KERNAL_SIZE-1))-1:0] counter_ready;
+    reg [COUNTER_READY_SIZE-1:0] counter_ready;
     wire counter_ready_tick;
     reg start_counter_not_ready;
-    reg [$clog2(KERNAL_SIZE-1)-1:0] counter_not_ready;
+    reg [COUNTER_NOT_READY_SIZE-1:0] counter_not_ready;
     wire counter_not_ready_tick;
     reg fifo_output_ready;
     
@@ -473,9 +469,9 @@ $module $module_name $parameter
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_fifo <= 0;       
+            counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};       
         else if(counter_fifo == FIFO_SIZE-1)
-            counter_fifo <= 0;
+            counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};
         else if(fifo_enable & start_counter_fifo)
             counter_fifo <= counter_fifo + 1'b1;
     end
@@ -484,23 +480,22 @@ $module $module_name $parameter
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_ready <= 0;       
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};       
         else if(start_counter_ready)
             counter_ready <= counter_ready + 1'b1;
         else
-            counter_ready <= 0;
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};
     end
     assign  counter_ready_tick = (counter_ready == IFM_SIZE-(KERNAL_SIZE-1)-1);
     
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_not_ready <= 0;
-
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
         else if(start_counter_not_ready)
             counter_not_ready <= counter_not_ready + 1'b1;
         else
-            counter_not_ready <= 0;
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
     assign  counter_not_ready_tick = (counter_not_ready == (KERNAL_SIZE-1)-1);
     
@@ -517,7 +512,7 @@ $module $module_name $parameter
         if(reset)
             ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
         else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
-            ifm_address_read_next <= 0;      
+            ifm_address_read_next <= {ADDRESS_SIZE_IFM{1'b0}};      
         else if(ifm_enable_write_next)
             ifm_address_read_next <= ifm_address_write_next + 1'b1;
     end
@@ -537,7 +532,7 @@ my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SEG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
@@ -553,7 +548,7 @@ $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SEG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
 		.Data_Out(ifm_enable_write_next)
 		);
@@ -565,7 +560,7 @@ DONATE
 print $fh <<"DONATE";   
 
     localparam  s0   = 1'b0,
-                 s1   = 2'b1;	  
+                s1   = 1'b1;	  
 							  
     reg state_reg2, state_next2; 
     

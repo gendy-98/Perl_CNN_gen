@@ -11,14 +11,15 @@ use feature "switch";
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
+#ARGV[2] ARITH_TYPE
 #ARGV[3] DATA_WIDTH
 #ARGV[4] ADDRESS_BITS
 #ARGV[5] IFM_SIZE  
 #ARGV[6] IFM_DEPTH 
 #ARGV[7] KERNAL_SIZE  
 #ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] NUMBER_OF_UNITS
+#ARGV[9] RGB
+#ARGV[10]stride
 #
 
 ######################################### CONSTANTS ###################################
@@ -56,8 +57,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -69,22 +70,10 @@ my $Relu_name = "relu";
 my $cu_name;
 my $dp_name;
 my $accumulator_name = "accumulator"; 
-$module_name = "top_conva$ARGV[0]";
+$module_name = " top_conva$ARGV[0]";
 
 
  
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
 
 
 
@@ -103,6 +92,7 @@ $module $module_name $parameter
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
 	$number_of_units       = $ARGV[9],
+	ARITH_TYPE 				= $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -178,8 +168,9 @@ print $fh <<"DONATE";
     
 	
 DONATE
+
 chdir "./CU_DP";
-system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
+system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
 
 $cu_name = "conva$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -221,12 +212,18 @@ print $fh <<"DONATE";
 DONATE
 
 
-system("perl DP_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
+system("perl DP_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10]");
 
 $dp_name = "conva$ARGV[0]_DP";
 print $fh <<"DONATE";
 
-	$dp_name #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
+	$dp_name #(.DATA_WIDTH(DATA_WIDTH), 
+	.IFM_SIZE(IFM_SIZE), 
+	.IFM_DEPTH(IFM_DEPTH), 
+	.KERNAL_SIZE(KERNAL_SIZE), 
+	.ARITH_TYPE(ARITH_TYPE),
+	.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), 
+	.NUMBER_OF_UNITS(NUMBER_OF_UNITS))
     DP_A1
     (
     .clk(clk),

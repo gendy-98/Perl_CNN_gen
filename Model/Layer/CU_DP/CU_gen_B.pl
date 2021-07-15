@@ -10,14 +10,13 @@ use feature 'say';
 use feature "switch";
 use POSIX;
 #argumets 
-#ARGV[0] no of the conv 2
-#ARGV[1] Mul number 25
-#ARGV[2] Mul & Add type which (decimal, fixed, float) float
-#ARGV[3] IFM_SIZE  32
-#ARGV[4] IFM_DEPTH 3
-#ARGV[5] KERNAL_SIZE 5 
-#ARGV[6] NUMBER_OF_FILTERS 6
-#ARGV[7] NUMBER_OF_UNITS 3
+#ARGV[0] no of the conv 2	
+#ARGV[1] Mul number 25		
+#ARGV[2] IFM_SIZE  32		
+#ARGV[3] IFM_DEPTH 3		
+#ARGV[4] KERNAL_SIZE 5 		
+#ARGV[5] NUMBER_OF_FILTERS 6
+#ARGV[6] NUMBER_OF_UNITS 3
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -78,7 +77,7 @@ $levels_number = ceil(log($dummy_level)/log(2));
 my $delay_cycles = $levels_number;
 
 
-$dummy_level = $ARGV[7]; 
+$dummy_level = $ARGV[6]; 
 
 $levels_number = ceil(log($dummy_level)/log(2));
 
@@ -87,37 +86,20 @@ $levels_number = ceil(log($dummy_level)/log(2));
 $delay_cycles = $delay_cycles + $levels_number;
 
 
-
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
-
-
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
-my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[6]/$ARGV[7]);
+my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
 
   
 print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$ifm_size              = $ARGV[3],                                                
-	$ifm_depth             = $ARGV[4],
-	$kernal_size           = $ARGV[5],
-	$number_of_filters     = $ARGV[6],
-	$number_of_units       = $ARGV[7],
+	$ifm_size              = $ARGV[2],                                                
+	$ifm_depth             = $ARGV[3],
+	$kernal_size           = $ARGV[4],
+	$number_of_filters     = $ARGV[5],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -290,12 +272,12 @@ $module $module_name $parameter
     begin
         if(reset)
             ifm_sel_next <= 0;
-        else if (ifm_sel_next == ( (NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS +1) -1) & ifm_address_write_next_tick)
+        else if (ifm_sel_next == ( $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS -1) & ifm_address_write_next_tick)
             ifm_sel_next <= 0;
         else if( ifm_sel_en )
             ifm_sel_next <= ifm_sel_next +  1; 
     end
-    assign ifm_sel_next_tick = (ifm_sel_next == ( (NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS +1) -1) & ifm_address_write_next_tick);
+    assign ifm_sel_next_tick = (ifm_sel_next == ( $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS -1) & ifm_address_write_next_tick);
     
     always @(posedge clk, posedge reset)
     begin
@@ -535,7 +517,7 @@ my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
@@ -551,7 +533,7 @@ $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
 		.Data_Out(ifm_enable_write_next)
 		);

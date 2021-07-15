@@ -9,16 +9,17 @@ use feature 'say';
 use feature "switch";
 
 #argumets 
-#ARGV[0] no of the conv 
-#ARGV[1] Mul number
-#ARGV[2] ARITH_TYPE
-#ARGV[3] DATA_WIDTH
-#ARGV[4] ADDRESS_BITS
-#ARGV[5] IFM_SIZE  
-#ARGV[6] IFM_DEPTH 
-#ARGV[7] KERNAL_SIZE  
-#ARGV[8] NUMBER_OF_FILTERS
-#ARGV[9] RGB 0gray 1 rgb
+#ARGV[0]  no of the conv 
+#ARGV[1]  Mul number
+#ARGV[2]  ARITH_TYPE
+#ARGV[3]  DATA_WIDTH
+#ARGV[4]  ADDRESS_BITS
+#ARGV[5]  IFM_SIZE  
+#ARGV[6]  IFM_DEPTH 
+#ARGV[7]  KERNAL_SIZE  
+#ARGV[8]  NUMBER_OF_FILTERS
+#ARGV[9]  RGB 0gray 1 rgb
+#ARGV[10] stride
 #
 
 ######################################### CONSTANTS ###################################
@@ -56,8 +57,8 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $adder_name;
-my $mul_name;
+my $adder_name = "adder";
+my $mul_name = "multiplier";
 my $odd_flag;
 my $dummy_level;
 my @levels;
@@ -70,19 +71,6 @@ my $accumulator_name = "accumulator";
 $module_name = "conva$ARGV[0]_DP";
 
  
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
-
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -252,6 +240,10 @@ if($ARGV[9] == 1){
 	);
 DONATE
 }
+
+
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9]");
+$unit_name = "unitA_$ARGV[2]";
 
 print $fh <<"DONATE"; 
     $unit_name 

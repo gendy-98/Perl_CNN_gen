@@ -11,13 +11,11 @@ use feature "switch";
 
 #argumets 
 #ARGV[0] DATA_WIDTH 32
-#ARGV[1] ADDRESS_BITS 15
-#ARGV[2] IFM_SIZE 14
-#ARGV[3] IFM_DEPTH 3
-#ARGV[4] KERNAL_SIZE 5
-#ARGV[5] NUMBER_OF_FILTERS 6 
-#ARGV[6] NUMBER_OF_UNITS 3
-#ARGV[7] Stride 1
+#ARGV[1] IFM_DEPTH 3
+#ARGV[2] KERNAL_SIZE 5
+#ARGV[3] NUMBER_OF_FILTERS 6
+#ARGV[4] NUMBER_OF_UNITS 3
+#ARGV[5] ARITH_TYPE 0
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -61,6 +59,7 @@ my $dummy_level;
 my @levels;
 my $levels_number;
 my $divided_by;
+my $arith_type = "ARITH_TYPE";
 
 
   
@@ -70,20 +69,23 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
-  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
+  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[3]/$ARGV[4]);
   
   
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
+	$arith_type               = $ARGV[5],
 	$data_width 			  = $ARGV[0],
-	$address_bits			= $ARGV[1],
 	/////////////////////////////////////  
-	$ifm_size              = $ARGV[2],
-	$ifm_depth             = $ARGV[3],
-	$kernal_size           = $ARGV[4],
-	$number_of_filters		= $ARGV[5],
-	$number_of_units 		= $ARGV[6])
+	$ifm_depth             = $ARGV[1],
+	$kernal_size           = $ARGV[2],
+	$number_of_filters		= $ARGV[3],
+	$number_of_units 		= $ARGV[4],
+	//////////////////////////////////////
+	
+    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))
+	)
 	(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -92,26 +94,26 @@ $module $module_name $parameter
 	$i_p 	[$data_width-1:0]		data_bias,
 	$i_p 	[$data_width-1:0]		data_in_from_next,
 	
-	$i_p 							accu_enable,
 	$i_p 							conv_enable,
+	$i_p 							accu_enable,
 	$i_p 							relu_enable,
 	
 	$i_p 							wm_enable_read,
 	$i_p 							wm_enable_write,
 	$i_p 							wm_fifo_enable,
 	
-	$i_p 	[$address_bits-1:0]		wm_address,
+	$i_p 	[ADDRESS_SIZE_WM-1:0]	wm_address,
 	
 DONATE
 
 
-for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i <= ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	print $fh "\t$i_p [$data_width-1:0]	signal_if$i,\n";
 }
 
  print $fh <<"DONATE";
 
-output [DATA_WIDTH-1:0] unit_data_out
+	output	[DATA_WIDTH-1:0]		unit_data_out
     );
 ////////////////////////Signal declaration/////////////////
     wire [DATA_WIDTH-1:0] wm_data_out;   
@@ -120,7 +122,7 @@ output [DATA_WIDTH-1:0] unit_data_out
 DONATE
 
 
-for($i = 1; $i <= ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i <= ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	print $fh "\twire [$data_width-1:0]	signal_w$i;\n";
 }
 
@@ -146,15 +148,14 @@ DONATE
 
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[7] $ARGV[0] $ARGV[2] $ARGV[4]");
+system("perl fc_fifo.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[0] ");
 
-my $num_outputs = $ARGV[4]*$ARGV[4];
-my $fifo_regs = (($ARGV[4] - 1)*$ARGV[2] + $ARGV[4]);
-my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[7]$under_Score$fifo_regs";
+
+my $fifo_name = "fo_fifo_${\($ARGV[2]*$ARGV[2])}";
 
  print $fh <<"DONATE";
 
-$fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size))
+$fifo_name #(.$data_width($data_width))
 	WM_FIFO (
 	 .clk(clk),
 	 .reset(reset),
@@ -163,7 +164,7 @@ $fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size))
 DONATE
 
 
-for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i < ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	print $fh "\t\t.fifo_data_out_$i(signal_w$i),\n";
 }
 print $fh "\t\t.fifo_data_out_$i(signal_w$i)\n\t\t);\n\n";
@@ -171,7 +172,7 @@ print $fh "\t\t.fifo_data_out_$i(signal_w$i)\n\t\t);\n\n";
 
 
  print $fh <<"DONATE";
-convolution #(.$data_width($data_width), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+convolution #(.$data_width($data_width), .ARITH_TYPE(ARITH_TYPE))
 	conv
 	(
 	 .clk(clk),
@@ -180,7 +181,7 @@ convolution #(.$data_width($data_width), .IFM_SIZE(IFM_SIZE), .IFM_DEPTH(IFM_DEP
 	 .conv_data_out(conv_data_out),
 DONATE
 
-for($i = 1; $i < ($ARGV[4]*$ARGV[4]); $i = $i + 1){
+for($i = 1; $i < ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i),\n";
 }
 print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
@@ -191,7 +192,7 @@ print $fh "\t\t.w$i(signal_w$i),.if$i(signal_if$i)\n";
 DONATE
 
  print $fh <<"DONATE";
- accumulator #(.DATA_WIDTH(DATA_WIDTH))
+ accumulator #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
  accu_B
  (
      .clk(clk),
@@ -203,7 +204,7 @@ DONATE
  );
  
  
-relu  Active1 (.in(accu_data_out), .out(relu_data_out), .relu_enable(relu_enable));
+relu #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(accu_data_out), .out(relu_data_out), .relu_enable(relu_enable));
 	
 assign unit_data_out = relu_data_out;
 

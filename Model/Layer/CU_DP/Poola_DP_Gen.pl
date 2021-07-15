@@ -15,6 +15,7 @@ use feature "switch";
 #ARGV[3] KERNAL_SIZE 2
 #ARGV[4] NO._OF_UNITS 1
 #ARGV[5] STRIDE 2
+#ARGV[6] ARITH_TYPE
 
 
 
@@ -70,7 +71,8 @@ $module $module_name $parameter
 	////////////////////////////////////
 	$ifm_size              = $ARGV[1],                                                
 	$ifm_depth             = $ARGV[2],
-	$kernal_size           = $ARGV[3]
+	$kernal_size           = $ARGV[3],
+	ARITH_TYPE 				= $ARGV[6]
 )(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -153,7 +155,7 @@ DONATE
 
 
 print $fh <<"DONATE";
-	average_pooling #(.DATA_WIDTH(DATA_WIDTH))
+	average_pooling #(.DATA_WIDTH(DATA_WIDTH), ARITH_TYPE(ARITH_TYPE))
 	pool_1 (
 	.clk(clk),
     .reset(reset),

@@ -69,7 +69,7 @@ $module $module_name $parameter
 	$ifm_size 					= $ARGV[2],
 	$kernal_size 				= $ARGV[3],
 ///////////generated parameters/////////
-	FIFO_SIZE               	= ($kernal_size-1)*IFM_SIZE + $kernal_size,            
+	FIFO_SIZE               	= ($kernal_size-1)*IFM_SIZE + $kernal_size            
 
 	)(
 	$i_p clk,
@@ -99,7 +99,7 @@ print $fh <<"DONATE";
 DONATE
 
 for($i = 0;$i < ($ARGV[3] - 1)*$ARGV[2] + $ARGV[3];$i = $i + 1){
-	print $fh "\t\t\tFIFO[$i] <= 0;\n";
+	print $fh "\t\t\tFIFO[$i] <= {DATA_WIDTH{1'b0}};\n";
 	
 }
 

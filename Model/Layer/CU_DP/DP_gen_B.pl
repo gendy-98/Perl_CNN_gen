@@ -11,16 +11,15 @@ use feature "switch";
 
 #argumets 
 #ARGV[0] no of the conv 2
-#ARGV[1] Mul number 25
-#ARGV[2] Mul & Add type which (decimal, fixed, float) 
-#ARGV[3] DATA_WIDTH 32
-#ARGV[4] ADDRESS_BITS 15
-#ARGV[5] IFM_SIZE  32
-#ARGV[6] IFM_DEPTH 3
-#ARGV[7] KERNAL_SIZE  5
-#ARGV[8] NUMBER_OF_FILTERS 6
-#ARGV[9] NUMBER_OF_UNITS 3
-#ARGV[10] STRIDE 1
+#ARGV[1] ARITH_TYPE 0 | Mul & Add type which (decimal, fixed, float)
+#ARGV[2] DATA_WIDTH 32
+#ARGV[3] ADDRESS_BITS 15
+#ARGV[4] IFM_SIZE  32
+#ARGV[5] IFM_DEPTH 3
+#ARGV[6] KERNAL_SIZE  5
+#ARGV[7] NUMBER_OF_FILTERS 6
+#ARGV[8] NUMBER_OF_UNITS 3
+#ARGV[9] STRIDE 1
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -72,7 +71,7 @@ $module_name = "convb$ARGV[0]_DP";
 
 
 $odd_flag = 0;
-$dummy_level = $ARGV[9]; 
+$dummy_level = $ARGV[8]; 
  while($dummy_level  > 0)
 {
 	push @levels , $dummy_level;
@@ -93,18 +92,6 @@ $dummy_level = $ARGV[9];
 
 $levels_number = @levels;
  
- if(lc ($ARGV[2]) eq "decimal"){
-	$adder_name = "Dec_Adder";
-	$mul_name = "Dec_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "fixed"){
-	$adder_name = "Fixed_Adder";
-	$mul_name = "Fixed_Multiplier";
-	}
-if(lc ($ARGV[2]) eq "float"){
-	$adder_name = "Float_Adder";
-	$mul_name = "Float_Multiplier";
-	}
 
 
 
@@ -112,26 +99,26 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
-  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[6]/$ARGV[7]);
+  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
   
-  my $num_outputs = $ARGV[7] * $ARGV[7];
-  my $fifo_regs = (($ARGV[7] - 1)*$ARGV[5] + $ARGV[7]);
-  my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[10]$under_Score$fifo_regs";
+  my $num_outputs = $ARGV[6] * $ARGV[6];
+  my $fifo_regs = (($ARGV[6] - 1)*$ARGV[4] + $ARGV[6]);
+  my $fifo_name = "FIFO_$num_outputs$under_Score$ARGV[9]$under_Score$fifo_regs";
   
   print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[3],
-	$address_bits 		  = $ARGV[4],
+	ARITH_TYPE				= $ARGV[1],
+	$data_width 			  = $ARGV[2],
+	$address_bits 		  = $ARGV[3],
 	/////////////////////////////////////
-	$ifm_size              = $ARGV[5],                                                
-	$ifm_depth             = $ARGV[6],
-	$kernal_size           = $ARGV[7],
-	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
+	$ifm_size              = $ARGV[4],                                                
+	$ifm_depth             = $ARGV[5],
+	$kernal_size           = $ARGV[6],
+	$number_of_filters     = $ARGV[7],
+	$number_of_units       = $ARGV[8],
 	//////////////////////////////////////
-	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(NUMBER_OF_FILTERS/NUMBER_OF_UNITS+1)),                               
-	NUMBER_OF_IFM           = IFM_DEPTH
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(NUMBER_OF_FILTERS/NUMBER_OF_UNITS+1))                             
 )(
 	input clk,
 	input reset,
@@ -153,20 +140,20 @@ $module $module_name $parameter
    
     input                                 bm_addr_sel,
     input                                 bm_enable_read,
-    input                     [$ARGV[9]-1:0]     bm_enable_write,
+    input                     [$ARGV[8]-1:0]     bm_enable_write,
     input [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
 
 	
 DONATE
 
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 	print $fh <<"DONATE";
 	input  [DATA_WIDTH-1:0] data_in_from_next$i,
 DONATE
 }
 
-for ($i = 1; $i < $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i < $ARGV[8]; $i = $i + 1){
 	print $fh <<"DONATE";
 	output [DATA_WIDTH-1:0] data_out_for_next$i,
 DONATE
@@ -179,13 +166,13 @@ print $fh <<"DONATE";
 
 DONATE
 
- for ($i = 1; $i <= $ARGV[7]*$ARGV[7]; $i = $i + 1){
+ for ($i = 1; $i <= $ARGV[6]*$ARGV[6]; $i = $i + 1){
 	print $fh <<"DONATE";
 	wire	[DATA_WIDTH - 1 : 0]	signal_if$i;
 DONATE
 }
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 	print $fh <<"DONATE";
 	wire [DATA_WIDTH-1:0] unit${\($i)}_data_out;
 DONATE
@@ -196,7 +183,7 @@ print $fh <<"DONATE";
 	wire [DATA_WIDTH-1:0] relu_data_out;
 DONATE
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 	print $fh <<"DONATE";
 	wire [DATA_WIDTH-1:0] data_bias_$i;
 DONATE
@@ -213,7 +200,7 @@ DONATE
 DONATE
 
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 	print $fh <<"DONATE";
 	single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS) )
 	bm$i (
@@ -229,7 +216,7 @@ DONATE
 }
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[10] $ARGV[3] $ARGV[5] $ARGV[7]");
+system("perl fifo.pl  $ARGV[9] $ARGV[2] $ARGV[4] $ARGV[6]");
 
 
  print $fh <<"DONATE";
@@ -242,7 +229,7 @@ system("perl fifo.pl  $ARGV[10] $ARGV[3] $ARGV[5] $ARGV[7]");
 	 .fifo_data_in(data_in_from_previous),
 DONATE
 
-for ($i = 1; $i < $ARGV[7]*$ARGV[7]; $i = $i + 1){
+for ($i = 1; $i < $ARGV[6]*$ARGV[6]; $i = $i + 1){
 	print $fh <<"DONATE";
 	 .fifo_data_out_$i(signal_if$i),  
 DONATE
@@ -256,9 +243,9 @@ print $fh <<"DONATE";
 DONATE
 
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 print $fh <<"DONATE";
-	unitB #(.DATA_WIDTH(DATA_WIDTH), .$address_bits($address_bits), .$ifm_size($ifm_size), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
+	unitB #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
 	convB_unit_$i
 	(
     .clk(clk),                                 
@@ -268,7 +255,7 @@ print $fh <<"DONATE";
 	.data_bias(data_bias_$i), 
 DONATE
 
-for ($j = 1; $j <= $ARGV[7]*$ARGV[7]; $j = $j + 1){
+for ($j = 1; $j <= $ARGV[6]*$ARGV[6]; $j = $j + 1){
 	print $fh <<"DONATE";
 	.signal_if$j(signal_if$j),
 DONATE
@@ -288,7 +275,7 @@ print $fh <<"DONATE";
 DONATE
 }
 
-for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 print $fh <<"DONATE";
 assign data_out_for_next$i = unit1_data_out;
 DONATE
