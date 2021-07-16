@@ -21,8 +21,7 @@ module
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE
 )(
 	input 							clk,
 	input 							reset,
@@ -34,11 +33,12 @@ module
 
 	input start_from_previous,
 	
-	input [DATA_WIDTH-1:0] data_in_from_previous1,
-	input [DATA_WIDTH-1:0] data_in_from_previous2,
-	input [DATA_WIDTH-1:0] data_in_from_previous3,
-	output                        ifm_enable_read_current,
-	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous1,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous2,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous3,
+	output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+
 	output                        end_to_previous,
 	
 	output                        ready, 
@@ -54,7 +54,8 @@ module
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel
+	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_previous,
+	output                                               ifm_sel_next
     );
 	
 	wire fifo_enable;
@@ -89,7 +90,7 @@ module
     .end_to_previous(end_to_previous),
     .ready(ready),
     
-    .ifm_sel(ifm_sel),
+    .ifm_sel_previous(ifm_sel_previous),
     .ifm_enable_read_current(ifm_enable_read_current),
     .ifm_address_read_current(ifm_address_read_current),
     
@@ -110,6 +111,7 @@ module
     .ifm_enable_write_next(ifm_enable_write_next),
     .ifm_address_read_next(ifm_address_read_next), 
     .ifm_address_write_next(ifm_address_write_next),
+	.ifm_sel_next(ifm_sel_next),
     .start_to_next(start_to_next)
     );    
      

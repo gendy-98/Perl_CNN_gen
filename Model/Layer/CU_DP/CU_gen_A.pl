@@ -532,7 +532,7 @@ my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.SEG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
@@ -548,7 +548,7 @@ $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
 print $fh <<"DONATE";   
 
-$delay_name #(.SEG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
+$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
 	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
 		.Data_Out(ifm_enable_write_next)
 		);

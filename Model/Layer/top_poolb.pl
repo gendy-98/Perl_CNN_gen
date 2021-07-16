@@ -97,8 +97,7 @@ $module $module_name $parameter
 	NUMBER_OF_IFM_NEXT      = IFM_DEPTH,
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),     
-    FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE
+    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT)
 	)(
 	$i_p clk,
 	$i_p reset,
@@ -160,7 +159,7 @@ my $number_to_be_ceiled = ceil($ARGV[2]/$ARGV[4]); #ceil(NUMBER_OF_IFM_NEXT/NUMB
 
 print $fh <<"DONATE";
 	output start_to_next,
-	output [$clog2(${\(ceil($number_to_be_ceiled/$ARGV[4]))})-1:0] ifm_sel_next //where $number_to_be_ceiled is ceil(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS)
+	output [$clog2(${\(ceil($ARGV[2]/$ARGV[4]))})-1:0] ifm_sel_next //where $number_to_be_ceiled is ceil(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS)
    );
    
    wire fifo_enable;

@@ -80,7 +80,7 @@ $module $module_name $parameter
 ///////////advanced parameters//////////
 	$data_width 					= $ARGV[0],
 	ARITH_TYPE 						= $ARGV[1]
-
+	)(
 	$i_p clk,
 	input reset,
 	input bias_sel,
@@ -102,17 +102,17 @@ DONATE
 
 for($i = 1;$i <= $ARGV[2]; $i = $i + 1){
 	print $fh <<"DONATE";
-	input [DATA_WIDTH - 1 : 0] Data_out_FC_$i,
+	output [DATA_WIDTH - 1 : 0] Data_out_FC_$i,
 DONATE
 }
 print $fh <<"DONATE";
-	input [DATA_WIDTH - 1 : 0] Data_out_FC_$i
+	output [DATA_WIDTH - 1 : 0] Data_out_FC_$i
 );
 DONATE
 
 for($i = 1;$i <= $ARGV[2]; $i = $i + 1){
 	print $fh <<"DONATE";
-    Reg_Accmulator #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) R_ACC$i (.clk(clk),.reset(reset),.data_in_from_previous( Data_in_$i),.data_bias(data_bias_$i),.bias_sel(bias_sel),.Enable(enable_write | bias_sel),.reg_accu_data_out( Data_out_FC_$i));
+    Reg_Accumulator #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) R_ACC$i (.clk(clk),.reset(reset),.data_in_from_previous( Data_in_$i),.data_bias(data_bias_$i),.bias_sel(bias_sel),.Enable(enable_write | bias_sel),.reg_accu_data_out( Data_out_FC_$i));
 DONATE
 }
 

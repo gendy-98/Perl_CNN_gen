@@ -105,7 +105,7 @@ open my $fh, '>', $file_name
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$data_width 			  = $ARGV[2]
+	$data_width 			  = $ARGV[2],
 	ARITH_TYPE				 = $ARGV[1]
 	)
 	(
@@ -255,7 +255,7 @@ print $fh <<"DONATE";
 DONATE
 
 print $fh <<"DONATE";
-	$div_name  #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) div ( .in1(reg_sum_${\($i-1)}$under_Score${\($jj-2)}), .in2($divided_by), .out(avgIFM) );
+	$div_name  #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) div ( .in1(reg_sum_${\($i-1)}$under_Score${\($jj-2)}),  .out(avgIFM) );
 
     
 endmodule

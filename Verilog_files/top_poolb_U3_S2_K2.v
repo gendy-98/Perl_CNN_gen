@@ -15,8 +15,7 @@ module
 	NUMBER_OF_IFM_NEXT      = IFM_DEPTH,
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),     
-    FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE
+    ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT)
 	)(
 	input clk,
 	input reset,
@@ -41,7 +40,7 @@ module
 	output [DATA_WIDTH-1 : 0]          data_out_2,
 	output [DATA_WIDTH-1 : 0]          data_out_3,
 	output start_to_next,
-	output [$clog2(2)-1:0] ifm_sel_next //where 6 is ceil(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS)
+	output [$clog2(6)-1:0] ifm_sel_next //where 6 is ceil(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS)
    );
    
    wire fifo_enable;

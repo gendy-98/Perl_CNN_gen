@@ -3,26 +3,23 @@
 
 module 
  conva3_CU #(parameter
-///////////advanced parameters//////////
-	DATA_WIDTH 			  = 32,
-	ADDRESS_BITS 		  = 16,
+    ///////////advanced parameters///////
+	DATA_WIDTH 			= 32,
+	ADDRESS_BITS 		    = 16,
 	/////////////////////////////////////
-	IFM_SIZE              = 5,                                                
-	IFM_DEPTH             = 16,
-	KERNAL_SIZE           = 5,
-	NUMBER_OF_FILTERS     = 120,
-	NUMBER_OF_UNITS       = 3,
-    ARITH_TYPE             = 32,
+	IFM_SIZE               = 5,                                                
+	IFM_DEPTH              = 16,
+	KERNAL_SIZE            = 5,
+	NUMBER_OF_FILTERS      = 120,
+	NUMBER_OF_UNITS        = 3,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),
+	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	NUMBER_OF_IFM           = IFM_DEPTH
 )(
 	input 							clk,
 	input 							reset,
@@ -31,18 +28,19 @@ module
     input  start_from_previous,
     output reg end_to_previous,
     output ready,
-	output reg [$clog2(6 )-1 : 0] ifm_sel,
+	output reg [$clog2(6 )-1 : 0] ifm_sel_previous,
+	output reg                    ifm_sel_next,
     output reg ifm_enable_read_current,
     output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 
     output reg wm_addr_sel,
     output reg wm_enable_read,
-    output reg [ADDRESS_SIZE_WM-1:0]  wm_address_read_current,
+    output reg [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
     output reg wm_fifo_enable,
 
     output reg bm_addr_sel,
     output reg bm_enable_read,
-    output reg [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
+    output reg [ADDRESS_SIZE_BM-1:0] bm_address_read_current,
     
     output reg fifo_enable,
     output conv_enable,
@@ -153,7 +151,7 @@ module
       
         fifo_enable_sig1               = 1'b0;
         
-        end_to_previous                = 1'b1;// & ~no_more_start_flag;
+        end_to_previous                = 1'b1;
 
 	     if(start)
              state_next = READ;
@@ -182,19 +180,27 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_sel <= 0;
-        else if(ifm_sel ==  6  -1 & start)
-            ifm_sel <= 0;  
+            ifm_sel_previous <= 0;
+        else if(ifm_sel_previous ==  6  -1 & start)
+            ifm_sel_previous <= 0;  
         else if(start)
-            ifm_sel <= ifm_sel + 1'b1; 
+            ifm_sel_previous <= ifm_sel_previous + 1'b1; 
     end 
+	
+	always @(posedge clk, posedge reset)
+    begin
+        if(reset)
+            ifm_sel_next <= 1'b0;
+        else if(start_to_next)
+            ifm_sel_next <= ~ifm_sel_next;
+    end
 
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_address_read_current <= 0;
+            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}};
         else if(ifm_address_read_current == IFM_SIZE*IFM_SIZE-1)
-            ifm_address_read_current <= 0 ;
+            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}} ;
         else if(ifm_start_counter_read_address)
             ifm_address_read_current <= (ifm_address_read_current + 1'b1);      
     end
@@ -215,19 +221,19 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            wm_address_read_current <= 0;
+            wm_address_read_current <= {ADDRESS_SIZE_WM{1'b0}};
         else if(wm_enable_read)
             wm_address_read_current <= wm_address_read_current + 1'b1;
         else if(state_reg==IDLE) 
-            wm_address_read_current <= 0;      
+            wm_address_read_current <= {ADDRESS_SIZE_WM{1'b0}};      
     end
           
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            bm_address_read_current <= 0;
+            bm_address_read_current <= {ADDRESS_SIZE_BM{1'b0}};
         else if(bm_address_read_current == (NUMBER_OF_FILTERS-1) & ifm_enable_write_next)
-            bm_address_read_current <= 0;
+            bm_address_read_current <= {ADDRESS_SIZE_BM{1'b0}};
         else if(ifm_enable_write_next)
             bm_address_read_current <= bm_address_read_current + 1'b1;      
     end
@@ -285,14 +291,18 @@ module
     ///////////////////////
     // FIFO Control Unit //
     ///////////////////////
+	localparam COUNTER_FIFO_SIZE      = $clog2(FIFO_SIZE);
+	localparam COUNTER_READY_SIZE     = $clog2(IFM_SIZE-(KERNAL_SIZE-1));
+	localparam COUNTER_NOT_READY_SIZE = $clog2(KERNAL_SIZE-1);
+	
     reg start_counter_fifo;
-    reg [$clog2(FIFO_SIZE)-1:0] counter_fifo;
+    reg [COUNTER_FIFO_SIZE-1:0] counter_fifo;
     wire counter_fifo_tick;
     reg start_counter_ready;
-    reg [$clog2(IFM_SIZE-(KERNAL_SIZE-1))-1:0] counter_ready;
+    reg [COUNTER_READY_SIZE-1:0] counter_ready;
     wire counter_ready_tick;
     reg start_counter_not_ready;
-    reg [$clog2(KERNAL_SIZE-1)-1:0] counter_not_ready;
+    reg [COUNTER_NOT_READY_SIZE-1:0] counter_not_ready;
     wire counter_not_ready_tick;
     reg fifo_output_ready;
     
@@ -367,9 +377,9 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_fifo <= 0;       
+            counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};       
         else if(counter_fifo == FIFO_SIZE-1)
-            counter_fifo <= 0;
+            counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};
         else if(fifo_enable & start_counter_fifo)
             counter_fifo <= counter_fifo + 1'b1;
     end
@@ -378,23 +388,22 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_ready <= 0;       
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};       
         else if(start_counter_ready)
             counter_ready <= counter_ready + 1'b1;
         else
-            counter_ready <= 0;
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};
     end
     assign  counter_ready_tick = (counter_ready == IFM_SIZE-(KERNAL_SIZE-1)-1);
     
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_not_ready <= 0;
-
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
         else if(start_counter_not_ready)
             counter_not_ready <= counter_not_ready + 1'b1;
         else
-            counter_not_ready <= 0;
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
     assign  counter_not_ready_tick = (counter_not_ready == (KERNAL_SIZE-1)-1);
     
@@ -411,7 +420,7 @@ module
         if(reset)
             ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
         else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
-            ifm_address_read_next <= 0;      
+            ifm_address_read_next <= {ADDRESS_SIZE_IFM{1'b0}};      
         else if(ifm_enable_write_next)
             ifm_address_read_next <= ifm_address_write_next + 1'b1;
     end
@@ -420,20 +429,20 @@ module
     assign address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
      
 
-delay_7_1 #(.SEG_DATA_WIDTH(1), .delay_cycles(7))
+delay_7_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(7))
 	DBlock_7_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
 		
 
-delay_1_1 #(.SEG_DATA_WIDTH(1), .delay_cycles(1))
+delay_1_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(1))
 	DBlock_1_1 (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
 		.Data_Out(ifm_enable_write_next)
 		);
 		
 
     localparam  s0   = 1'b0,
-                 s1   = 2'b1;	  
+                s1   = 1'b1;	  
 							  
     reg state_reg2, state_next2; 
     

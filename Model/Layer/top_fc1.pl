@@ -13,10 +13,10 @@ use POSIX; # for ceil and floor
 
 #argumets 
 #ARGV[0] DATA_WIDTH 32
-#ARGV[1] IFM_SIZE 28
-#ARGV[2] IFM_DEPTH 3
+#ARGV[1] IFM_SIZE //
+#ARGV[2] IFM_DEPTH 3//
 #ARGV[3] NUMBER_OF_WM 84
-#ARGV[4] ADDRESS_BITS 16
+#ARGV[4] ADDRESS_BITS 16//
 #ARGV[5] ARITH_TYPE = 1
 #ARGV[6] FC_number 1
 #ARGV[7] Is it the last FC? (1 Yes/0 No) 0
@@ -78,6 +78,7 @@ $module $module_name $parameter
     ADDRESS_BITS        = $ARGV[4],
     ARITH_TYPE          = $ARGV[5],
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
+    ADDRESS_SIZE_WM        = $clog2(IFM_DEPTH),
     NUMBER_OF_WM        = $ARGV[3]
 
 	)(
@@ -145,9 +146,13 @@ print $fh <<"DONATE";
 DONATE
 
 
+chdir "./CU_DP";
+system("perl FC1_CU_gen.pl $ARGV[0]  $ARGV[2] $ARGV[6] $ARGV[7]");
+my $unit_name = "FCA${\($ARGV[6])}_CU";
 print $fh <<"DONATE";
 
-	FCA${\($FC_number)}_CU #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
+	$unit_name #(
+    .$ifm_depth($ifm_depth)) 
     CU
     (
     .clk(clk),
@@ -181,10 +186,13 @@ DONATE
 	
 }
 
+system("perl FC1_DP_gen.pl $ARGV[5]  $ARGV[0] $ARGV[4] $ARGV[2] $ARGV[3] $ARGV[6]");
+$unit_name = "FCA${\($ARGV[6])}_DP";
 
 print $fh <<"DONATE";
 
-	FCA${\($FC_number)}_DP #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) 
+	$unit_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE),
+    .$ifm_depth($ifm_depth), .NUMBER_OF_WM(NUMBER_OF_WM)) 
     DP
 	(
     .clk(clk),

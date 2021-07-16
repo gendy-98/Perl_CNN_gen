@@ -64,7 +64,7 @@ my @levels;
 my $levels_number;
 
 my $single_port_name = "single_port_memory";
-my $unit_name = "unitA";
+my $unit_name ;
 my $Relu_name = "relu";
 my $accumulator_name = "accumulator"; 
 $module_name = "convb$ARGV[0]_DP";
@@ -242,10 +242,24 @@ print $fh <<"DONATE";
 	
 DONATE
 
+#ARGV[0] no of the conv 2
+#ARGV[1] ARITH_TYPE 0 | Mul & Add type which (decimal, fixed, float)
+#ARGV[2] DATA_WIDTH 32
+#ARGV[3] ADDRESS_BITS 15
+#ARGV[4] IFM_SIZE  32
+#ARGV[5] IFM_DEPTH 3
+#ARGV[6] KERNAL_SIZE  5
+#ARGV[7] NUMBER_OF_FILTERS 6
+#ARGV[8] NUMBER_OF_UNITS 3
+#ARGV[9] STRIDE 1
+chdir "../";
+system("perl UnitB.pl  $ARGV[2] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[1] $ARGV[9]");
+
+$unit_name = "unitB";
 
 for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 print $fh <<"DONATE";
-	unitB #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
+	$unit_name #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
 	convB_unit_$i
 	(
     .clk(clk),                                 

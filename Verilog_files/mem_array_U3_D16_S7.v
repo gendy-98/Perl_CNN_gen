@@ -9,11 +9,11 @@ module
 	IFM_SIZE              = 7,                                                
     NUMBER_OF_IFM         = 16,
     NUMBER_OF_UNITS       = 3,
-    ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE))
+    ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE)
 
 	)(
 	input clk,
-	input [$clog2($ceil(NUMBER_OF_IFM/NUMBER_OF_UNITS))-1:0] ifm_sel,
+	input [$clog2(6)-1:0] ifm_sel,
 	input                        ifm_enable_write_previous,            
 	input                        ifm_enable_read_previous, 
 	input  [ADDRESS_SIZE_IFM-1:0] ifm_address_write_previous,
@@ -462,10 +462,10 @@ M5(  .clk(clk),
 	.Address_A ( ifm_address_write_previous_dMuxOut6 | ifm_address_read_A_next_dMuxOut1 ),
     .Address_B ( ifm_address_read_previous_dMuxOut6  | ifm_address_read_B_next_dMuxOut1 ),  
 	
-	.Enable_Write_A_Mem (ifm_enable_write_previous_dMuxOut6),
-    .Enable_Read_A_Mem  (ifm_enable_read_A_next_dMuxOut1),
-    .Enable_Write_B_Mem (1'b0),
-    .Enable_Read_B_Mem  (ifm_enable_read_previous_dMuxOut6 | ifm_enable_read_B_next_dMuxOut1),
+	.Enable_Write_A (ifm_enable_write_previous_dMuxOut6),
+    .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut1),
+    .Enable_Write_B (1'b0),
+    .Enable_Read_B  (ifm_enable_read_previous_dMuxOut6 | ifm_enable_read_B_next_dMuxOut1),
 	  
 	
     .Data_Output_A(Data_Output_A_Mem16),

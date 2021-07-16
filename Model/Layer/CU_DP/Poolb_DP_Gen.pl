@@ -52,8 +52,15 @@ my $j = 0;
 my $jj = 0;
 my $file_name;
 my $module_name;
-my $pool_unit_name = "poolb_unit";
-
+my $pool_unit_name = "poolb_unit_$ARGV[1]";
+#ARGV[0] DATA_WIDTH 32
+#ARGV[1] IFM_SIZE 14
+#ARGV[2] IFM_DEPTH 3
+#ARGV[3] STRIDE 2
+#ARGV[4] NO._OF_UNITS 3
+#ARGV[5] KERNAL_SIZE 2
+#ARGV[6] ARITH_TYPE
+system("perl PoolB_unit.pl  $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[3] $ARGV[6] ");
 
 
 $module_name = "poolb_dp_U$ARGV[4]";
@@ -106,11 +113,10 @@ DONATE
 DONATE
 
 if($ARGV[3] == 2){
-for($i=1; $i<= $ARGV[4]; $i = $i + 1){
-	print $fh <<"DONATE";
+	for($i=1; $i<= $ARGV[4]; $i = $i + 1){
+		print $fh <<"DONATE";
 	$pool_unit_name #(.$data_width($data_width), 
 	.$ifm_size($ifm_size), 
-	.$ifm_depth($ifm_depth), 
 	.ARITH_TYPE(ARITH_TYPE),
 	.$kernal_size($kernal_size))
     unit$i(
@@ -124,7 +130,7 @@ for($i=1; $i<= $ARGV[4]; $i = $i + 1){
     );
 	
 DONATE
-}
+	}
 }
 else{
 	for($i=1; $i<= $ARGV[4]; $i = $i + 1){
@@ -144,7 +150,7 @@ else{
     );
 	
 DONATE
-}
+	}
 }
 
 	print $fh <<"DONATE";

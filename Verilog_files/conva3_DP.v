@@ -12,7 +12,7 @@ module
 	KERNAL_SIZE           = 5,
 	NUMBER_OF_FILTERS     = 120,
 	NUMBER_OF_UNITS       = 3,
-	ARITH_TYPE 				= 0,
+	ARITH_TYPE 			   = 0,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -91,12 +91,13 @@ module
 	 .Data_Input(riscv_data),	.Data_Output(data_bias));
 	 
   
-	unitA_0 #(
+	unitA_5 #(
 		.DATA_WIDTH(DATA_WIDTH), 
 		.IFM_SIZE(IFM_SIZE), 
 		.IFM_DEPTH(IFM_DEPTH), 
 		.KERNAL_SIZE(KERNAL_SIZE), 
-		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
+		.ARITH_TYPE(ARITH_TYPE))
     unit_1
     (
     .clk(clk),                                 
@@ -111,12 +112,13 @@ module
     .wm_fifo_enable(wm_fifo_enable),         
     .unit_data_out(unit1_data_out)   
     );
-	unitA_0 #(
+	unitA_5 #(
 		.DATA_WIDTH(DATA_WIDTH), 
 		.IFM_SIZE(IFM_SIZE), 
 		.IFM_DEPTH(IFM_DEPTH), 
 		.KERNAL_SIZE(KERNAL_SIZE), 
-		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
+		.ARITH_TYPE(ARITH_TYPE))
     unit_2
     (
     .clk(clk),                                 
@@ -131,12 +133,13 @@ module
     .wm_fifo_enable(wm_fifo_enable),         
     .unit_data_out(unit2_data_out)   
     );
-	unitA_0 #(
+	unitA_5 #(
 		.DATA_WIDTH(DATA_WIDTH), 
 		.IFM_SIZE(IFM_SIZE), 
 		.IFM_DEPTH(IFM_DEPTH), 
 		.KERNAL_SIZE(KERNAL_SIZE), 
-		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
+		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
+		.ARITH_TYPE(ARITH_TYPE))
     unit_3
     (
     .clk(clk),                                 
@@ -163,13 +166,13 @@ module
 
 	end
 
-	adder		adr_1_1	(.in1(unit1_data_out), .in2(unit2_data_out), .out(adder_out_1_1));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))		adr_1_1	(.in1(unit1_data_out), .in2(unit2_data_out), .out(adder_out_1_1));
 
 	assign adder_out_1_2 = unit3_data_out;
 
-	adder		adr_2_1	(.in1(reg_adder_out_1_1), .in2(reg_adder_out_1_2), .out(adder_out_2_1));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))		adr_2_1	(.in1(reg_adder_out_1_1), .in2(reg_adder_out_1_2), .out(adder_out_2_1));
 
-	accumulator #(.DATA_WIDTH(DATA_WIDTH))
+	accumulator #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
     accu
     (
      .clk(clk),
@@ -180,7 +183,7 @@ module
      .accu_data_out(accu_data_out)
      );
 
-	relu  Active1 (.in(accu_data_out), .out (relu_data_out), .relu_enable(relu_enable));
+	relu #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(accu_data_out), .out (relu_data_out), .relu_enable(relu_enable));
 	
     assign data_out_for_next = relu_data_out;	   	 
 	

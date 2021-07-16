@@ -41,7 +41,7 @@ module
 	.fifo_data_out_4(signal_if4)
 	);
 	
-	average_pooling #(.DATA_WIDTH(DATA_WIDTH), ARITH_TYPE(ARITH_TYPE))
+	average_pooling #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
 	pool_1 (
 	.clk(clk),
     .reset(reset),

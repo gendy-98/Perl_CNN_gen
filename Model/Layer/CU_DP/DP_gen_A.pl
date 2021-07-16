@@ -234,7 +234,7 @@ DONATE
 #ARGV[10]stride
 
 system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9]");
-$unit_name = "unitA_$ARGV[2]";
+$unit_name = "unitA_$ARGV[5]";
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 print $fh <<"DONATE"; 

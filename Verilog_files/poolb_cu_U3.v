@@ -149,13 +149,17 @@ module
     ///////////////////////////////
     ///// FIFO control unit///////
     //////////////////////////////
-    reg [$clog2(FIFO_SIZE/2):0] counter_fifo;
+    localparam COUNTER_FIFO_SIZE = $clog2(FIFO_SIZE/2);
+	localparam COUNTER_READY_SIZE = $clog2(IFM_SIZE/2);
+	localparam COUNTER_NOT_READY_SIZE = $clog2((IFM_SIZE/2)+(KERNAL_SIZE/2-1));
+	
+    reg [COUNTER_FIFO_SIZE:0] counter_fifo;
 	reg start_counter_fifo;
     wire counter_fifo_tick;
-    reg [$clog2(IFM_SIZE/2):0] counter_ready;
+    reg [COUNTER_READY_SIZE:0] counter_ready;
     reg start_counter_ready;
     wire counter_ready_tick;
-    reg [$clog2((IFM_SIZE/2)+(KERNAL_SIZE/2-1)):0] counter_not_ready;
+    reg [COUNTER_NOT_READY_SIZE:0] counter_not_ready;
     reg start_counter_not_ready;
     wire counter_not_ready_tick;
     
@@ -230,9 +234,9 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_fifo <= 0;
+            counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};
         else if(counter_fifo == (FIFO_SIZE/2)-1)
-	        counter_fifo <= 0;       
+	        counter_fifo <= {COUNTER_FIFO_SIZE{1'b0}};      
         else if(fifo_enable & start_counter_fifo)
             counter_fifo <= counter_fifo + 1'b1;
         
@@ -242,22 +246,22 @@ module
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_ready <= 0;       
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};      
         else if(start_counter_ready)
             counter_ready <= counter_ready + 1'b1;
         else
-            counter_ready <= 0;
+            counter_ready <= {COUNTER_READY_SIZE{1'b0}};
     end
     assign  counter_ready_tick = (counter_ready == IFM_SIZE/2-1);
     
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            counter_not_ready <= 0;       
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};      
         else if(start_counter_not_ready)
             counter_not_ready <= counter_not_ready + 1'b1;
         else
-            counter_not_ready <= 0;
+            counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
     assign  counter_not_ready_tick = (counter_not_ready == (IFM_SIZE/2)+(KERNAL_SIZE/2-1)-1);
     
@@ -269,7 +273,7 @@ module
 
 	assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
     assign ifm_enable_read_B_current = ifm_enable_read_A_current; 
-delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
+delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
 	DBlock_3_1 (.clk(clk), .reset(reset), .Data_In(pool_enable), 
 		.Data_Out(ifm_enable_write_next)
 		);
@@ -291,7 +295,7 @@ delay_3_1 #(.DATA_WIDTH(1), .delay_cycles(3))
     ///////////////////////////////   
 	
 	localparam  s0   = 1'b0,
-                s1   = 2'b1;	  
+                s1   = 1'b1;	  
 							  
     reg state_reg2, state_next2; 
     

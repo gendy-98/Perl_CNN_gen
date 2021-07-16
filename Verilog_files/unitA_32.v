@@ -7,13 +7,13 @@ module
 	DATA_WIDTH 			  = 32,
 	/////////////////////////////////////
 	IFM_SIZE              = 32,                                                
-	IFM_DEPTH             = 3 ,
+	IFM_DEPTH             = 1 ,
 	KERNAL_SIZE           = 5,
 	NUMBER_OF_FILTERS		= 6,
 	ARITH_TYPE				= 0,
 	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*1)      
 
-	(
+	)(
 	input 							clk,
 	input 							reset,
 	

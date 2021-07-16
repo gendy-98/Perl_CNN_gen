@@ -82,7 +82,7 @@ $module $module_name $parameter
 	ARITH_TYPE				= $ARGV[4],
 	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*${\(ceil($ARGV[5]/$ARGV[7]))})      
 
-	(
+	)(
 	$i_p 							clk,
 	$i_p 							reset,
 	

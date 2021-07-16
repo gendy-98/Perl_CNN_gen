@@ -13,7 +13,7 @@ module
 	ARITH_TYPE				= 0,
 	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*6)      
 
-	(
+	)(
 	input 							clk,
 	input 							reset,
 	

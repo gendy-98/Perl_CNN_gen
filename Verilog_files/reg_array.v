@@ -1,71 +1,10 @@
-use strict;
-use warnings;
-use diagnostics;
-
-# say prints a line followed by a newline
-use feature 'say';
- 
-# Use a Perl version of switch called given when
-use feature "switch";
-
-use POSIX; # for ceil and floor 
-
-#argumets 
-#ARGV[0] DATA_WIDTH 
-#
-
-######################################### CONSTANTS ###################################
-my $module = <<"DONATE";
 `timescale 1ns / 1ps
 
 
 module 
-DONATE
-my $parameter = "#(parameter";
-
-my $always_clk = <<"DONATE";
-always @ (posedge clk)
-    begin 
-DONATE
-my $end = "end";
-my $end_module = "endmodule";
-my $i_p = "input";
-my $o_p = "output";
-my $under_Score = "_";
-my $clog2 = "\$clog2";
-my $ceil = "\$ceil";
-my $data_width = "DATA_WIDTH";
-my $address_bits = "ADDRESS_BITS";
-my $ifm_size = "IFM_SIZE";
-my $ifm_depth = "IFM_DEPTH";
-my $kernal_size = "KERNAL_SIZE";
-my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
-#######################################################################################
-my $i = 0;
-my $j = 0;
-my $k = 0;
-my $h = 0;
-my $l = 0;
-my $m = 0;
-my $file_name;
-my $module_name;
-my $IFM_number;
-my $units;
-
-$module_name = "reg_array";
-
-
-
-
-$file_name = $full_path . $module_name . ".v";
-open my $fh, '>', $file_name
-  or die "Can't open file : $!";
-
-print $fh <<"DONATE";
-$module $module_name $parameter
+ reg_array #(parameter
 ///////////advanced parameters//////////
-	$data_width 					= $ARGV[0])
+	DATA_WIDTH 					= 32)
 (
   input clk ,reset ,
   /////////////////////////////////////////////////
@@ -117,7 +56,3 @@ $module $module_name $parameter
    endmodule
 
 
-DONATE
-
-
-close $fh or die "Couldn't Close File : $!";

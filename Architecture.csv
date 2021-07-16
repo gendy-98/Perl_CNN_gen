@@ -2,7 +2,7 @@ layer name,conva1
 kernal size ,5
 stride,1
 input size,32
-input channels,3
+input channels,1
 output channels,6
 units number,1
 layer name,pool1
@@ -39,11 +39,11 @@ stride,1
 input size,32
 input channels,120
 output channels,84
-units number,1
+units number,84
 layer name,fc2
 kernal size ,1
 stride,1
 input size,32
 input channels,84
 output channels,10
-units number,1
+units number,10

@@ -158,31 +158,31 @@ module
 	always @(posedge clk , posedge reset)
     if (reset)
     begin
-		reg_mul_out_1 <= 0;
-		reg_mul_out_2 <= 0;
-		reg_mul_out_3 <= 0;
-		reg_mul_out_4 <= 0;
-		reg_mul_out_5 <= 0;
-		reg_mul_out_6 <= 0;
-		reg_mul_out_7 <= 0;
-		reg_mul_out_8 <= 0;
-		reg_mul_out_9 <= 0;
-		reg_mul_out_10 <= 0;
-		reg_mul_out_11 <= 0;
-		reg_mul_out_12 <= 0;
-		reg_mul_out_13 <= 0;
-		reg_mul_out_14 <= 0;
-		reg_mul_out_15 <= 0;
-		reg_mul_out_16 <= 0;
-		reg_mul_out_17 <= 0;
-		reg_mul_out_18 <= 0;
-		reg_mul_out_19 <= 0;
-		reg_mul_out_20 <= 0;
-		reg_mul_out_21 <= 0;
-		reg_mul_out_22 <= 0;
-		reg_mul_out_23 <= 0;
-		reg_mul_out_24 <= 0;
-		reg_mul_out_25 <= 0;
+		reg_mul_out_1 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_2 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_3 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_4 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_5 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_6 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_7 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_8 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_9 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_10 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_11 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_12 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_13 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_14 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_15 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_16 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_17 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_18 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_19 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_20 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_21 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_22 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_23 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_24 <= {DATA_WIDTH{1'b0}};
+		reg_mul_out_25 <= {DATA_WIDTH{1'b0}};
 	end
     
     else if(conv_enable)
@@ -218,37 +218,37 @@ module
     begin
 		if(reset)
 		begin
-			reg_adder_out_1_1 <= 0;
-			reg_adder_out_1_2 <= 0;
-			reg_adder_out_1_3 <= 0;
-			reg_adder_out_1_4 <= 0;
-			reg_adder_out_1_5 <= 0;
-			reg_adder_out_1_6 <= 0;
-			reg_adder_out_1_7 <= 0;
-			reg_adder_out_1_8 <= 0;
-			reg_adder_out_1_9 <= 0;
-			reg_adder_out_1_10 <= 0;
-			reg_adder_out_1_11 <= 0;
-			reg_adder_out_1_12 <= 0;
-			reg_adder_out_1_13 <= 0;
+			reg_adder_out_1_1 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_2 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_3 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_4 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_5 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_6 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_7 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_8 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_9 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_10 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_11 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_12 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_1_13 <= {DATA_WIDTH{1'b0}};
 
-			reg_adder_out_2_1 <= 0;
-			reg_adder_out_2_2 <= 0;
-			reg_adder_out_2_3 <= 0;
-			reg_adder_out_2_4 <= 0;
-			reg_adder_out_2_5 <= 0;
-			reg_adder_out_2_6 <= 0;
-			reg_adder_out_2_7 <= 0;
+			reg_adder_out_2_1 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_2 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_3 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_4 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_5 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_6 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_2_7 <= {DATA_WIDTH{1'b0}};
 
-			reg_adder_out_3_1 <= 0;
-			reg_adder_out_3_2 <= 0;
-			reg_adder_out_3_3 <= 0;
-			reg_adder_out_3_4 <= 0;
+			reg_adder_out_3_1 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_3_2 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_3_3 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_3_4 <= {DATA_WIDTH{1'b0}};
 
-			reg_adder_out_4_1 <= 0;
-			reg_adder_out_4_2 <= 0;
+			reg_adder_out_4_1 <= {DATA_WIDTH{1'b0}};
+			reg_adder_out_4_2 <= {DATA_WIDTH{1'b0}};
 
-			reg_adder_out_5_1 <= 0;
+			reg_adder_out_5_1 <= {DATA_WIDTH{1'b0}};
 
 		end
         

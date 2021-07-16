@@ -97,8 +97,7 @@ $module $module_name $parameter
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE
 )(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -115,13 +114,33 @@ DONATE
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_from_previous$i,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous$i,
 DONATE
 }
+if($ARGV[10]  == 2){
+	for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+		print $fh <<"DONATE";
+	input [DATA_WIDTH-1:0] data_in_B_from_previous$i,
+DONATE
+}
+}
 
+if($ARGV[10] == 1){
+	print $fh <<"DONATE";
+	output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+DONATE
+}
+else{
 print $fh <<"DONATE";
-	output                        ifm_enable_read_current,
-	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
+	output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+		output                        ifm_enable_read_B_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
+DONATE
+}
+print $fh <<"DONATE";
+
 	output                        end_to_previous,
 	
 	output                        ready, 
@@ -137,7 +156,8 @@ print $fh <<"DONATE";
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel
+	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_previous,
+	output                                               ifm_sel_next
     );
 	
 	wire fifo_enable;
@@ -179,7 +199,7 @@ print $fh <<"DONATE";
     .end_to_previous(end_to_previous),
     .ready(ready),
     
-    .ifm_sel(ifm_sel),
+    .ifm_sel_previous(ifm_sel_previous),
     .ifm_enable_read_current(ifm_enable_read_current),
     .ifm_address_read_current(ifm_address_read_current),
     
@@ -200,6 +220,7 @@ print $fh <<"DONATE";
     .ifm_enable_write_next(ifm_enable_write_next),
     .ifm_address_read_next(ifm_address_read_next), 
     .ifm_address_write_next(ifm_address_write_next),
+	.ifm_sel_next(ifm_sel_next),
     .start_to_next(start_to_next)
     );    
      

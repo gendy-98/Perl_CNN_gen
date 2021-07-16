@@ -87,18 +87,12 @@ $module $module_name $parameter
 	$ifm_depth             = $ARGV[6],
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
-	$number_of_units       = 3
+	$number_of_units       = 3,
     ARITH_TYPE              = $ARGV[2],
 	//////////////////////////////////////
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
-	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
-	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
-	NUMBER_OF_WM            = KERNAL_SIZE*KERNAL_SIZE,                              
-	NUMBER_OF_BITS_SEL_IFM_NEXT = $clog2(NUMBER_OF_IFM_NEXT)
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS),    
+	NUMBER_OF_IFM           = IFM_DEPTH
 )(
 	input clk,
 	input reset,
@@ -176,12 +170,12 @@ DONATE
 	assign wm_address = wm_addr_sel ? wm_address_read_current : riscv_address[ADDRESS_SIZE_WM-1:0];
 	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2(NUMBER_OF_FILTERS)-1:0];
     
-    SinglePort_Memory #(.MEM_SIZE (NUMBER_OF_FILTERS)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
+    $single_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (NUMBER_OF_FILTERS)) bm (.clk(clk),	.Enable_Write(bm_enable_write),
      .Enable_Read(bm_enable_read),	.Address(bm_address),
 	 .Data_Input(riscv_data),	.Data_Output(data_bias));
 	 
 
-	TrueDualPort_Memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
 	convA1_IFM1 (
     .clk(clk),
     
@@ -190,7 +184,7 @@ DONATE
     .Enable_Write_A(ifm_enable_write_previous[0]),
     .Enable_Read_A(1'b0), 
   
-    .Data_Input_B(32'b0),
+    .Data_Input_B({DATA_WIDTH{1'b0}}),
     .Address_B(ifm_address_read_current),
     .Enable_Write_B(1'b0),
     .Enable_Read_B(ifm_enable_read_current), 
@@ -210,11 +204,11 @@ if($ARGV[9] == 1){
     .Data_Input_A(riscv_data),
     .Address_A(riscv_address),
     .Enable_Write_A(ifm_enable_write_previous[1]),
-    .Enable_Read_A(0), 
+    .Enable_Read_A(1'b0), 
   
-    .Data_Input_B(0),
+    .Data_Input_B({DATA_WIDTH{1'b0}}),
     .Address_B(ifm_address_read_current),
-    .Enable_Write_B(0),
+    .Enable_Write_B(1'b0),
     .Enable_Read_B(ifm_enable_read_current), 
   
     .Data_Output_A(),
@@ -228,11 +222,11 @@ if($ARGV[9] == 1){
     .Data_Input_A(riscv_data),
     .Address_A(riscv_address),
     .Enable_Write_A(ifm_enable_write_previous[2]),
-    .Enable_Read_A(0), 
+    .Enable_Read_A(1'b0), 
   
-    .Data_Input_B(0),
+    .Data_Input_B({DATA_WIDTH{1'b0}}),
     .Address_B(ifm_address_read_current),
-    .Enable_Write_B(0),
+    .Enable_Write_B(1'b0),
     .Enable_Read_B(ifm_enable_read_current), 
   
     .Data_Output_A(),
@@ -240,10 +234,16 @@ if($ARGV[9] == 1){
 	);
 DONATE
 }
+if($ARGV[9] == 1){#rgb
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 3");
 
+}
+else{#gray
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 1");
 
-system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9]");
-$unit_name = "unitA_$ARGV[2]";
+}
+
+$unit_name = "unitA_$ARGV[5]";
 
 print $fh <<"DONATE"; 
     $unit_name 
@@ -322,8 +322,8 @@ DONATE
 if($ARGV[9] == 1){#rgb
 	print $fh <<"DONATE";
 	
-	adder #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH)) Add (.in1 (partial_sum1), .in2 (partial_sum2), .out (full_sum_reg));
-	relu  Active1 (.in(full_sum),.out (data_out_for_next), .relu_enable(1'b1)); 
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (partial_sum1), .in2 (partial_sum2), .out (full_sum_reg));
+	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum),.out (data_out_for_next), .relu_enable(1'b1)); 
 	
 endmodule
 DONATE
@@ -332,7 +332,7 @@ DONATE
 else{#gray
 
 	print $fh <<"DONATE";   
-	relu  Active1 (.in(unit1_data_out),.out (data_out_for_next), .relu_enable(1'b1)); 
+	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(unit1_data_out),.out (data_out_for_next), .relu_enable(1'b1)); 
  	 
 	
 endmodule

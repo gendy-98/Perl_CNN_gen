@@ -241,11 +241,11 @@ DONATE
   chdir "./CU_DP/Modules";
   system("perl fc_fifo.pl $ARGV[4] $ARGV[1]");
   
-  my $fifo_name = "fc_fifo_$ARGV[4]";
+  my $fifo_name = "fo_fifo_$ARGV[4]";
   
   print $fh <<"DONATE";
   
-	$fifo_name #(.DATA_WIDTH(DATA_WIDTH), .delay_cycles($ARGV[4]))
+	$fifo_name #(.DATA_WIDTH(DATA_WIDTH), .REGS_NUM($ARGV[4]))
 	FIFO1
 	(
 		.clk(clk),

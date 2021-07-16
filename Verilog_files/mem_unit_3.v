@@ -7,7 +7,7 @@ module
 	DATA_WIDTH				= 32,
 ///////////architecture parameters//////
 	IFM_SIZE				= 16, 
-    ADDRESS_SIZE_IFM		= $clog2(IFM_SIZE*IFM_SIZE))
+    ADDRESS_SIZE_IFM		= $clog2(IFM_SIZE*IFM_SIZE)
 
 	)(
 	input clk,

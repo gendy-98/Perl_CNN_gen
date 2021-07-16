@@ -68,7 +68,7 @@ $module $module_name $parameter
 	$data_width				= 32,
 ///////////architecture parameters//////
 	$ifm_size				= 16, 
-    ADDRESS_SIZE_IFM		= $clog2($ifm_size*$ifm_size))
+    ADDRESS_SIZE_IFM		= $clog2($ifm_size*$ifm_size)
 
 	)(
 	$i_p clk,

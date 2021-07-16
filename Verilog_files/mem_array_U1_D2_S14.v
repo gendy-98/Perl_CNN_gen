@@ -9,11 +9,11 @@ module
 	IFM_SIZE              = 14,                                                
     NUMBER_OF_IFM         = 2,
     NUMBER_OF_UNITS       = 1,
-    ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE))
+    ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE)
 
 	)(
 	input clk,
-	input [$clog2($ceil(NUMBER_OF_IFM/NUMBER_OF_UNITS))-1:0] ifm_sel,
+	input [$clog2(2)-1:0] ifm_sel,
 	input                        ifm_enable_write_previous,            
 	input                        ifm_enable_read_previous, 
 	input  [ADDRESS_SIZE_IFM-1:0] ifm_address_write_previous,

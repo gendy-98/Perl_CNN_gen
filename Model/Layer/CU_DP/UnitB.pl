@@ -16,6 +16,7 @@ use feature "switch";
 #ARGV[3] NUMBER_OF_FILTERS 6
 #ARGV[4] NUMBER_OF_UNITS 3
 #ARGV[5] ARITH_TYPE 0
+#ARGV[6] stride
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";

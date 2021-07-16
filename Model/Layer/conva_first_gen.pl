@@ -70,11 +70,16 @@ my $Relu_name = "relu";
 my $cu_name;
 my $dp_name;
 my $accumulator_name = "accumulator"; 
-$module_name = " top_conva$ARGV[0]";
+$module_name = "top_conva$ARGV[0]";
 
 
  
-
+if($ARGV[9] == 1){
+	$cu_name = 3;
+}
+else{	
+	$cu_name = 1;
+}
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -91,7 +96,7 @@ $module $module_name $parameter
 	$ifm_depth             = $ARGV[6],
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
-	$number_of_units       = $ARGV[9],
+	$number_of_units       = $cu_name,
 	ARITH_TYPE 				= $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
@@ -130,32 +135,12 @@ DONATE
 
 
 print $fh <<"DONATE";
-	output                        ifm_enable_read_current,
-	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
-	output                        end_to_previous,
-	
-	output                        ready, 
-	input  end_from_next,
-	
-	input  [DATA_WIDTH-1:0] data_in_from_next,
-	
-	output [DATA_WIDTH-1:0] data_out_for_next,
-	
-	output ifm_enable_read_next,
-	output ifm_enable_write_next,
-    //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
-    //output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
-	output start_to_next,
-	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel
-    );
-	
 	wire fifo_enable;
     wire conv_enable;
-    wire accu_enable;
-    wire relu_enable;
-    
-    
+	
+	wire                        ifm_enable_read_current;
+	wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current;
+   
     wire wm_addr_sel;
     wire wm_enable_read;
     wire [ADDRESS_SIZE_WM-1:0] wm_address_read_current;

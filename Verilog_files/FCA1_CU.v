@@ -1,88 +1,11 @@
-use strict;
-use warnings;
-use diagnostics;
-use POSIX;
-
-# say prints a line followed by a newline
-use feature 'say';
- 
-# Use a Perl version of switch called given when
-use feature "switch";
-use POSIX;
-#argumets 
-#ARGV[0] DATA_WIDTH 32
-#ARGV[1] IFM_DEPTH 120
-#ARGV[2] FC_number 1
-#ARGV[3] Is it the last FC? (1 Yes/0 No) 0
-######################################### CONSTANTS ###################################
-my $module = <<"DONATE";
 `timescale 1ns / 1ps
 
 
 module 
-DONATE
-
-my $FC_number = $ARGV[2];
-my $parameter = "#(parameter";
-
-my $always_clk = <<"DONATE";
-always @ (posedge clk)
-    begin 
-DONATE
-my $end = "end";
-my $end_module = "endmodule";
-my $i_p = "input";
-my $o_p = "output";
-my $under_Score = "_";
-my $clog2 = "\$clog2";
-
-my $data_width = "SIG_DATA_WIDTH";
-my $address_bits = "ADDRESS_BITS";
-
-my $ifm_size = "IFM_SIZE";                                               
-my $ifm_depth = "IFM_DEPTH";
-my $kernal_size = "KERNAL_SIZE";
-my $number_of_filters = "NUMBER_OF_FILTERS";
-my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
-#######################################################################################
-my $i = 0;
-my $j = 0;
-my $jj = 0;
-my $file_name;
-my $module_name;
-
-$module_name = "FCA${\($FC_number)}_CU";
-
-
-$file_name = $full_path . $module_name . ".v";
-open my $fh, '>', $file_name
-  or die "Can't open file : $!";
-  
-my $delay_cycles;
-  
-my $signal_bits = 1;
-
-if($ARGV[3] == 0){
-$delay_cycles = 2;
-}
-else{
-$delay_cycles = 3;
-}
-
-chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
-
-system("perl delay.pl 2 1");
-
-my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
-  
-
-print $fh <<"DONATE";
-$module $module_name $parameter
+ FCA1_CU #(parameter
 ///////////advanced parameters//////////
-	$data_width              = $ARGV[0],                                                
-	$ifm_depth             = $ARGV[1],
+	SIG_DATA_WIDTH              = 32,                                                
+	IFM_DEPTH             = 120,
 	//////////////////////////////////////
 	ADDRESS_SIZE_WM = $clog2(IFM_DEPTH)
 )(
@@ -102,26 +25,10 @@ $module $module_name $parameter
     output fc_output_ready,
     output enable_write_next,
 	
-DONATE
-  
-  if($ARGV[3] == 0){
-  print $fh <<"DONATE";
 	output start_to_next
     );
   
   
-DONATE
-  }
-  else{
-	print $fh <<"DONATE";
-	output output_ready
-    );
-  
-  
-DONATE
-  }
-
-  print $fh <<"DONATE";
     localparam [1:0]   IDLE     = 2'b00,
                        READ     = 2'b01,
                        FINISH   = 2'b10,
@@ -221,7 +128,7 @@ DONATE
      .Data_out(enable_write_next)
     );
     
-    delay_2_1 #(.$data_width(1), .delay_cycles(2)) 
+    delay_2_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(2)) 
     d1
     (.clk(clk),
      .reset(reset),
@@ -229,33 +136,13 @@ DONATE
      .Data_Out(bias_sel)
     );
 
-DONATE
-
-#if this is the only fc start_to_next = output_ready, delay changed from 2 to 3
-
-if($ARGV[3] == 0){
-	print $fh <<"DONATE";
-    $delay_name #(.$data_width(1), .delay_cycles(2)) 
+    delay_2_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(2)) 
     d2
     (.clk(clk),
      .reset(reset), 
      .Data_In(wm_address_read_current_tick), 
      .Data_Out(start_to_next)
     );
-DONATE
-}
-else{
-	print $fh <<"DONATE";
-    $delay_name #(.$data_width(1), .delay_cycles(3)) 
-    d2
-    (.clk(clk),
-     .reset(reset), 
-     .Data_In(wm_address_read_current_tick), 
-     .Data_Out(output_ready)
-    );
-DONATE
-}
-    print $fh <<"DONATE";
 	always @(posedge clk, posedge reset)
     begin
         if(reset)
@@ -269,8 +156,3 @@ DONATE
 
     
 endmodule
-DONATE
-
-
-
-close $fh or die "Couldn't Close File : $!";

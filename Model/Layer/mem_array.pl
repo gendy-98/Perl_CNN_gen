@@ -86,11 +86,11 @@ $module $module_name $parameter
 	$ifm_size              = $ARGV[4],                                                
     NUMBER_OF_IFM         = $IFM_number,
     NUMBER_OF_UNITS       = $units,
-    ADDRESS_SIZE_IFM      = $clog2($ifm_size*$ifm_size))
+    ADDRESS_SIZE_IFM      = $clog2($ifm_size*$ifm_size)
 
 	)(
 	$i_p clk,
-	$i_p [$clog2($ceil(NUMBER_OF_IFM/NUMBER_OF_UNITS))-1:0] ifm_sel,
+	$i_p [$clog2(${\(ceil($IFM_number/$units))})-1:0] ifm_sel,
 	$i_p                        ifm_enable_write_previous,            
 	$i_p                        ifm_enable_read_previous, 
 	$i_p  [ADDRESS_SIZE_IFM-1:0] ifm_address_write_previous,
@@ -432,10 +432,10 @@ for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	.Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut1 ),
     .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut1 ),  
 	
-	.Enable_Write_A_Mem (ifm_enable_write_previous_dMuxOut$i),
-    .Enable_Read_A_Mem  (ifm_enable_read_A_next_dMuxOut1),
-    .Enable_Write_B_Mem (1'b0),
-    .Enable_Read_B_Mem  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut1),
+	.Enable_Write_A (ifm_enable_write_previous_dMuxOut$i),
+    .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut1),
+    .Enable_Write_B (1'b0),
+    .Enable_Read_B  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut1),
 	  
 	
     .Data_Output_A(Data_Output_A_Mem$accu_var),

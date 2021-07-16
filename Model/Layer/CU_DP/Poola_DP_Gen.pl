@@ -147,15 +147,20 @@ print $fh <<"DONATE";
 	);
 	
 DONATE
-
-
+#ARGV[0] DATA_WIDTH 32
+#ARGV[1] IFM_SIZE 14
+#ARGV[2] IFM_DEPTH 3
+#ARGV[3] KERNAL_SIZE 2
+#ARGV[4] NO._OF_UNITS 1
+#ARGV[5] STRIDE 2
+#ARGV[6] ARITH_TYPE
 
 
 
 
 
 print $fh <<"DONATE";
-	average_pooling #(.DATA_WIDTH(DATA_WIDTH), ARITH_TYPE(ARITH_TYPE))
+	average_pooling #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
 	pool_1 (
 	.clk(clk),
     .reset(reset),

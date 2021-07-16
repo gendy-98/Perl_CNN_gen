@@ -65,7 +65,10 @@ $i = $i + 2;
 my $muls_convolution = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $divided_by = $AdvancedParameters_info[$i];
-
+$i = $i + 2;
+my $pool_size = $AdvancedParameters_info[$i];
+$i = $i + 2;
+my $rgb = $AdvancedParameters_info[$i];
 
 my $float_oldver = "float";
 ###################################################
@@ -80,6 +83,7 @@ system("perl Relu.pl");
 system("perl singleportmemory.pl");
 chdir "../Layer/CU_DP/Modules";
 system("perl convolution.pl $muls_convolution $arith_type $data_width");
+system("perl pool.pl  $pool_size  $arith_type $data_width");
 chdir "./operations";
 system("perl adder.pl $arith_type $data_width $M_Mantissa $E_Exponent");
 system("perl divider.pl $arith_type $data_width $M_Mantissa $E_Exponent $divided_by");
@@ -143,5 +147,5 @@ $number_of_filters = join(",", @number_of_filters_r);
 $stride = join(",", @stride_r);
 
 chdir "./Model";
-system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits 3 $stride $arith_type");
+system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits $rgb $stride $arith_type");
 
