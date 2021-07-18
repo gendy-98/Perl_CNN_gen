@@ -2,11 +2,11 @@
 
 
 module 
- FIFO_4_2_9 #(parameter
+ FIFO_4_2_12 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 ///////////architecture parameters//////
-	IFM_SIZE 					= 7,
+	IFM_SIZE 					= 10,
 	KERNAL_SIZE 				= 2,
 ///////////generated parameters/////////
 	FIFO_SIZE               	= (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE            
@@ -36,6 +36,9 @@ module
 			FIFO[6] <= {DATA_WIDTH{1'b0}};
 			FIFO[7] <= {DATA_WIDTH{1'b0}};
 			FIFO[8] <= {DATA_WIDTH{1'b0}};
+			FIFO[9] <= {DATA_WIDTH{1'b0}};
+			FIFO[10] <= {DATA_WIDTH{1'b0}};
+			FIFO[11] <= {DATA_WIDTH{1'b0}};
 		end
 		else if(fifo_enable)
 		begin
@@ -47,6 +50,10 @@ module
 			FIFO[5] <= FIFO[3];
 			FIFO[6] <= FIFO[4];
 			FIFO[7] <= FIFO[5];
+			FIFO[8] <= FIFO[6];
+			FIFO[9] <= FIFO[7];
+			FIFO[10] <= FIFO[8];
+			FIFO[11] <= FIFO[9];
 		end
 	end
 

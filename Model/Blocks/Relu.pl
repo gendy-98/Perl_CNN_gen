@@ -11,6 +11,7 @@ use feature "switch";
 #argumets 
 #No arguments needed 
 #They get passed from higher layer
+#ARGV[0] $relative_path
 #
 
 ######################################### CONSTANTS ###################################
@@ -35,7 +36,7 @@ my $clog2 = "\$clog2";
 
 my $data_width = "DATA_WIDTH";
 my $mem_size = "MEM_SIZE";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[0]/";
 
 #######################################################################################
 

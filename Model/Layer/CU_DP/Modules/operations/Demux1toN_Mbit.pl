@@ -12,6 +12,7 @@ use POSIX qw/ceil/;
 #argumets 
 #ARGV[0] N number of outputs 
 #ARGV[1] M number of bits (data_width)
+#$ARGV[2]
 #
 
 
@@ -37,7 +38,7 @@ my $i_p = "input";
 my $o_p = "output";
 my $under_Score = "_";
 my $braket = "[";
-my $full_path = "../../../../../Verilog_files/";
+my $full_path = "../../../../../$ARGV[2]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -52,7 +53,7 @@ $module_name = "demux_1_to_$ARGV[0]_$ARGV[1]bits";
 
 
 $demux_instance_name = "demux_1_to_$ARGV[0]";
-system("perl Demux1toN.pl  $ARGV[0]");
+system("perl Demux1toN.pl  $ARGV[0] $ARGV[2]");
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";

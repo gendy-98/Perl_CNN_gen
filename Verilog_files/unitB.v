@@ -94,7 +94,7 @@ module
 	wire [DATA_WIDTH-1:0] accu_data_out;
 	wire [DATA_WIDTH-1:0] relu_data_out;
 
-single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * NUMBER_OF_FILTERS * (6))) 
+single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * IFM_DEPTH * (6))) 
 	WM 
 	(
 	 .clk(clk),	

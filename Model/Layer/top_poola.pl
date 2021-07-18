@@ -19,7 +19,7 @@ use POSIX; # for ceil and floor
 #ARGV[4] NO._OF_UNITS 1
 #ARGV[5] STRIDE 2
 #ARGV[6] ARITH_TYPE
-
+#ARGV[7]
 
 
 
@@ -49,7 +49,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -63,13 +63,13 @@ my $IFM_number;
 
 chdir "./CU_DP";
 
-system("perl Poola_CU_Gen.pl  $ARGV[1] $ARGV[3] $ARGV[5]");
+system("perl Poola_CU_Gen.pl  $ARGV[1] $ARGV[3] $ARGV[5] $ARGV[7]");
 
 
 
 
 
-system("perl Poola_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6]");
+system("perl Poola_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7]");
 
 chdir "..";
 

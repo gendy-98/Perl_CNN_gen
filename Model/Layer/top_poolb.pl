@@ -18,6 +18,7 @@ use POSIX; # for ceil and floor
 #ARGV[4] NUMBER_OF_UNITS 3
 #ARGV[5] STRIDE 2
 #ARGV[6] ARITH_TYPE
+#ARGV[7]
 #
 
 ######################################### CONSTANTS ###################################
@@ -46,7 +47,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -64,7 +65,7 @@ chdir "./CU_DP";
 #ARGV[2] KERNAL_SIZE 2
 #ARGV[3] NUMBER_OF_UNITS 3
 #ARGV[4] STRIDE 2
-system("perl Poolb_CU_Gen.pl  $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5]");
+system("perl Poolb_CU_Gen.pl  $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[7]");
 #ARGV[0] DATA_WIDTH 32
 #ARGV[1] IFM_SIZE 10
 #ARGV[2] IFM_DEPTH 16
@@ -72,7 +73,7 @@ system("perl Poolb_CU_Gen.pl  $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5]");
 #ARGV[4] NUMBER_OF_UNITS 3
 #ARGV[5] STRIDE 2
 #ARGV[6] ARITH_TYPE
-system("perl Poolb_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[5] $ARGV[4] $ARGV[3] $ARGV[6]");
+system("perl Poolb_DP_Gen.pl  $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[5] $ARGV[4] $ARGV[3] $ARGV[6] $ARGV[7]");
 
 
 

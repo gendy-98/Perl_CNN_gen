@@ -17,7 +17,7 @@ module
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(6) ),    
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
@@ -54,7 +54,7 @@ module
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_previous,
+	output [$clog2((6))-1:0] ifm_sel_previous,
 	output                                               ifm_sel_next
     );
 	
@@ -91,8 +91,9 @@ module
     .ready(ready),
     
     .ifm_sel_previous(ifm_sel_previous),
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+	//it has no stride 2 it need correction in CU.pl
+    .ifm_enable_read_current(ifm_enable_read_A_current),
+    .ifm_address_read_current(ifm_address_read_A_current),
     
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
@@ -134,9 +135,9 @@ module
     .accu_enable(accu_enable),
     .relu_enable(relu_enable),
 	
-	.data_in_from_previous1(data_in_from_previous1),
-	.data_in_from_previous2(data_in_from_previous2),
-	.data_in_from_previous3(data_in_from_previous3),
+	.data_in_A_from_previous1(data_in_A_from_previous1),
+	.data_in_A_from_previous2(data_in_A_from_previous2),
+	.data_in_A_from_previous3(data_in_A_from_previous3),
 
 	
     .wm_addr_sel(wm_addr_sel),

@@ -8,6 +8,8 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+use POSIX;
+
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
@@ -20,6 +22,7 @@ use feature "switch";
 #ARGV[8] NUMBER_OF_FILTERS  filter_num
 #ARGV[9] NUMBER_OF_UNITS    layer_units
 #ARGV[10]stride
+#ARGV[11] $relative_path
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -49,7 +52,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[11]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -93,7 +96,7 @@ $module $module_name $parameter
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[6]/$ARGV[9]))}) ),    
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
@@ -156,7 +159,7 @@ print $fh <<"DONATE";
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_previous,
+	output [$clog2((${\(ceil($ARGV[6]/$ARGV[9]))}))-1:0] ifm_sel_previous,
 	output                                               ifm_sel_next
     );
 	
@@ -180,7 +183,7 @@ print $fh <<"DONATE";
 DONATE
 chdir "./CU_DP";
 
-system("perl CU_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
+system("perl CU_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
 
 $cu_name = "conva$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -200,8 +203,9 @@ print $fh <<"DONATE";
     .ready(ready),
     
     .ifm_sel_previous(ifm_sel_previous),
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+	//it has no stride 2 it need correction in CU.pl
+    .ifm_enable_read_current(ifm_enable_read_A_current),
+    .ifm_address_read_current(ifm_address_read_A_current),
     
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
@@ -227,7 +231,7 @@ print $fh <<"DONATE";
 DONATE
 
 
-system("perl DP_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10]");
+system("perl DP_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] $ARGV[11]");
 
 $dp_name = "conva$ARGV[0]_DP";
 print $fh <<"DONATE";
@@ -253,8 +257,13 @@ print $fh <<"DONATE";
 DONATE
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
-	.data_in_from_previous$i(data_in_from_previous$i),
+	.data_in_A_from_previous$i(data_in_A_from_previous$i),
 DONATE
+	if($ARGV[10] == 2){
+		print $fh <<"DONATE";
+	.data_in_B_from_previous$i(data_in_B_from_previous$i),
+DONATE
+	}
 }
 
 print $fh <<"DONATE";

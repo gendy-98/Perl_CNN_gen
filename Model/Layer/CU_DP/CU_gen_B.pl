@@ -17,6 +17,7 @@ use POSIX;
 #ARGV[4] KERNAL_SIZE 5 		
 #ARGV[5] NUMBER_OF_FILTERS 6
 #ARGV[6] NUMBER_OF_UNITS 3
+#ARGV[7]
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -46,7 +47,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -66,24 +67,6 @@ my $Relu_name = "relu";
 my $accumulator_name = "accumulator"; 
 $module_name = "convb$ARGV[0]_CU";
 
-
-
-$dummy_level = $ARGV[1]; 
-
-
-
-$levels_number = ceil(log($dummy_level)/log(2));
-
-my $delay_cycles = $levels_number;
-
-
-$dummy_level = $ARGV[6]; 
-
-$levels_number = ceil(log($dummy_level)/log(2));
-
-
-
-$delay_cycles = $delay_cycles + $levels_number;
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -508,9 +491,23 @@ $module $module_name $parameter
 
 DONATE
 
+$dummy_level = $ARGV[1]; 
+
+
+#ifm read -1
+$levels_number = ceil(log($dummy_level)/log(2)) +1 -1;
+
+my $delay_cycles = $levels_number;
+
+
+
+
+
+
+
 my $signal_bits = 1;
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[7]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
@@ -526,7 +523,7 @@ DONATE
 
 
 $delay_cycles = 1;
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[7]");
 
 $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  

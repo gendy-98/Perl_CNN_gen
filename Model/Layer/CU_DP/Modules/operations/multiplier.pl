@@ -14,6 +14,7 @@ use feature "switch";
 #ARGV[1] DATA_WIDTH
 #ARGV[2] M - Mantissa, precision
 #ARGV[3] E - Exponent, integer bits
+#$ARGV[4]
 #
 
 
@@ -36,7 +37,7 @@ my $end_module = "endmodule";
 my $i_p = "input";
 my $o_p = "output";
 my $under_Score = "_";
-my $full_path = "../../../../../Verilog_files/";
+my $full_path = "../../../../../$ARGV[4]/";
 #######################################################################################
 my $i = 0;
 
@@ -51,8 +52,8 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
 
-system("perl fixed_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2]");
-system("perl floating_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2]");
+system("perl fixed_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2] $ARGV[4]");
+system("perl floating_point_mul.pl $ARGV[1] $ARGV[3] $ARGV[2] $ARGV[4]");
 
 
 print $fh <<"DONATE";
@@ -69,9 +70,9 @@ $module $module_name $parameter
     
     generate
 		if (ARITH_TYPE)
-			fixed_point_mul    mul (.in1(in1), .in2(in2), .out(out));
+			fixed_point_mul  #(.DATA_WIDTH(DATA_WIDTH))  mul (.in1(in1), .in2(in2), .out(out));
 		else
-			floating_point_mul mul (.in1(in1), .in2(in2), .out(out));
+			floating_point_mul  #(.DATA_WIDTH(DATA_WIDTH), .E($ARGV[3]), .M($ARGV[2])) mul (.in1(in1), .in2(in2), .out(out));
     endgenerate
     
 endmodule

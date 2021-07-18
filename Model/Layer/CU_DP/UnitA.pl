@@ -19,7 +19,7 @@ use POSIX;
 #ARGV[5] IFM_DEPTH
 #ARGV[6] NUMBER_OF_FILTERS
 #ARGV[7] NUMBER_OF_UNITS
-
+#$ARGV[8]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -48,7 +48,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[8]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -129,7 +129,7 @@ DONATE
 
 
 chdir "./Modules";
-system("perl fc_fifo.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[0] ");
+system("perl fc_fifo.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[0] $ARGV[8]");
 
 my $num_outputs = $ARGV[2]*$ARGV[2];
 my $fifo_regs = (($ARGV[2] - 1)*$ARGV[1] + $ARGV[2]);
@@ -151,7 +151,7 @@ for($i = 1; $i < ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 print $fh "\t\t.fifo_data_out_$i(signal_w$i)\n";
 
 
-system("perl fifo.pl  $ARGV[3] $ARGV[0] $ARGV[1] $ARGV[2] ");
+system("perl fifo.pl  $ARGV[3] $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[8]");
 
 $num_outputs = $ARGV[2]*$ARGV[2];
 $fifo_regs = (($ARGV[2] - 1)*$ARGV[1] + $ARGV[2]);

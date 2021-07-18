@@ -20,6 +20,7 @@ use POSIX;
 #ARGV[6] KERNAL_SIZE  
 #ARGV[7] NUMBER_OF_FILTERS
 #ARGV[8] RGB
+#ARGV[9]
 #
 
 ######################################### CONSTANTS ###################################
@@ -50,7 +51,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[9]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -71,6 +72,12 @@ my $accumulator_name = "accumulator";
 $module_name = "conva$ARGV[0]_CU";
 
  
+if($ARGV[8] == 1){#rgb
+    $dummy_level = 3; 
+}
+else{#gray
+    $dummy_level = 1; 
+}
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -86,13 +93,13 @@ $module $module_name $parameter
 	$ifm_depth              = $ARGV[5],
 	$kernal_size            = $ARGV[6],
 	$number_of_filters      = $ARGV[7],
-	$number_of_units        = $ARGV[5],
+	$number_of_units        = $dummy_level,
     ARITH_TYPE              = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[5]/$dummy_level))}) ),    
 	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),												 
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH
@@ -136,7 +143,7 @@ $module $module_name $parameter
     wire filters_counter_tick;
     reg start_internal;
     wire start;
-    wire no_more_start_flag;
+
     
     reg mem_empty; 
     wire signal_hold;
@@ -461,7 +468,7 @@ $dummy_level = $ARGV[1];
 
 
 
-$levels_number = ceil(log($dummy_level)/log(2));
+$levels_number = ceil(log($dummy_level)/log(2))  + 1;
 
 my $delay_cycles = $levels_number;
 
@@ -474,17 +481,17 @@ else{#gray
 }
 
 
-$levels_number = ceil(log($dummy_level)/log(2));
+$levels_number = ceil(log($dummy_level+1)/log(2));
 
 
 
-$delay_cycles = $delay_cycles + $levels_number + 1;
+$delay_cycles = $delay_cycles + $levels_number ;
 
 
 
 my $signal_bits = 1;
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[9]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
@@ -492,8 +499,9 @@ my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
 print $fh <<"DONATE";   
 
 $delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
-	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
-		.Data_Out(ifm_enable_read_next)
+	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), 
+        .Data_In(conv_enable), 
+		.Data_Out(ifm_enable_write_next)
 		);
 		
 DONATE

@@ -11,6 +11,7 @@ use POSIX qw/ceil/;
 
 #argumets 
 #ARGV[0] N number of outputs
+#$ARGV[1]
 #
 
 
@@ -34,7 +35,7 @@ my $end_module = "endmodule";
 my $i_p = "input";
 my $o_p = "output";
 my $under_Score = "_";
-my $full_path = "../../../../../Verilog_files/";
+my $full_path = "../../../../../$ARGV[1]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;

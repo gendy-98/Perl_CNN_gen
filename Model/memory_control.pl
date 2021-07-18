@@ -18,6 +18,7 @@ use feature "switch";
 #ARGV[4] ADDRESS_BITS
 #ARGV[5] ENABLE_BITS
 #ARGV[6] RGB FLAG
+#ARGV[7] $relative_path
 
 
 
@@ -50,7 +51,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../Verilog_files/";
+my $full_path = "../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -88,7 +89,7 @@ $module $module_name $parameter
     $enable_bits            = $ARGV[5])
 
 	(
-	$i_p clk,
+
     $i_p [$data_width-1:0] riscv_data_bus,
     $i_p [$address_bus-1:0] riscv_address_bus,
     $i_p initialization_done, 
@@ -146,7 +147,9 @@ DONATE
 
 my $no_of_memories_total = 0;
 for($i = 0; $i <$Array_number; $i = $i + 1){
+	if (index($Layers_names[$i], "pool") == -1) {
 	$no_of_memories_total = $no_of_memories_total + $UnitsInEachLayer[$i];
+	}
 }
 
 if($ARGV[6] == 0){
@@ -158,11 +161,13 @@ else{
 #7esbet el bias
 my $bias_count = 0;
 for($i = 0; $i <$Array_number; $i = $i + 1){
-	if (index($Layers_names[$i], "convb") == -1) {
-		$bias_count = $bias_count + 1;
-	}
-	else{
-		$bias_count = $bias_count + $UnitsInEachLayer[$i];
+	if (index($Layers_names[$i], "pool") == -1) {
+		if (index($Layers_names[$i], "convb") == -1) {
+			$bias_count = $bias_count + 1;
+		}
+		else{
+			$bias_count = $bias_count + $UnitsInEachLayer[$i];
+		}
 	}
 }
 	
@@ -226,10 +231,12 @@ print $fh "\n\n";
 
 my $index_summer = 0;
 for($i = 0; $i <$Array_number; $i = $i + 1){
+	if (index($Layers_names[$i], "pool") == -1) {
 	print $fh <<"DONATE";
 	assign $Layers_names[$i]_wm_enable_write = enable_write[${\($index_summer+$UnitsInEachLayer[$i]-1)}:$index_summer];
 DONATE
 $index_summer = $index_summer + $UnitsInEachLayer[$i];
+	}
 }
 
 print $fh "\n";
@@ -237,6 +244,7 @@ print $fh "\n";
 
 
 for($i = 0; $i <$Array_number; $i = $i + 1){
+	if (index($Layers_names[$i], "pool") == -1) {
 	if (index($Layers_names[$i], "convb") == -1) {
 	print $fh <<"DONATE";
 	assign $Layers_names[$i]_bm_enable_write = enable_write[$index_summer];
@@ -248,6 +256,7 @@ $index_summer = $index_summer + 1;
 	assign $Layers_names[$i]_bm_enable_write = enable_write[${\($index_summer + $UnitsInEachLayer[$i]-1)}:$index_summer];
 DONATE
 $index_summer = $index_summer + $UnitsInEachLayer[$i];
+	}
 	}
 }
 

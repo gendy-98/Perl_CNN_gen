@@ -14,6 +14,7 @@ use feature "switch";
 #ARGV[1] DATA_WIDTH 
 #ARGV[2] IFM_SIZE
 #ARGV[3] KERNAL_SIZE 
+#$ARGV[4]
 #
 
 ######################################### CONSTANTS ###################################
@@ -42,7 +43,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../../../Verilog_files/";
+my $full_path = "../../../../$ARGV[4]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;

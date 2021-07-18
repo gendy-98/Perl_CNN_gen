@@ -4,12 +4,12 @@
 module 
  poolb_cu_U3 #(parameter
 
-	IFM_SIZE              = 7,                                                
+	IFM_SIZE              = 10,                                                
 	IFM_DEPTH             = 16,
 	KERNAL_SIZE           = 2,
 	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
-	NUMBER_OF_IFM_NEXT      = IFM_DEPTH,
+
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
     ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),    
@@ -30,7 +30,7 @@ module
     output ifm_enable_write_next,
 	output reg [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output reg start_to_next,
-	output reg [$clog2(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
+	output reg [$clog2((6))-1:0] ifm_sel_next
     );
        
     reg  start_ifm_address_read_current;
@@ -119,7 +119,7 @@ module
         if(reset)
             ifm_sel_next <= 0;
 
-		else if(ifm_sel_next == 6-1 & start_to_next) //6 = ceil((NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS))
+		else if(ifm_sel_next == 6-1 & start_to_next) //6 = ceil((NUMBER_OF_IFM_NEXT/ NUMBER_OF_UNITS))
 		    ifm_sel_next <= 0;
         else if(start_to_next)
             ifm_sel_next <= ifm_sel_next + 1'b1;      

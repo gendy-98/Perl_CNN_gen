@@ -4,7 +4,7 @@
 module 
  floating_point_adder #(parameter
 	DATA_WIDTH = 32,
-	E = 24, 
+	E = 23, 
 	M = 8 )
     (
     input [DATA_WIDTH-1:0] in1,
@@ -13,8 +13,8 @@ module
     );
  
     wire sign1,sign2,signOUT;
-    wire [E-1:0] Exponent1,Exponent2,ExponentOUT;
-    wire [M-1:0] Mantissa1,Mantissa2,MantissaOUT; 
+    wire [E-1:0] Exponent1,Exponent2;
+    wire [M-1:0] Mantissa1,Mantissa2; 
     
     wire [M:0] MantissaUnNORMALIZED1;
     wire [M:0] MantissaUnNORMALIZED2;

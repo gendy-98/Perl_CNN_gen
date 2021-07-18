@@ -22,7 +22,7 @@ units number,3
 layer name,pool2
 kernal size ,2
 stride,2
-input size,7
+input size,10
 input channels,16
 output channels,16
 units number,3

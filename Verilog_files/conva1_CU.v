@@ -16,7 +16,7 @@ module
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(1) ),    
 	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),												 
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH
@@ -60,7 +60,7 @@ module
     wire filters_counter_tick;
     reg start_internal;
     wire start;
-    wire no_more_start_flag;
+
     
     reg mem_empty; 
     wire signal_hold;
@@ -380,9 +380,10 @@ module
     assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
         
 
-delay_6_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(6))
-	DBlock_6_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
-		.Data_Out(ifm_enable_read_next)
+delay_7_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(7))
+	DBlock_7_1 (.clk(clk), .reset(reset), 
+        .Data_In(conv_enable), 
+		.Data_Out(ifm_enable_write_next)
 		);
 		
 	//////////////////////////

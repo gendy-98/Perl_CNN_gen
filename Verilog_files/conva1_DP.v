@@ -48,6 +48,11 @@ module
 
 	wire [DATA_WIDTH-1:0] data_read_for_unit1;
 	wire [DATA_WIDTH-1:0] unit1_data_out;
+
+	reg [DATA_WIDTH-1:0] full_sum_r;
+	wire [DATA_WIDTH-1:0] full_sum;
+
+    wire [DATA_WIDTH-1:0] data_bias;
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
 	wire [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address;
 	
@@ -77,7 +82,12 @@ module
     .Data_Output_B(data_read_for_unit1)
 	);
 	  
-    unitA_32 
+    unitA_32 #(
+     .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .IFM_DEPTH(IFM_DEPTH), 
+	 .KERNAL_SIZE(KERNAL_SIZE), 
+	 .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS))
     convA1_unit_1
     (
     .clk(clk),                                 
@@ -93,7 +103,15 @@ module
     .unit_data_out(unit1_data_out)   
     );
 	
-	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(unit1_data_out),.out (data_out_for_next), .relu_enable(1'b1)); 
+    always @(posedge clk)
+	begin
+	   full_sum_r     <= full_sum;
+	end
+
+
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit1_data_out), .in2 (data_bias), .out (full_sum));
+ 
+	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum_r),.out (data_out_for_next), .relu_enable(1'b1)); 
  	 
 	
 endmodule

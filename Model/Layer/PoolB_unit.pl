@@ -14,7 +14,7 @@ use feature "switch";
 #ARGV[2] KERNAL_SIZE 2
 #ARGV[3] STRIDE 2
 #ARGV[4] ARITH_TYPE
-
+#ARGV[5]
 
 
 ######################################### CONSTANTS ###################################
@@ -45,7 +45,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[5]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -107,7 +107,7 @@ DONATE
 }
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[3] $ARGV[0] $ARGV[1] $ARGV[2]");
+system("perl fifo.pl  $ARGV[3] $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[5]");
 
 
 print $fh <<"DONATE";

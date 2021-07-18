@@ -13,6 +13,7 @@ use feature "switch";
 #ARGV[0] data_width 32
 #ARGV[1] M - Mantissa, precision
 #ARGV[2] E - Exponent, integer bits
+#$ARGV[3]
 #
 
 
@@ -35,7 +36,7 @@ my $end_module = "endmodule";
 my $i_p = "input";
 my $o_p = "output";
 my $under_Score = "_";
-my $full_path = "../../../../../Verilog_files/";
+my $full_path = "../../../../../$ARGV[3]/";
 #######################################################################################
 my $i = 0;
 

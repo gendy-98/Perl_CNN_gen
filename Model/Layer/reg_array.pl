@@ -12,6 +12,7 @@ use POSIX; # for ceil and floor
 
 #argumets 
 #ARGV[0] DATA_WIDTH 
+#ARGV[1]
 #
 
 ######################################### CONSTANTS ###################################
@@ -40,7 +41,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[1]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;

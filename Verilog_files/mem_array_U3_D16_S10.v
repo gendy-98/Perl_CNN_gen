@@ -2,11 +2,11 @@
 
 
 module 
- mem_array_U3_D16_S7 #(parameter
+ mem_array_U3_D16_S10 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 ///////////architecture parameters//////
-	IFM_SIZE              = 7,                                                
+	IFM_SIZE              = 10,                                                
     NUMBER_OF_IFM         = 16,
     NUMBER_OF_UNITS       = 3,
     ADDRESS_SIZE_IFM      = $clog2(IFM_SIZE*IFM_SIZE)
@@ -158,6 +158,17 @@ module
 	);
 
 	demux_1_to_6 d2(
+	.din(ifm_enable_read_A_next),
+	.sel(ifm_sel),
+	.dout_1(ifm_enable_read_A_next_dMuxOut1),
+	.dout_2(ifm_enable_read_A_next_dMuxOut2),
+	.dout_3(ifm_enable_read_A_next_dMuxOut3),
+	.dout_4(ifm_enable_read_A_next_dMuxOut4),
+	.dout_5(ifm_enable_read_A_next_dMuxOut5),
+	.dout_6(ifm_enable_read_A_next_dMuxOut6)
+	);
+
+	demux_1_to_6 d3(
 	.din(ifm_enable_read_B_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_enable_read_B_next_dMuxOut1),
@@ -168,18 +179,7 @@ module
 	.dout_6(ifm_enable_read_B_next_dMuxOut6)
 	);
 
-	demux_1_to_6 d3(
-	.din(ifm_enable_write_previous),
-	.sel(ifm_sel),
-	.dout_1(ifm_enable_write_previous_dMuxOut1),
-	.dout_2(ifm_enable_write_previous_dMuxOut2),
-	.dout_3(ifm_enable_write_previous_dMuxOut3),
-	.dout_4(ifm_enable_write_previous_dMuxOut4),
-	.dout_5(ifm_enable_write_previous_dMuxOut5),
-	.dout_6(ifm_enable_write_previous_dMuxOut6)
-	);
-
-	demux_1_to_6_6bits d4(
+	demux_1_to_6_7bits d4(
 	.din(ifm_address_write_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_write_previous_dMuxOut1),
@@ -190,7 +190,7 @@ module
 	.dout_6(ifm_address_write_previous_dMuxOut6)
 	);
 
-	demux_1_to_6_6bits d5(
+	demux_1_to_6_7bits d5(
 	.din(ifm_address_read_previous),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_previous_dMuxOut1),
@@ -201,7 +201,7 @@ module
 	.dout_6(ifm_address_read_previous_dMuxOut6)
 	);
 
-	demux_1_to_6_6bits d6(
+	demux_1_to_6_7bits d6(
 	.din(ifm_address_read_A_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_A_next_dMuxOut1),
@@ -212,7 +212,7 @@ module
 	.dout_6(ifm_address_read_A_next_dMuxOut6)
 	);
 
-	demux_1_to_6_6bits d7(
+	demux_1_to_6_7bits d7(
 	.din(ifm_address_read_B_next),
 	.sel(ifm_sel),
 	.dout_1(ifm_address_read_B_next_dMuxOut1),
@@ -460,7 +460,7 @@ M5(  .clk(clk),
 	.Data_Input_B('b0),
 	
 	.Address_A ( ifm_address_write_previous_dMuxOut6 | ifm_address_read_A_next_dMuxOut1 ),
-    .Address_B ( ifm_address_read_previous_dMuxOut6  | ifm_address_read_B_next_dMuxOut1 ),  
+    .Address_B ( ifm_address_read_previous_dMuxOut6  | ifm_address_read_B_next_dMuxOut1),  
 	
 	.Enable_Write_A (ifm_enable_write_previous_dMuxOut6),
     .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut1),

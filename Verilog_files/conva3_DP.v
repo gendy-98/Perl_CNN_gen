@@ -17,7 +17,7 @@ module
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(6) ),    
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
@@ -49,9 +49,9 @@ module
     input [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address_read_current,
     
 	
-	input [DATA_WIDTH-1:0] data_in_from_previous1,
-	input [DATA_WIDTH-1:0] data_in_from_previous2,
-	input [DATA_WIDTH-1:0] data_in_from_previous3,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous1,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous2,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous3,
 
 	input  [DATA_WIDTH-1:0] data_in_from_next,
     output [DATA_WIDTH-1:0] data_out_for_next
@@ -103,7 +103,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous1),       
+    .unit_data_in(data_in_A_from_previous1),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -124,7 +124,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous2),       
+    .unit_data_in(data_in_A_from_previous2),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -145,7 +145,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous3),       
+    .unit_data_in(data_in_A_from_previous3),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          

@@ -34,7 +34,7 @@ module
 		
 		// 4.pool2
         POOL2_KERNAL_SIZE            = 2,
-        POOL2_IFM_SIZE                = 7,
+        POOL2_IFM_SIZE                = 10,
         POOL2_IFM_DEPTH             = 16,
         POOL2_NUMBER_OF_UNITS         = 3,
         POOL2_ADDRESS_SIZE_IFM        = $clog2(POOL2_IFM_SIZE * POOL2_IFM_SIZE),
@@ -49,9 +49,11 @@ module
 		
 		// 6.fc1
         FC1_NUMBER_OF_FILTERS         = 84,
+        FC1_IFM_DEPTH                = 120,
 		
 		// 7.fc2
         FC2_NUMBER_OF_FILTERS         = 10,
+        FC2_IFM_DEPTH                = 84,
 		
 
 
@@ -97,8 +99,8 @@ wire                                    memControl_fc1_bm_enable_write;
 wire                                    memControl_fc2_bm_enable_write;
 			
 	// Outputs of layer Conv 0
-wire                   [DATA_WIDTH-1:0]  conva1_data_out_for_next       ;
-wire                   [CONVA1_ADDRESS_SIZE_IFM-1:0] conva1_ifm_address_write_next  ;
+wire                   [DATA_WIDTH-1:0]  conva1_data_out_for_next1       ;
+wire                   [POOL1_ADDRESS_SIZE_IFM-1:0] conva1_ifm_address_write_next  ;
 wire                                    conva1_ifm_enable_write_next;
 wire                                    conva1_start_to_next;
 wire                                    conva1_ifm_sel_next;
@@ -125,10 +127,11 @@ wire                                    pool1_ifm_sel_next;
 			
 	// Outputs of layer Conv 2
 wire                                    convb2_end_to_previous;
-wire                                    convb2_ifm_enable_read_A_current;
-wire                                    convb2_ifm_enable_read_B_current;
-wire                   [CONVB2_ADDRESS_SIZE_IFM-1:0] convb2_ifm_address_read_A_current;
-wire                   [CONVB2_ADDRESS_SIZE_IFM-1:0] convb2_ifm_address_read_B_current;
+    
+    wire convb2_ifm_enable_read_A_current;
+    wire [CONVB2_ADDRESS_SIZE_IFM-1:0] convb2_ifm_address_read_A_current;
+
+
 wire                                    convb2_ifm_enable_read_next;
 wire                                    convb2_ifm_enable_write_next;
 wire                   [POOL2_ADDRESS_SIZE_IFM-1:0] convb2_ifm_address_read_next   ;
@@ -173,18 +176,18 @@ wire                                    pool2_ifm_sel_next;
 	// Outputs of layer Conv 4
 wire                                    conva3_end_to_previous;
 wire                                    conva3_ready;
-wire                                    conva3_ifm_enable_read_A_current;
-	wire [CONVA3_ADDRESS_SIZE_IFM-1:0] conva3_ifm_address_read_A_current;
+
+    
+    wire conva3_ifm_enable_read_A_current;
+    wire [CONVA3_ADDRESS_SIZE_IFM-1:0] conva3_ifm_address_read_A_current;
+
+
 wire                   [DATA_WIDTH-1:0] conva3_data_out_for_next       ;
 wire                                    conva3_ifm_enable_write_next;
 wire                                    conva3_ifm_enable_read_next;
 wire                                    conva3_start_to_next;
 wire                   [$clog2(6)-1:0] conva3_ifm_sel_previous;
 wire                    conva3_ifm_sel_next;
-
-	// Outputs of Mem_Array 5 conva3 - fc1
-	wire [DATA_WIDTH-1:0] mem_arr5_data_A_out_for_previous1;
-	wire [DATA_WIDTH-1:0] mem_arr5_data_A_out_for_next1;
 
     //Outputs of Reg_array 1
     wire [DATA_WIDTH-1:0]   fc1_data_out_for_previous;
@@ -456,10 +459,6 @@ wire                    conva3_ifm_sel_next;
 	wire [DATA_WIDTH-1:0] out_reg_acc1_84;
 
 
-
-	// Outputs of Mem_Array 6 fc1 - fc2
-	wire [DATA_WIDTH-1:0] mem_arr6_data_A_out_for_previous1;
-	wire [DATA_WIDTH-1:0] mem_arr6_data_A_out_for_next1;
     // commented by the perl commity 
     //wire fc2_enable_read_current;
     //wire fc2_end_to_previous;
@@ -506,10 +505,14 @@ wire                    conva3_ifm_sel_next;
 
 
 	//memory controler
-    memory_control
+    memory_control #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .ADDRESS_BUS(ADDRESS_BUS),
+        .ADDRESS_BITS(ADDRESS_BITS)
+    )
     MEM_Cont
     (
-	.clk (clk),
+	
     .riscv_data_bus                    (riscv_data_bus            ),
     .riscv_address_bus                 (riscv_address_bus         ),
     .initialization_done               (initialization_done       ),
@@ -557,7 +560,7 @@ wire                    conva3_ifm_sel_next;
     .ifm_enable_write_previous         (memControl_conva1_ifm_enable_write),
     // next
     .end_from_next                     (pool1_end_to_previous     ),
-    .data_out_for_next                 (conva1_data_out_for_next  ),
+    .data_out_for_next                 (conva1_data_out_for_next1  ),
 
     .ifm_address_write_next            (conva1_ifm_address_write_next),
     .ifm_enable_write_next             (conva1_ifm_enable_write_next),
@@ -594,7 +597,7 @@ wire                    conva3_ifm_sel_next;
 	/////////////////1 - top_poola_S2_K2////////////////					
     top_poola_S2_K2 #(
     .DATA_WIDTH(DATA_WIDTH),
-    ARITH_TYPE(ARITH_TYPE),
+    .ARITH_TYPE(ARITH_TYPE),
     .IFM_SIZE                          (POOL1_IFM_SIZE),
     .IFM_DEPTH                         (POOL1_IFM_DEPTH),
     .KERNAL_SIZE                       (POOL1_KERNAL_SIZE)) 
@@ -647,8 +650,8 @@ wire                    conva3_ifm_sel_next;
     top_convb2 #(.IFM_SIZE(CONVB2_IFM_SIZE),
     .IFM_DEPTH                         (CONVB2_IFM_DEPTH),
     .KERNAL_SIZE                       (CONVB2_KERNAL_SIZE),
-    .DATA_WIDTH(DATA_WIDTH),
-    .ARITH_TYPE(ARITH_TYPE),
+    .DATA_WIDTH                        (DATA_WIDTH),
+    .ARITH_TYPE                        (ARITH_TYPE),
     .NUMBER_OF_FILTERS                 (CONVB2_NUMBER_OF_FILTERS)) 
     top_convb2_inst
     (
@@ -662,12 +665,13 @@ wire                    conva3_ifm_sel_next;
     ///////////////////////////////////////////////////
     .start_from_previous (pool1_start_to_next), 
 	 .data_in_from_previous (mem_arr2_data_A_out_for_next1),
-	 .ifm_enable_read_current(convb2_ifm_enable_read_current),
-	 .ifm_address_read_current(convb2_ifm_address_read_current),
      .end_to_previous (convb2_end_to_previous),  
 	 .conv_ready(1'b1),
 	 .end_from_next (pool2_end_to_previous),
      
+        .ifm_enable_read_A_current(convb2_ifm_enable_read_A_current),
+	    .ifm_address_read_A_current(convb2_ifm_address_read_A_current),
+
     .data_in_from_next1                 (mem_arr3_data_A_out_for_previous1),
     .data_out_for_next1                 (convb2_data_out_for_next1),
 
@@ -687,13 +691,13 @@ wire                    conva3_ifm_sel_next;
     );
 	
 
-	/////////////////3 - mem_array_U3_D16_S7////////////////					
-    mem_array_U3_D16_S7 #(
+	/////////////////3 - mem_array_U3_D16_S10////////////////					
+    mem_array_U3_D16_S10 #(
     .DATA_WIDTH                        (DATA_WIDTH                ),
     .IFM_SIZE                          (POOL2_IFM_SIZE),
     .NUMBER_OF_IFM                     (2                         ),
     .NUMBER_OF_UNITS                   (POOL2_NUMBER_OF_UNITS)          ) 
-    mem_array_U3_D16_S7_inst
+    mem_array_U3_D16_S10_inst
     (.clk (clk),
     .ifm_sel                           (convb2_ifm_sel_next),
     .ifm_enable_write_previous         (convb2_ifm_enable_write_next),
@@ -764,7 +768,7 @@ wire                    conva3_ifm_sel_next;
     .NUMBER_OF_UNITS                   (CONVA3_NUMBER_OF_UNITS  )) 
     mem_array_U3_D16_S5_inst
     (.clk (clk),
-    .ifm_sel                           (pool2_ifm_sel_previous),
+    .ifm_sel                           (pool2_ifm_sel_next|conva3_ifm_sel_previous),
     .ifm_enable_write_previous         (pool2_ifm_enable_write_next),
     .ifm_enable_read_previous          (1'b0                      ),
     .ifm_address_write_previous        (pool2_ifm_address_write_next),
@@ -841,7 +845,7 @@ wire                    conva3_ifm_sel_next;
 	/////////////////5 - top_fcA_1////////////////					
     top_fcA_1 #(.DATA_WIDTH(DATA_WIDTH),
     .ARITH_TYPE(ARITH_TYPE),
-    .IFM_DEPTH(FC1_NUMBER_OF_FILTERS))
+    .IFM_DEPTH(FC1_IFM_DEPTH))
     top_fcA_1_inst
     (
         .clk(clk),
@@ -1206,6 +1210,7 @@ wire                    conva3_ifm_sel_next;
 	.data_bias_81 (data_bias_FC_1_81),
 	.data_bias_82 (data_bias_FC_1_82),
 	.data_bias_83 (data_bias_FC_1_83),
+	.data_bias_84 (data_bias_FC_1_84),
 	.Data_out_FC_1 ( out_reg_acc1_1),
 	.Data_out_FC_2 ( out_reg_acc1_2),
 	.Data_out_FC_3 ( out_reg_acc1_3),
@@ -1289,15 +1294,14 @@ wire                    conva3_ifm_sel_next;
 	.Data_out_FC_81 ( out_reg_acc1_81),
 	.Data_out_FC_82 ( out_reg_acc1_82),
 	.Data_out_FC_83 ( out_reg_acc1_83),
-	.Data_out_FC_84 ( out_reg_acc1_84),
-	.Data_out_FC_85 ( out_reg_acc1_85)
+	.Data_out_FC_84 ( out_reg_acc1_84)
 );
 
 				
 	/////////////////6 - top_fcB_2////////////////					
     top_fcB_2 #(.DATA_WIDTH(DATA_WIDTH),
     .ARITH_TYPE(ARITH_TYPE),
-    .IFM_DEPTH(FC2_NUMBER_OF_FILTERS))
+    .IFM_DEPTH(FC2_IFM_DEPTH))
     top_fcB_2_inst
     (
         .clk(clk),
@@ -1311,7 +1315,7 @@ wire                    conva3_ifm_sel_next;
         .start_from_previous (fc1_start_to_next),
         .end_to_previous     (fc2_end_to_previous),
         .bias_sel (fc2_bias_sel),
-        .ifm_enable_write_next (fc2_ifm_enable_write_next),
+        .enable_write_next (fc2_enable_write_next),
         .output_ready (output_ready),
 	.Data_in_1 ( out_reg_acc1_1),
 	.Data_in_2 ( out_reg_acc1_2),
@@ -1426,7 +1430,7 @@ wire                    conva3_ifm_sel_next;
         .clk (clk),                                                     
         .reset (reset),                                                
         .bias_sel (fc2_bias_sel),                                                   
-        .enable_write (fc2_ifm_enable_write_next),      
+        .enable_write (fc2_enable_write_next),      
 	.Data_in_1 ( Data_out_FC_2_1),
 	.Data_in_2 ( Data_out_FC_2_2),
 	.Data_in_3 ( Data_out_FC_2_3),
@@ -1446,16 +1450,26 @@ wire                    conva3_ifm_sel_next;
 	.data_bias_7 (data_bias_FC_2_7),
 	.data_bias_8 (data_bias_FC_2_8),
 	.data_bias_9 (data_bias_FC_2_9),
-	.Data_out_FC_1 ( Data_out_1_final),
-	.Data_out_FC_2 ( Data_out_2_final),
-	.Data_out_FC_3 ( Data_out_3_final),
-	.Data_out_FC_4 ( Data_out_4_final),
-	.Data_out_FC_5 ( Data_out_5_final),
-	.Data_out_FC_6 ( Data_out_6_final),
-	.Data_out_FC_7 ( Data_out_7_final),
-	.Data_out_FC_8 ( Data_out_8_final),
-	.Data_out_FC_9 ( Data_out_9_final),
-	.Data_out_FC_10 ( Data_out_10_final),
-	.Data_out_FC_11 ( Data_out_11_final)
+	.data_bias_10 (data_bias_FC_2_10),
+	.Data_out_FC_1 ( out_reg_acc2_1),
+	.Data_out_FC_2 ( out_reg_acc2_2),
+	.Data_out_FC_3 ( out_reg_acc2_3),
+	.Data_out_FC_4 ( out_reg_acc2_4),
+	.Data_out_FC_5 ( out_reg_acc2_5),
+	.Data_out_FC_6 ( out_reg_acc2_6),
+	.Data_out_FC_7 ( out_reg_acc2_7),
+	.Data_out_FC_8 ( out_reg_acc2_8),
+	.Data_out_FC_9 ( out_reg_acc2_9),
+	.Data_out_FC_10 ( out_reg_acc2_10)
 );
+	assign Data_out_1_final = out_reg_acc2_1;
+	assign Data_out_2_final = out_reg_acc2_2;
+	assign Data_out_3_final = out_reg_acc2_3;
+	assign Data_out_4_final = out_reg_acc2_4;
+	assign Data_out_5_final = out_reg_acc2_5;
+	assign Data_out_6_final = out_reg_acc2_6;
+	assign Data_out_7_final = out_reg_acc2_7;
+	assign Data_out_8_final = out_reg_acc2_8;
+	assign Data_out_9_final = out_reg_acc2_9;
+	assign Data_out_10_final = out_reg_acc2_10;
 endmodule

@@ -17,7 +17,7 @@ use POSIX;
 #ARGV[5] KERNAL_SIZE  
 #ARGV[6] NUMBER_OF_FILTERS
 #ARGV[7] NUMBER_OF_UNITS
-
+#ARGV[8]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -46,7 +46,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[8]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -65,26 +65,6 @@ my $unit_name = "unitA";
 my $Relu_name = "relu";
 my $accumulator_name = "accumulator"; 
 $module_name = "conva$ARGV[0]_CU";
-
-
-
-$dummy_level = $ARGV[1]; 
-
-
-
-$levels_number = ceil(log($dummy_level)/log(2));
-
-my $delay_cycles = $levels_number;
-
-
-$dummy_level = $ARGV[7]; 
-
-$levels_number = ceil(log($dummy_level)/log(2));
-
-
-
-$delay_cycles = $delay_cycles + $levels_number;
-
 
 
 
@@ -108,7 +88,7 @@ $module $module_name $parameter
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[4]/$ARGV[7]))}) ),
 	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH
@@ -153,7 +133,7 @@ $module $module_name $parameter
     
     reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] filters_counter;
     wire filters_counter_tick;
-    //ceil IFM_DEPTH/NUMBER_OF_UNITS
+    //ceil IFM_DEPTH/ NUMBER_OF_UNITS
     reg  [$clog2( ${\(ceil($ARGV[4]/$ARGV[7]))} )-1 : 0] depth_counter;
     wire depth_counter_tick;
     
@@ -522,10 +502,30 @@ $module $module_name $parameter
      
 DONATE
 
+$dummy_level = $ARGV[1]; 
+
+
+#-1 ifm read
+$levels_number = ceil(log($dummy_level)/log(2)) + 1 - 1;
+
+my $delay_cycles = $levels_number;
+
+
+$dummy_level = $ARGV[7]; 
+
+$levels_number = ceil(log($dummy_level+1)/log(2));
+
+
+
+$delay_cycles = $delay_cycles + $levels_number;
+
+
+
+
 
 my $signal_bits = 1;
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[8]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  
@@ -541,7 +541,7 @@ DONATE
 
 
 $delay_cycles = 1;
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[8]");
 
 $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  

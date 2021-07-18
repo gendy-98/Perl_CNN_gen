@@ -15,7 +15,7 @@ use feature "switch";
 #ARGV[2] KERNAL_SIZE 2
 #ARGV[3] NUMBER_OF_UNITS 3
 #ARGV[4] STRIDE 2
-
+#ARGV[5]
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -45,7 +45,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[5]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -70,7 +70,7 @@ $module $module_name $parameter
 	$kernal_size           = $ARGV[2],
 	$number_of_units       = $ARGV[3],
 	//////////////////////////////////////
-	NUMBER_OF_IFM_NEXT      = IFM_DEPTH,
+
 	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
     ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),    
@@ -101,7 +101,7 @@ print $fh <<"DONATE";
     output ifm_enable_write_next,
 	output reg [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output reg start_to_next,
-	output reg [$clog2(NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
+	output reg [$clog2((${\(ceil($ARGV[1]/$ARGV[3]))}))-1:0] ifm_sel_next
     );
        
     reg  start_ifm_address_read_current;
@@ -191,13 +191,13 @@ print $fh <<"DONATE";
             ifm_sel_next <= 0;
 DONATE
 
-#else if(ifm_sel_next == (NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS+1)-1 & start_to_next)
+#else if(ifm_sel_next == (NUMBER_OF_IFM_NEXT/ NUMBER_OF_UNITS+1)-1 & start_to_next)
 
 my $ifm_sel_next_calc = ceil($ARGV[1]/$ARGV[3]);
 
 print $fh <<"DONATE";
 
-		else if(ifm_sel_next == $ifm_sel_next_calc-1 & start_to_next) //$ifm_sel_next_calc = ceil((NUMBER_OF_IFM_NEXT/NUMBER_OF_UNITS))
+		else if(ifm_sel_next == $ifm_sel_next_calc-1 & start_to_next) //$ifm_sel_next_calc = ceil((NUMBER_OF_IFM_NEXT/ NUMBER_OF_UNITS))
 		    ifm_sel_next <= 0;
         else if(start_to_next)
             ifm_sel_next <= ifm_sel_next + 1'b1;      
@@ -371,7 +371,7 @@ DONATE
 my $delay_cycles = log($ARGV[2]*$ARGV[2])/log(2) + 1;
 my $signal_bits = 1;
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[5]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  

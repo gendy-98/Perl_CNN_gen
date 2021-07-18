@@ -8,6 +8,7 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+use POSIX;
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number//
@@ -19,7 +20,8 @@ use feature "switch";
 #ARGV[7] KERNAL_SIZE  
 #ARGV[8] NUMBER_OF_FILTERS
 #ARGV[9] NUMBER_OF_UNITS
-
+#ARGV[10]stride
+#ARGV[11]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -48,7 +50,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[11]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -112,7 +114,7 @@ $module $module_name $parameter
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[6]/$ARGV[9]))}) ),    
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
@@ -148,9 +150,15 @@ DONATE
 
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
+
 	print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_from_previous$i,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous$i,
 DONATE
+	if($ARGV[10] == 2){
+		print $fh <<"DONATE";
+	input [DATA_WIDTH-1:0] data_in_B_from_previous$i,
+DONATE
+	}
 }
 
 print $fh <<"DONATE";
@@ -233,7 +241,7 @@ DONATE
 #ARGV[9] NUMBER_OF_UNITS
 #ARGV[10]stride
 
-system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9]");
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] $ARGV[9] $ARGV[11]");
 $unit_name = "unitA_$ARGV[5]";
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
@@ -250,7 +258,7 @@ print $fh <<"DONATE";
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_from_previous$i),       
+    .unit_data_in(data_in_A_from_previous$i),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          

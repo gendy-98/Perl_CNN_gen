@@ -13,7 +13,7 @@ use feature "switch";
 #ARGV[0] IFM_SIZE 14
 #ARGV[1] KERNAL_SIZE 2
 #ARGV[2] STRIDE 2
-
+#$ARGV[3]
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -43,7 +43,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[3]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -217,10 +217,10 @@ DONATE
 
 
 ######################################################
-my $delay_cycles = 3;
+my $delay_cycles = ceil(log($ARGV[1] * $ARGV[1])/log(2)) +1;
 my $signal_bits = 1;
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[3]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
  

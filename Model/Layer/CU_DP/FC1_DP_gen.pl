@@ -16,6 +16,7 @@ use POSIX;
 #ARGV[3] IFM_DEPTH 120
 #ARGV[4] NUMBER_OF_WM 84
 #ARGV[5] FC_number 1
+#$ARGV[6]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -46,7 +47,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[6]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -73,9 +74,10 @@ $delay_cycles = 3;
 }
 
 #chdir "./Modules";
-#system("perl delay.pl $delay_cycles $signal_bits");
+#system("perl delay.pl $delay_cycles $signal_bits $ARGV[6]");
 
-#system("perl delay.pl 2 1");
+#system("perl delay.pl 2 1 $ARGV[6]" );
+#system("perl delay.pl 2 1 $ARGV[6]" );
 
 #my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
   
@@ -164,7 +166,7 @@ DONATE
   
   
   chdir "./Modules";
-  system("perl fc_fifo.pl $ARGV[4] $ARGV[1]");
+  system("perl fc_fifo.pl $ARGV[4] $ARGV[1] $ARGV[6]");
   
   my $fifo_name = "fo_fifo_$ARGV[4]";
   
@@ -174,6 +176,7 @@ DONATE
 	FIFO1
 	(
 		.clk(clk),
+		.reset(reset),
 		.fifo_data_in(riscv_data), 
 		.fifo_enable(bm_enable_write),
 DONATE
@@ -191,7 +194,7 @@ DONATE
 DONATE
 
     chdir "../..";
-  system("perl fully_connected_gen.pl $ARGV[1] $ARGV[4] $ARGV[0]");
+  system("perl fully_connected_gen.pl $ARGV[1] $ARGV[4] $ARGV[0] $ARGV[6]");
 
 print $fh <<"DONATE";
 	fully_connected_$ARGV[4] #(.$data_width($data_width), .ARITH_TYPE(ARITH_TYPE))

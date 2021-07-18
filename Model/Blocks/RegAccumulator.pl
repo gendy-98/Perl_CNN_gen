@@ -11,6 +11,7 @@ use feature "switch";
 #argumets 
 #ARGV[0] ARITH_TYPE 1
 #ARGV[1] DATA_WIDTH 32
+#ARGV[2] $relative_path
 #
 
 ######################################### CONSTANTS ###################################
@@ -36,7 +37,7 @@ my $clog2 = "\$clog2";
 my $data_width = "DATA_WIDTH";
 my $arith_type = "ARITH_TYPE";
 my $mem_size = "MEM_SIZE";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[2]/";
 
 #######################################################################################
 

@@ -8,6 +8,7 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+use POSIX;
 #argumets 
 #ARGV[0] no of the conv 
 #ARGV[1] Mul number
@@ -20,6 +21,7 @@ use feature "switch";
 #ARGV[8] NUMBER_OF_FILTERS
 #ARGV[9] RGB
 #ARGV[10]stride
+#ARGV[11] $relative_path
 #
 
 ######################################### CONSTANTS ###################################
@@ -50,7 +52,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[11]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -102,7 +104,7 @@ $module $module_name $parameter
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[6]/$cu_name))}) ),    
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH,
 	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS,
@@ -155,7 +157,7 @@ print $fh <<"DONATE";
 DONATE
 
 chdir "./CU_DP";
-system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] ");
+system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
 
 $cu_name = "conva$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -197,7 +199,7 @@ print $fh <<"DONATE";
 DONATE
 
 
-system("perl DP_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10]");
+system("perl DP_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] $ARGV[11]");
 
 $dp_name = "conva$ARGV[0]_DP";
 print $fh <<"DONATE";

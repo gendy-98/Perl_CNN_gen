@@ -17,9 +17,9 @@ module
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(2) ),    
+	NUMBER_OF_IFM           = IFM_DEPTH
+	
 )(
 	input 							clk,
 	input 							reset,
@@ -31,9 +31,9 @@ module
 
 	input start_from_previous,
 	
+    output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
 	input  [DATA_WIDTH-1:0]       data_in_from_previous,
-	output                        ifm_enable_read_current,
-	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 	output                        end_to_previous,
 	
 	input                        conv_ready, 
@@ -50,7 +50,7 @@ module
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
+	output [$clog2(6)-1:0] ifm_sel_next
     );
 	
 	wire fifo_enable;
@@ -80,10 +80,10 @@ module
     .start_from_previous(start_from_previous),
     .end_to_previous(end_to_previous),
     .conv_ready(conv_ready),
-    
+    //this stride not real dont use stride = 2
     .ifm_sel_next(ifm_sel_next),
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+    .ifm_enable_read_current(ifm_enable_read_A_current),
+    .ifm_address_read_current(ifm_address_read_A_current),
     
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),

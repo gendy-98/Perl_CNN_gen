@@ -20,7 +20,7 @@ use feature "switch";
 #ARGV[7] NUMBER_OF_FILTERS 6
 #ARGV[8] NUMBER_OF_UNITS 3
 #ARGV[9] STRIDE 1
-
+#ARGV[10]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -49,7 +49,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[10]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -118,7 +118,7 @@ $module $module_name $parameter
 	$number_of_filters     = $ARGV[7],
 	$number_of_units       = $ARGV[8],
 	//////////////////////////////////////
-	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(NUMBER_OF_FILTERS/NUMBER_OF_UNITS+1))                             
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*${\(ceil($ARGV[7]/$ARGV[8]))})                             
 )(
 	input clk,
 	input reset,
@@ -192,10 +192,10 @@ DONATE
  print $fh <<"DONATE";
 	    
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
-	wire [$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0] bm_address;
+	wire [$clog2((${\(ceil($ARGV[7]/$ARGV[8]))}))-1:0] bm_address;
 	
 	assign wm_address = wm_addr_sel ? wm_address_read_current : riscv_address[ADDRESS_SIZE_WM-1:0];
-	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0];
+	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2((${\(ceil($ARGV[7]/$ARGV[8]))}))-1:0];
 	
 DONATE
 
@@ -216,7 +216,7 @@ DONATE
 }
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[9] $ARGV[2] $ARGV[4] $ARGV[6]");
+system("perl fifo.pl  $ARGV[9] $ARGV[2] $ARGV[4] $ARGV[6] $ARGV[10]");
 
 
  print $fh <<"DONATE";
@@ -242,24 +242,21 @@ print $fh <<"DONATE";
 	
 DONATE
 
-#ARGV[0] no of the conv 2
-#ARGV[1] ARITH_TYPE 0 | Mul & Add type which (decimal, fixed, float)
-#ARGV[2] DATA_WIDTH 32
-#ARGV[3] ADDRESS_BITS 15
-#ARGV[4] IFM_SIZE  32
-#ARGV[5] IFM_DEPTH 3
-#ARGV[6] KERNAL_SIZE  5
-#ARGV[7] NUMBER_OF_FILTERS 6
-#ARGV[8] NUMBER_OF_UNITS 3
-#ARGV[9] STRIDE 1
+
 chdir "../";
-system("perl UnitB.pl  $ARGV[2] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[1] $ARGV[9]");
+system("perl UnitB.pl  $ARGV[2] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[1] $ARGV[9] $ARGV[10]");
 
 $unit_name = "unitB";
 
 for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 print $fh <<"DONATE";
-	$unit_name #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .$ifm_depth($ifm_depth), .$kernal_size($kernal_size), .$number_of_filters($number_of_filters), .$number_of_units($number_of_units))
+	$unit_name #(
+	 .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .$ifm_depth($ifm_depth), 
+	 .$kernal_size($kernal_size), 
+	 .$number_of_filters($number_of_filters), 
+	 .$number_of_units($number_of_units))
 	convB_unit_$i
 	(
     .clk(clk),                                 
@@ -283,7 +280,7 @@ print $fh <<"DONATE";
 	.wm_enable_write(wm_enable_write[${\($i-1)}]), 
 	.wm_address(wm_address),
     .wm_fifo_enable(wm_fifo_enable),          
-    .unit_data_out(unit1_data_out)   
+    .unit_data_out(unit${\($i)}_data_out)   
     );
 	
 DONATE
@@ -291,7 +288,7 @@ DONATE
 
 for ($i = 1; $i <= $ARGV[8]; $i = $i + 1){
 print $fh <<"DONATE";
-assign data_out_for_next$i = unit1_data_out;
+assign data_out_for_next$i = unit${\($i)}_data_out;
 DONATE
 }
 

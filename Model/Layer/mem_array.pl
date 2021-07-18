@@ -17,6 +17,7 @@ use POSIX; # for ceil and floor
 #ARGV[3] ADDRESS_BITS
 #ARGV[4] IFM_SIZE
 #ARGV[5] IFM_DEPTH
+#ARGV[6] $relative_path
 #
 
 ######################################### CONSTANTS ###################################
@@ -45,7 +46,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[6]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -161,9 +162,9 @@ DONATE
 my $addressbits = ceil(log($ARGV[4]*$ARGV[4]) / log(2));
 chdir "./CU_DP/Modules/operations";
 
-system("perl Demux1toN.pl $divisionOutput");
+system("perl Demux1toN.pl $divisionOutput $ARGV[6]");
 
-system("perl Demux1toN_Mbit.pl $divisionOutput $addressbits");
+system("perl Demux1toN_Mbit.pl $divisionOutput $addressbits $ARGV[6]");
 
 my $demux_1bit_name = "demux_1_to_$divisionOutput";
 
@@ -193,6 +194,16 @@ print $fh "\t.dout_$i(ifm_enable_read_previous_dMuxOut$i)\n\t);\n\n";
 
 print $fh <<"DONATE";
 	$demux_1bit_name d2(
+	.din(ifm_enable_read_A_next),
+	.sel(ifm_sel),
+DONATE
+for($i = 1;$i < $divisionOutput; $i = $i + 1){
+print $fh "\t.dout_$i(ifm_enable_read_A_next_dMuxOut$i),\n";
+}
+print $fh "\t.dout_$i(ifm_enable_read_A_next_dMuxOut$i)\n\t);\n\n";
+
+print $fh <<"DONATE";
+	$demux_1bit_name d3(
 	.din(ifm_enable_read_B_next),
 	.sel(ifm_sel),
 DONATE
@@ -200,17 +211,6 @@ for($i = 1;$i < $divisionOutput; $i = $i + 1){
 print $fh "\t.dout_$i(ifm_enable_read_B_next_dMuxOut$i),\n";
 }
 print $fh "\t.dout_$i(ifm_enable_read_B_next_dMuxOut$i)\n\t);\n\n";
-
-
-print $fh <<"DONATE";
-	$demux_1bit_name d3(
-	.din(ifm_enable_write_previous),
-	.sel(ifm_sel),
-DONATE
-for($i = 1;$i < $divisionOutput; $i = $i + 1){
-print $fh "\t.dout_$i(ifm_enable_write_previous_dMuxOut$i),\n";
-}
-print $fh "\t.dout_$i(ifm_enable_write_previous_dMuxOut$i)\n\t);\n\n";
 
 
 print $fh <<"DONATE";
@@ -354,7 +354,7 @@ chdir "./../../..";
 
 
 
-system("perl mem_unit.pl $units"); 
+system("perl mem_unit.pl $units $ARGV[6]"); 
 
 ######################################################big loop
 my $loop_condition;
@@ -365,6 +365,7 @@ if(($IFM_number/$units)  == ceil($IFM_number/$units)){
 else{
 	$loop_condition = floor($IFM_number/$units);
 }
+my $ifm_init_number = ($IFM_number - floor($IFM_number/$units) * $units); 
 
 for($i = 1;$i <= $loop_condition;$i = $i + 1){
 
@@ -382,13 +383,13 @@ DONATE
 DONATE
 }
 
+	if(!($i == $loop_condition && $ifm_init_number ==0)){
 
 		print $fh <<"DONATE";
 	
       .Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut${\($i+1)} ),
       .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut${\($i+1)} ),  
 DONATE
-
 
 
 		print $fh <<"DONATE";
@@ -399,6 +400,27 @@ DONATE
       .Enable_Read_B_Mem  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut${\($i+1)}),
 	  
 DONATE
+	}
+	else{
+			print $fh <<"DONATE";
+	
+      .Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut1 ),
+      .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut1),  
+DONATE
+
+
+		print $fh <<"DONATE";
+	
+      .Enable_Write_A_Mem (ifm_enable_write_previous_dMuxOut$i),
+      .Enable_Read_A_Mem  (ifm_enable_read_A_next_dMuxOut1),
+      .Enable_Write_B_Mem (1'b0),
+      .Enable_Read_B_Mem  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut1),
+	  
+DONATE
+
+
+	}
+
 
 
 	for($m = 1;$m<$units;$m = $m + 1){
@@ -418,10 +440,34 @@ DONATE
 
 }
 
-my $ifm_init_number = ($IFM_number - floor($IFM_number/$units) * $units); 
 
 for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
-	print $fh <<"DONATE";
+	if($k != $ifm_init_number){
+		print $fh <<"DONATE";
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	IFM$accu_var (
+    .clk(clk),
+	
+	.Data_Input_A(data_in_from_previous$k),
+	.Data_Input_B('b0),
+	
+	.Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut${\($i+1)} ),
+    .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut${\($i+1)}),  
+	
+	.Enable_Write_A (ifm_enable_write_previous_dMuxOut$i),
+    .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut${\($i+1)}),
+    .Enable_Write_B (1'b0),
+    .Enable_Read_B  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut${\($i+1)}),
+	  
+	
+    .Data_Output_A(Data_Output_A_Mem$accu_var),
+    .Data_Output_B(Data_Output_B_Mem$accu_var)
+	);
+	
+DONATE
+	}
+	else{
+		print $fh <<"DONATE";
 	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
 	IFM$accu_var (
     .clk(clk),
@@ -430,7 +476,7 @@ for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	.Data_Input_B('b0),
 	
 	.Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut1 ),
-    .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut1 ),  
+    .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut1),  
 	
 	.Enable_Write_A (ifm_enable_write_previous_dMuxOut$i),
     .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut1),
@@ -443,6 +489,9 @@ for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
 	);
 	
 DONATE
+
+	}
+	$i = $i + 1;	
 $accu_var = $accu_var + 1;
 }
 

@@ -14,6 +14,7 @@ use POSIX; # for ceil and floor
 #ARGV[0] DATA_WIDTH 
 #ARGV[1] ARITH_TYPE
 #ARGV[2] Reg_Accmulator units
+#ARGV[3]
 #
 
 ######################################### CONSTANTS ###################################
@@ -42,7 +43,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[3]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -100,7 +101,7 @@ for($i = 1;$i <= $ARGV[2]; $i = $i + 1){
 DONATE
 }
 
-for($i = 1;$i <= $ARGV[2]; $i = $i + 1){
+for($i = 1;$i < $ARGV[2]; $i = $i + 1){
 	print $fh <<"DONATE";
 	output [DATA_WIDTH - 1 : 0] Data_out_FC_$i,
 DONATE

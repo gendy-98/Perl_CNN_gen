@@ -20,6 +20,7 @@ use feature "switch";
 #ARGV[8]  NUMBER_OF_FILTERS
 #ARGV[9]  RGB 0gray 1 rgb
 #ARGV[10] stride
+#ARGV[11]
 #
 
 ######################################### CONSTANTS ###################################
@@ -50,7 +51,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[11]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -77,6 +78,7 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
+
   print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
@@ -155,15 +157,28 @@ DONATE
 if($ARGV[9] == 1){
 	print $fh <<"DONATE";
  
-	reg [DATA_WIDTH-1:0] partial_sum1;
-	reg [DATA_WIDTH-1:0] partial_sum2;
-	reg [DATA_WIDTH-1:0] full_sum;
-	wire [DATA_WIDTH-1:0] full_sum_reg;
+	reg [DATA_WIDTH-1:0] partial_sum1_r;
+	reg [DATA_WIDTH-1:0] partial_sum2_r;
+    wire [DATA_WIDTH-1:0] partial_sum1;
+	wire [DATA_WIDTH-1:0] partial_sum2;
+	reg [DATA_WIDTH-1:0] full_sum_r;
+	wire [DATA_WIDTH-1:0] full_sum;
 
 DONATE
 }
+else{
+    print $fh <<"DONATE";
+
+	reg [DATA_WIDTH-1:0] full_sum_r;
+	wire [DATA_WIDTH-1:0] full_sum;
+
+DONATE
+
+}
+
 
  print $fh <<"DONATE";	
+    wire [DATA_WIDTH-1:0] data_bias;
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
 	wire [$clog2(NUMBER_OF_FILTERS)-1:0] bm_address;
 	
@@ -235,18 +250,23 @@ if($ARGV[9] == 1){
 DONATE
 }
 if($ARGV[9] == 1){#rgb
-system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 3");
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 3 $ARGV[11]");
 
 }
 else{#gray
-system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 1");
+system("perl UnitA.pl $ARGV[3] $ARGV[5] $ARGV[7] $ARGV[10] $ARGV[2] $ARGV[6] $ARGV[8] 1 $ARGV[11]");
 
 }
 
 $unit_name = "unitA_$ARGV[5]";
 
 print $fh <<"DONATE"; 
-    $unit_name 
+    $unit_name #(
+     .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .$ifm_depth($ifm_depth), 
+	 .$kernal_size($kernal_size), 
+	 .$number_of_filters($number_of_filters))
     convA1_unit_1
     (
     .clk(clk),                                 
@@ -267,7 +287,12 @@ DONATE
 
 if($ARGV[9] == 1){
 	print $fh <<"DONATE";
-	$unit_name 
+	$unit_name #(
+     .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .$ifm_depth($ifm_depth), 
+	 .$kernal_size($kernal_size), 
+	 .$number_of_filters($number_of_filters))
     convA1_unit_2
     (
     .clk(clk),                                 
@@ -283,7 +308,12 @@ if($ARGV[9] == 1){
     .unit_data_out(unit2_data_out)   
     );
     
-    $unit_name 
+    $unit_name #(
+     .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .$ifm_depth($ifm_depth), 
+	 .$kernal_size($kernal_size), 
+	 .$number_of_filters($number_of_filters))
     convA1_unit_3
     (
     .clk(clk),                                 
@@ -309,30 +339,43 @@ if($ARGV[9] == 1){
 	
 	always @(posedge clk)
 	begin
-	   partial_sum1 <= unit1_data_out + unit2_data_out;
-	   partial_sum2 <= unit3_data_out + data_bias;
-	   full_sum     <= full_sum_reg;
+	   partial_sum1_r <= partial_sum1;
+	   partial_sum2_r <= partial_sum2;
+	   full_sum_r     <= full_sum;
 	end
 	
 DONATE
 
 }	
+else{
+    print $fh <<"DONATE";
+    always @(posedge clk)
+	begin
+	   full_sum_r     <= full_sum;
+	end
+
+DONATE
+}
 
 
 if($ARGV[9] == 1){#rgb
 	print $fh <<"DONATE";
-	
-	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (partial_sum1), .in2 (partial_sum2), .out (full_sum_reg));
-	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum),.out (data_out_for_next), .relu_enable(1'b1)); 
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit1_data_out), .in2 (unit2_data_out), .out (partial_sum1));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit3_data_out), .in2 (data_bias),      .out (partial_sum2));
+
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (partial_sum1_r), .in2 (partial_sum2_r), .out (full_sum));
+	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum_r),.out (data_out_for_next), .relu_enable(1'b1)); 
 	
 endmodule
 DONATE
 }
-
 else{#gray
 
-	print $fh <<"DONATE";   
-	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(unit1_data_out),.out (data_out_for_next), .relu_enable(1'b1)); 
+	print $fh <<"DONATE";  
+
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit1_data_out), .in2 (data_bias), .out (full_sum));
+ 
+	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum_r),.out (data_out_for_next), .relu_enable(1'b1)); 
  	 
 	
 endmodule

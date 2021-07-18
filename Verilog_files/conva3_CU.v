@@ -16,7 +16,7 @@ module
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(6) ),
 	ADDRESS_SIZE_BM         = $clog2(NUMBER_OF_FILTERS),
 	FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
 	NUMBER_OF_IFM           = IFM_DEPTH
@@ -61,7 +61,7 @@ module
     
     reg  [$clog2(NUMBER_OF_FILTERS)-1 : 0] filters_counter;
     wire filters_counter_tick;
-    //ceil IFM_DEPTH/NUMBER_OF_UNITS
+    //ceil IFM_DEPTH/ NUMBER_OF_UNITS
     reg  [$clog2( 6 )-1 : 0] depth_counter;
     wire depth_counter_tick;
     

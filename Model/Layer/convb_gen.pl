@@ -8,6 +8,7 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
+use POSIX;
 #argumets 
 #ARGV[0] no of the conv 2
 #ARGV[1] Mul number 25
@@ -20,6 +21,7 @@ use feature "switch";
 #ARGV[8] NUMBER_OF_FILTERS 6 filter_num
 #ARGV[9] NUMBER_OF_UNITS  3  layer_units
 #ARGV[10] STRIDE 1
+#ARGV[11] $relative_path
 #
 
 ######################################### CONSTANTS ###################################
@@ -50,7 +52,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[11]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -95,9 +97,9 @@ $module $module_name $parameter
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(IFM_DEPTH/NUMBER_OF_UNITS+1) ),    
-	NUMBER_OF_IFM           = IFM_DEPTH,
-	NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS
+	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[6]/$ARGV[9]))}) ),    
+	NUMBER_OF_IFM           = IFM_DEPTH
+	
 )(
 	$i_p 							clk,
 	$i_p 							reset,
@@ -111,12 +113,26 @@ $module $module_name $parameter
 	
 DONATE
 
+if($ARGV[10] == 1){
+                print $fh <<"DONATE";
+    output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+DONATE
+            }
+            else
+            {
+                print $fh <<"DONATE";
+    output                        ifm_enable_read_A_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+    output                        ifm_enable_read_B_current,
+	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
 
+DONATE
+
+            }
 
 print $fh <<"DONATE";
 	input  [DATA_WIDTH-1:0]       data_in_from_previous,
-	output                        ifm_enable_read_current,
-	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
 	output                        end_to_previous,
 	
 	input                        conv_ready, 
@@ -142,7 +158,7 @@ print $fh <<"DONATE";
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output start_to_next,
 	
-	output [$clog2(NUMBER_OF_IFM/NUMBER_OF_UNITS+1)-1:0] ifm_sel_next
+	output [$clog2(${\(ceil($ARGV[8]/$ARGV[9]))})-1:0] ifm_sel_next
     );
 	
 	wire fifo_enable;
@@ -164,7 +180,7 @@ print $fh <<"DONATE";
 	
 DONATE
 chdir "./CU_DP";
-system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9]");
+system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
 
 $cu_name = "convb$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -178,10 +194,10 @@ print $fh <<"DONATE";
     .start_from_previous(start_from_previous),
     .end_to_previous(end_to_previous),
     .conv_ready(conv_ready),
-    
+    //this stride not real dont use stride = 2
     .ifm_sel_next(ifm_sel_next),
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+    .ifm_enable_read_current(ifm_enable_read_A_current),
+    .ifm_address_read_current(ifm_address_read_A_current),
     
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
@@ -206,7 +222,7 @@ print $fh <<"DONATE";
 DONATE
 
 
-system("perl DP_gen_B.pl $ARGV[0] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] ");
+system("perl DP_gen_B.pl $ARGV[0] $ARGV[2] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[10] $ARGV[11]");
 
 $dp_name = "convb$ARGV[0]_DP";
 print $fh <<"DONATE";

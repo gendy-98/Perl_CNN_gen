@@ -1216,6 +1216,7 @@ module
 	FIFO1
 	(
 		.clk(clk),
+		.reset(reset),
 		.fifo_data_in(riscv_data), 
 		.fifo_enable(bm_enable_write),
 		.fifo_data_out_1 (data_bias_1),

@@ -16,6 +16,7 @@ use feature "switch";
 #ARGV[4] NO._OF_UNITS 3
 #ARGV[5] KERNAL_SIZE 2
 #ARGV[6] ARITH_TYPE
+#$ARGV[7]
 
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -45,7 +46,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -60,7 +61,7 @@ my $pool_unit_name = "poolb_unit_$ARGV[1]";
 #ARGV[4] NO._OF_UNITS 3
 #ARGV[5] KERNAL_SIZE 2
 #ARGV[6] ARITH_TYPE
-system("perl PoolB_unit.pl  $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[3] $ARGV[6] ");
+system("perl PoolB_unit.pl  $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[3] $ARGV[6] $ARGV[7]");
 
 
 $module_name = "poolb_dp_U$ARGV[4]";

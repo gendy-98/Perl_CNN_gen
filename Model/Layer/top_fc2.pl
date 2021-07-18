@@ -20,6 +20,7 @@ use POSIX; # for ceil and floor
 #ARGV[5] ARITH_TYPE = 1
 #ARGV[6] FC_number 1
 #ARGV[7] Is it the last FC? (1 Yes/0 No) 0
+#ARGV[8]
 #
 
 ######################################### CONSTANTS ###################################
@@ -48,7 +49,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[8]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -95,7 +96,7 @@ $module $module_name $parameter
     input start_from_previous,
     output end_to_previous,
     output bias_sel,
-    output ifm_enable_write_next,
+    output enable_write_next,
     
     ////////////////////////////////////////// for next  
 DONATE
@@ -156,7 +157,7 @@ DONATE
 
 
 chdir "./CU_DP";
-system("perl FC2_CU_gen.pl $ARGV[0]  $ARGV[1] $ARGV[6] $ARGV[7]");
+system("perl FC2_CU_gen.pl $ARGV[0]  $ARGV[1] $ARGV[6] $ARGV[7] $ARGV[8]");
 my $unit_name = "FCB${\($ARGV[6])}_CU";
 print $fh <<"DONATE";
 
@@ -177,7 +178,7 @@ print $fh <<"DONATE";
     .sel_ifm (sel_ifm),
     .end_to_previous (end_to_previous),
     .fc_output_ready (fc_output_ready) , 
-    .enable_write_next (ifm_enable_write_next),   
+    .enable_write_next (enable_write_next),   
 DONATE
 
 if($ARGV[7] == 0){
@@ -197,15 +198,7 @@ DONATE
 	
 }
 
-#ARGV[0] DATA_WIDTH 32
-#ARGV[1] IFM_SIZE 28
-#ARGV[2] IFM_DEPTH 84
-#ARGV[3] NUMBER_OF_WM 10
-#ARGV[4] ADDRESS_BITS 16
-#ARGV[5] ARITH_TYPE = 1
-#ARGV[6] FC_number 1
-#ARGV[7] Is it the last FC? (1 Yes/0 No) 0
-system("perl FC2_DP_gen.pl $ARGV[5]  $ARGV[0] $ARGV[4] $ARGV[2] $ARGV[3] $ARGV[6]");
+system("perl FC2_DP_gen.pl $ARGV[5]  $ARGV[0] $ARGV[4] $ARGV[2] $ARGV[3] $ARGV[6] $ARGV[8]");
 $unit_name = "FCB${\($ARGV[6])}_DP";
 
 print $fh <<"DONATE";

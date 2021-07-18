@@ -12,7 +12,7 @@ use feature "switch";
 #ARGV[0] Mul_number
 #ARGV[1] ARITH_TYPE
 #ARGV[2] DATA_WIDTH
-
+#$ARGV[3]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -35,7 +35,7 @@ my $clog2 = "\$clog2";
 
 my $data_width = "DATA_WIDTH";
 
-my $full_path = "../../../../Verilog_files/";
+my $full_path = "../../../../$ARGV[3]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;

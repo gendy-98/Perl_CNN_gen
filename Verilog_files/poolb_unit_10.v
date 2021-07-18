@@ -2,11 +2,11 @@
 
 
 module 
- poolb_unit_7 #(parameter
+ poolb_unit_10 #(parameter
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	/////////////////////////////////////
-	IFM_SIZE              = 7,                                                
+	IFM_SIZE              = 10,                                                
 	ARITH_TYPE 				= 0,
 	KERNAL_SIZE           = 2,
 	//////////////////////////////////////
@@ -31,14 +31,14 @@ module
 	wire [DATA_WIDTH-1:0] signal_if3;
 	wire [DATA_WIDTH-1:0] signal_if4;
 
-	FIFO_4_2_9 #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .KERNAL_SIZE(KERNAL_SIZE))
+	FIFO_4_2_12 #(.DATA_WIDTH(DATA_WIDTH), .IFM_SIZE(IFM_SIZE), .KERNAL_SIZE(KERNAL_SIZE))
 	FIFO1 (
 	.clk(clk),
 	.reset(reset),
 	.fifo_enable(fifo_enable),
 	.fifo_data_in(unit_data_in),
 	
-	.fifo_data_in_2(unit_data_in2),
+	.fifo_data_in_2(unit_data_in_2),
 	.fifo_data_out_1(signal_if1),
 	.fifo_data_out_2(signal_if2),
 	.fifo_data_out_3(signal_if3),

@@ -14,6 +14,7 @@ use POSIX;
 #ARGV[1] IFM_DEPTH 84
 #ARGV[2] FC_number 1
 #ARGV[3] Is it the last FC? (1 Yes/0 No) 0
+#$ARGV[4]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -44,7 +45,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[4]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -70,9 +71,9 @@ $delay_cycles = 3;
 }
 
 chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits");
+system("perl delay.pl $delay_cycles $signal_bits $ARGV[4]");
 
-system("perl delay.pl 2 1");
+system("perl delay.pl 2 1 $ARGV[4]");
 
 my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
 

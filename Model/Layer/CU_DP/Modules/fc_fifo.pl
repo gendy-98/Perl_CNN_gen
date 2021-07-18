@@ -12,6 +12,7 @@ use feature "switch";
 #argumets 
 #ARGV[0] REGS_NUM
 #ARGV[1] Data_Width
+#$ARGV[2]
 #
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
@@ -39,7 +40,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../../../Verilog_files/";
+my $full_path = "../../../../$ARGV[2]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;

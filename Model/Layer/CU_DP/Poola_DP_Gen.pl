@@ -16,7 +16,7 @@ use feature "switch";
 #ARGV[4] NO._OF_UNITS 1
 #ARGV[5] STRIDE 2
 #ARGV[6] ARITH_TYPE
-
+#$ARGV[7]
 
 
 ######################################### CONSTANTS ###################################
@@ -47,7 +47,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -117,7 +117,7 @@ $module_name_of_fifo = "FIFO_$num_outputs_of_fifo$under_Score$ARGV[5]$under_Scor
 
 
 chdir "./Modules";
-system("perl fifo.pl  $ARGV[5] $ARGV[0] $ARGV[1] $ARGV[3]");
+system("perl fifo.pl  $ARGV[5] $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[7]");
 
 
 print $fh <<"DONATE";

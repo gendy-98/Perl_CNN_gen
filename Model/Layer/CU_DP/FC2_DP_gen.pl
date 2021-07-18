@@ -16,6 +16,7 @@ use POSIX;
 #ARGV[3] IFM_DEPTH 84
 #ARGV[4] NUMBER_OF_WM 10
 #ARGV[5] FC_number 1
+#$ARGV[6]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -46,7 +47,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[6]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -172,9 +173,8 @@ DONATE
  my $log_2_ifm_depth = ceil(log($ARGV[3])/log(2));
   
   for($i=1; $i<=$ARGV[3]; $i = $i + 1){
-	my $bin = sprintf ("%b", ${\($i-1)});
 	print $fh <<"DONATE";
-        $log_2_ifm_depth\'b$bin : Data_Read_mux =  Data_in_$i ;
+        $log_2_ifm_depth\'d${\($i-1)} : Data_Read_mux =  Data_in_$i ;
 DONATE
   }
   
@@ -201,14 +201,9 @@ DONATE
 DONATE
   
   
-  for($i=1; $i<=$ARGV[4]; $i = $i + 1){
-	print $fh <<"DONATE";
-    wire [DATA_WIDTH-1:0] data_bias_fc2_$i;
-DONATE
-  }
 
     chdir "..";
-  system("perl fully_connected_gen.pl $ARGV[1] $ARGV[4] $ARGV[0]");
+  system("perl fully_connected_gen.pl $ARGV[1] $ARGV[4] $ARGV[0] $ARGV[6]");
   
   
 print $fh <<"DONATE";
@@ -239,7 +234,7 @@ DONATE
   
   
   chdir "./CU_DP/Modules";
-  system("perl fc_fifo.pl $ARGV[4] $ARGV[1]");
+  system("perl fc_fifo.pl $ARGV[4] $ARGV[1] $ARGV[6]");
   
   my $fifo_name = "fo_fifo_$ARGV[4]";
   

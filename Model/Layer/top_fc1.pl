@@ -9,7 +9,6 @@ use feature 'say';
 # Use a Perl version of switch called given when
 use feature "switch";
 
-use POSIX; # for ceil and floor 
 
 #argumets 
 #ARGV[0] DATA_WIDTH 32
@@ -20,6 +19,7 @@ use POSIX; # for ceil and floor
 #ARGV[5] ARITH_TYPE = 1
 #ARGV[6] FC_number 1
 #ARGV[7] Is it the last FC? (1 Yes/0 No) 0
+#ARGV[8]
 #
 
 ######################################### CONSTANTS ###################################
@@ -48,7 +48,7 @@ my $ifm_size = "IFM_SIZE";
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $num_filters = "NUMBER_OF_FILTERS";
-my $full_path = "../../Verilog_files/";
+my $full_path = "../../$ARGV[8]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -147,7 +147,7 @@ DONATE
 
 
 chdir "./CU_DP";
-system("perl FC1_CU_gen.pl $ARGV[0]  $ARGV[2] $ARGV[6] $ARGV[7]");
+system("perl FC1_CU_gen.pl $ARGV[0]  $ARGV[2] $ARGV[6] $ARGV[7] $ARGV[8]");
 my $unit_name = "FCA${\($ARGV[6])}_CU";
 print $fh <<"DONATE";
 
@@ -186,7 +186,7 @@ DONATE
 	
 }
 
-system("perl FC1_DP_gen.pl $ARGV[5]  $ARGV[0] $ARGV[4] $ARGV[2] $ARGV[3] $ARGV[6]");
+system("perl FC1_DP_gen.pl $ARGV[5]  $ARGV[0] $ARGV[4] $ARGV[2] $ARGV[3] $ARGV[6] $ARGV[8]");
 $unit_name = "FCA${\($ARGV[6])}_DP";
 
 print $fh <<"DONATE";

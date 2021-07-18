@@ -69,25 +69,27 @@ $i = $i + 2;
 my $pool_size = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $rgb = $AdvancedParameters_info[$i];
-
+$i = $i + 2;
+my $relative_path = $AdvancedParameters_info[$i];
+say $relative_path;
 my $float_oldver = "float";
 ###################################################
 ####       FILES THAT WOULD RUN ONLY ONCE      ####
 ###################################################
 chdir "./Model/Blocks";
-system("perl accumulator.pl $arith_type $data_width");
-system("perl duelportmemory.pl");
-system("perl RegAccumulator.pl $data_width $arith_type");
-system("perl Register.pl");
-system("perl Relu.pl");
-system("perl singleportmemory.pl");
+system("perl accumulator.pl $arith_type $data_width $relative_path");
+system("perl duelportmemory.pl $relative_path");
+system("perl RegAccumulator.pl $data_width $arith_type $relative_path");
+system("perl Register.pl $relative_path");
+system("perl Relu.pl $relative_path");
+system("perl singleportmemory.pl $relative_path");
 chdir "../Layer/CU_DP/Modules";
-system("perl convolution.pl $muls_convolution $arith_type $data_width");
-system("perl pool.pl  $pool_size  $arith_type $data_width");
+system("perl convolution.pl $muls_convolution $arith_type $data_width $relative_path");
+system("perl pool.pl  $pool_size  $arith_type $data_width $relative_path");
 chdir "./operations";
-system("perl adder.pl $arith_type $data_width $M_Mantissa $E_Exponent");
-system("perl divider.pl $arith_type $data_width $M_Mantissa $E_Exponent $divided_by");
-system("perl multiplier.pl $arith_type $data_width $M_Mantissa $E_Exponent ");
+system("perl adder.pl $arith_type $data_width $M_Mantissa $E_Exponent $relative_path");
+system("perl divider.pl $arith_type $data_width $M_Mantissa $E_Exponent $divided_by $relative_path");
+system("perl multiplier.pl $arith_type $data_width $M_Mantissa $E_Exponent $relative_path");
 chdir "../../../..";
 ###################################################
 #layer extraction part
@@ -147,5 +149,5 @@ $number_of_filters = join(",", @number_of_filters_r);
 $stride = join(",", @stride_r);
 
 chdir "./Model";
-system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits $rgb $stride $arith_type");
+system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits $rgb $stride $arith_type $relative_path");
 

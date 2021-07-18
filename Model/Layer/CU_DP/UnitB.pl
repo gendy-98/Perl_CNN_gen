@@ -17,7 +17,7 @@ use feature "switch";
 #ARGV[4] NUMBER_OF_UNITS 3
 #ARGV[5] ARITH_TYPE 0
 #ARGV[6] stride
-
+#$ARGV[7]
 ######################################### CONSTANTS ###################################
 my $module = <<"DONATE";
 `timescale 1ns / 1ps
@@ -46,7 +46,7 @@ my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../Verilog_files/";
+my $full_path = "../../../$ARGV[7]/";
 #######################################################################################
 my $i = 0;
 my $j = 0;
@@ -132,7 +132,7 @@ for($i = 1; $i <= ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	wire [$data_width-1:0] accu_data_out;
 	wire [$data_width-1:0] relu_data_out;
 
-single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))) 
+single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($kernal_size * $kernal_size * IFM_DEPTH * ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))) 
 	WM 
 	(
 	 .clk(clk),	
@@ -149,7 +149,7 @@ DONATE
 
 
 chdir "./Modules";
-system("perl fc_fifo.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[0] ");
+system("perl fc_fifo.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[0] $ARGV[7]");
 
 
 my $fifo_name = "fo_fifo_${\($ARGV[2]*$ARGV[2])}";

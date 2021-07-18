@@ -415,8 +415,8 @@ module
     assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
 
 
-delay_7_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(7))
-	DBlock_7_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
+delay_5_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(5))
+	DBlock_5_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
 		

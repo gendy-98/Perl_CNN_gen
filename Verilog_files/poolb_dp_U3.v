@@ -6,7 +6,7 @@ module
 ///////////advanced parameters//////////
 	DATA_WIDTH 			  = 32,
 	////////////////////////////////////
-	IFM_SIZE              = 7,                                                
+	IFM_SIZE              = 10,                                                
 	IFM_DEPTH             = 16,
 	ARITH_TYPE 				= 0,
 	KERNAL_SIZE           = 2
@@ -25,7 +25,7 @@ module
 	output [DATA_WIDTH-1:0] data_out_2,
 	output [DATA_WIDTH-1:0] data_out_3
 	);
-	poolb_unit_7 #(.DATA_WIDTH(DATA_WIDTH), 
+	poolb_unit_10 #(.DATA_WIDTH(DATA_WIDTH), 
 	.IFM_SIZE(IFM_SIZE), 
 	.ARITH_TYPE(ARITH_TYPE),
 	.KERNAL_SIZE(KERNAL_SIZE))
@@ -39,7 +39,7 @@ module
     .unit_data_out(data_out_1)
     );
 	
-	poolb_unit_7 #(.DATA_WIDTH(DATA_WIDTH), 
+	poolb_unit_10 #(.DATA_WIDTH(DATA_WIDTH), 
 	.IFM_SIZE(IFM_SIZE), 
 	.ARITH_TYPE(ARITH_TYPE),
 	.KERNAL_SIZE(KERNAL_SIZE))
@@ -53,7 +53,7 @@ module
     .unit_data_out(data_out_2)
     );
 	
-	poolb_unit_7 #(.DATA_WIDTH(DATA_WIDTH), 
+	poolb_unit_10 #(.DATA_WIDTH(DATA_WIDTH), 
 	.IFM_SIZE(IFM_SIZE), 
 	.ARITH_TYPE(ARITH_TYPE),
 	.KERNAL_SIZE(KERNAL_SIZE))

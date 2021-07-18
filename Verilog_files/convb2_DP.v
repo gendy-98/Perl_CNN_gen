@@ -14,7 +14,7 @@ module
 	NUMBER_OF_FILTERS     = 16,
 	NUMBER_OF_UNITS       = 3,
 	//////////////////////////////////////
-	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(NUMBER_OF_FILTERS/NUMBER_OF_UNITS+1))                             
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*6)                             
 )(
 	input clk,
 	input reset,
@@ -84,10 +84,10 @@ module
 	wire [DATA_WIDTH-1:0] data_bias_3;
 	    
 	wire [ADDRESS_SIZE_WM-1:0] wm_address;
-	wire [$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0] bm_address;
+	wire [$clog2((6))-1:0] bm_address;
 	
 	assign wm_address = wm_addr_sel ? wm_address_read_current : riscv_address[ADDRESS_SIZE_WM-1:0];
-	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2((NUMBER_OF_FILTERS/NUMBER_OF_UNITS)+1)-1:0];
+	assign bm_address = bm_addr_sel ? bm_address_read_current : riscv_address[$clog2((6))-1:0];
 	
 	single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (2) )
 	bm1 (
@@ -154,7 +154,13 @@ module
 	);
 	
 	
-	unitB #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
+	unitB #(
+	 .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .IFM_DEPTH(IFM_DEPTH), 
+	 .KERNAL_SIZE(KERNAL_SIZE), 
+	 .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), 
+	 .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
 	convB_unit_1
 	(
     .clk(clk),                                 
@@ -197,7 +203,13 @@ module
     .unit_data_out(unit1_data_out)   
     );
 	
-	unitB #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
+	unitB #(
+	 .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .IFM_DEPTH(IFM_DEPTH), 
+	 .KERNAL_SIZE(KERNAL_SIZE), 
+	 .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), 
+	 .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
 	convB_unit_2
 	(
     .clk(clk),                                 
@@ -237,10 +249,16 @@ module
 	.wm_enable_write(wm_enable_write[1]), 
 	.wm_address(wm_address),
     .wm_fifo_enable(wm_fifo_enable),          
-    .unit_data_out(unit1_data_out)   
+    .unit_data_out(unit2_data_out)   
     );
 	
-	unitB #(.ARITH_TYPE(ARITH_TYPE), .DATA_WIDTH(DATA_WIDTH), .IFM_DEPTH(IFM_DEPTH), .KERNAL_SIZE(KERNAL_SIZE), .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
+	unitB #(
+	 .ARITH_TYPE(ARITH_TYPE),
+	 .DATA_WIDTH(DATA_WIDTH), 
+	 .IFM_DEPTH(IFM_DEPTH), 
+	 .KERNAL_SIZE(KERNAL_SIZE), 
+	 .NUMBER_OF_FILTERS(NUMBER_OF_FILTERS), 
+	 .NUMBER_OF_UNITS(NUMBER_OF_UNITS))
 	convB_unit_3
 	(
     .clk(clk),                                 
@@ -280,12 +298,12 @@ module
 	.wm_enable_write(wm_enable_write[2]), 
 	.wm_address(wm_address),
     .wm_fifo_enable(wm_fifo_enable),          
-    .unit_data_out(unit1_data_out)   
+    .unit_data_out(unit3_data_out)   
     );
 	
 assign data_out_for_next1 = unit1_data_out;
-assign data_out_for_next2 = unit1_data_out;
-assign data_out_for_next3 = unit1_data_out;
+assign data_out_for_next2 = unit2_data_out;
+assign data_out_for_next3 = unit3_data_out;
 
 
 endmodule

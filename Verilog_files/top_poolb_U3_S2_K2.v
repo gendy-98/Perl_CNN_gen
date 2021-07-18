@@ -6,7 +6,7 @@ module
 ///////////advanced parameters//////////
 	DATA_WIDTH 					= 32,
 ///////////architecture parameters//////
-	IFM_SIZE              = 7,
+	IFM_SIZE              = 10,
 	IFM_DEPTH				= 16,
 	KERNAL_SIZE			= 2,
     ARITH_TYPE 				= 0,
