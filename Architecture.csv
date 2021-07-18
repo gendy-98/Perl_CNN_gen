@@ -1,49 +1,49 @@
-layer name,conva1
-kernal size ,5
-stride,1
-input size,32
-input channels,1
-output channels,6
-units number,1
-layer name,pool1
-kernal size ,2
-stride,2
-input size,28
-input channels,6
-output channels,6
-units number,1
-layer name,convb2
-kernal size ,5
-stride,1
-input size,14
-input channels,6
-output channels,16
-units number,3
-layer name,pool2
-kernal size ,2
-stride,2
-input size,10
-input channels,16
-output channels,16
-units number,3
-layer name,conva3
-kernal size ,5
-stride,1
-input size,5
-input channels,16
-output channels,120
-units number,3
-layer name,fc1
-kernal size ,1
-stride,1
-input size,32
-input channels,120
-output channels,84
-units number,84
-layer name,fc2
-kernal size ,1
-stride,1
-input size,32
-input channels,84
-output channels,10
-units number,10
+layer name,conva1,,,
+kernal size ,5,,mohem,
+stride,1,,mohem,
+input size,32,,,
+input channels,1,,,
+output channels,6,,mohem,no of filtes
+units number,1,,mohem,
+layer name,pool1,,,
+kernal size ,2,,mohem,
+stride,2,,mohem,
+input size,28,,,
+input channels,6,,,
+output channels,6,,,
+units number,1,,mohem,
+layer name,convb2,,,
+kernal size ,5,,mohem,
+stride,1,,mohem,
+input size,14,,,
+input channels,6,,,
+output channels,16,,mohem,
+units number,6,,mohem,
+layer name,pool2,,,
+kernal size ,2,,mohem,
+stride,2,,mohem,
+input size,10,,,
+input channels,16,,,
+output channels,16,,,
+units number,6,,mohem,
+layer name,conva3,,,
+kernal size ,5,,mohem,
+stride,1,,mohem,
+input size,5,,,
+input channels,16,,,
+output channels,120,,mohem,
+units number,6,,mohem,
+layer name,fc1,,,
+kernal size ,1,,,
+stride,1,,,
+input size,32,,,
+input channels,120,,,
+output channels,84,,mohem,
+units number,84,,,
+layer name,fc2,,,
+kernal size ,1,,,
+stride,1,,,
+input size,32,,,
+input channels,84,,,
+output channels,10,,mohem,
+units number,10,,,

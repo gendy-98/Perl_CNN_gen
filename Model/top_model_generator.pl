@@ -344,12 +344,12 @@ DONATE
 
             
             print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_end_to_previous;
-wire                   [DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out                ;
-wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
-wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-wire                                    ${\($layers_names[$i])}_start_to_next;
-wire                                    ${\($layers_names[$i])}_ifm_sel_next;
+    wire                   ${\($layers_names[$i])}_end_to_previous;
+    wire                   [DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out                ;
+    wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+    wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
+    wire                                    ${\($layers_names[$i])}_start_to_next;
+    wire                                    ${\($layers_names[$i])}_ifm_sel_next;
 DONATE
         }
         else{
@@ -375,7 +375,7 @@ wire                                    ${\($layers_names[$i])}_end_to_previous;
 wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
 wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
 wire                                    ${\($layers_names[$i])}_start_to_next;
-wire                                    ${\($layers_names[$i])}_ifm_sel_next;
+wire                   [$clog2(${\(ceil($ifm_depth[$i+1]/$layer_units[$i]))})-1:0]${\($layers_names[$i])}_ifm_sel_next;
 DONATE
         }
     }
@@ -415,8 +415,7 @@ DONATE
         else{
             print $fh <<"DONATE";
     // commented by the perl commity 
-    //wire ${\($layers_names[$i])}_enable_read_current;
-    //wire ${\($layers_names[$i])}_end_to_previous;
+    wire ${\($layers_names[$i])}_end_to_previous;
 
     wire ${\($layers_names[$i])}_bias_sel;    
     wire ${\($layers_names[$i])}_enable_write_next;

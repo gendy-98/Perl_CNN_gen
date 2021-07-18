@@ -1,11 +1,11 @@
-data width ,32,,,,,
-riscv address bus,22,,,,,
-address bits,15,,,,,
-operation type,0,,,0 float,1 fixed,
-mantissa,23,,,,,
-exponent,8,,,,,
-muls in conv,25,,,,,
-divided by,4,,,,,
-pool,4,,,pool size,,
-RGB,0,,,,,
-relative path,Verilog_files,,,,,verilog_models/unit2
+data width ,32,,mohem
+riscv address bus,22,,
+address bits,15,,
+operation type,0,,mohem
+mantissa,23,,mohem
+exponent,8,,mohem
+muls in conv,25,,
+divided by,4,,
+pool,4,,
+RGB,0,,mohem
+relative path,PerlGenModels/unit6,,mohem

@@ -1,93 +1,18 @@
-use strict;
-use warnings;
-use diagnostics;
-use POSIX;
-
-# say prints a line followed by a newline
-use feature 'say';
- 
-# Use a Perl version of switch called given when
-use feature "switch";
-use POSIX;
-#argumets 
-#ARGV[0] no of the conv 2	
-#ARGV[1] Mul number 25		
-#ARGV[2] IFM_SIZE  32		
-#ARGV[3] IFM_DEPTH 3		
-#ARGV[4] KERNAL_SIZE 5 		
-#ARGV[5] NUMBER_OF_FILTERS 6
-#ARGV[6] NUMBER_OF_UNITS 3
-#ARGV[7]
-
-######################################### CONSTANTS ###################################
-my $module = <<"DONATE";
 `timescale 1ns / 1ps
 
 
 module 
-DONATE
-my $parameter = "#(parameter";
-
-my $always_clk = <<"DONATE";
-always @ (posedge clk)
-    begin 
-DONATE
-my $end = "end";
-my $end_module = "endmodule";
-my $i_p = "input";
-my $o_p = "output";
-my $under_Score = "_";
-my $clog2 = "\$clog2";
-
-my $data_width = "DATA_WIDTH";
-my $address_bits = "ADDRESS_BITS";
-
-my $ifm_size = "IFM_SIZE";                                               
-my $ifm_depth = "IFM_DEPTH";
-my $kernal_size = "KERNAL_SIZE";
-my $number_of_filters = "NUMBER_OF_FILTERS";
-my $number_of_units = "NUMBER_OF_UNITS";
-my $full_path = "../../../$ARGV[7]/";
-#######################################################################################
-my $i = 0;
-my $j = 0;
-my $jj = 0;
-my $file_name;
-my $module_name;
-my $adder_name;
-my $mul_name;
-my $odd_flag;
-my $dummy_level;
-my @levels;
-my $levels_number;
-
-my $single_port_name = "single_port_memory";
-my $unit_name = "unitA";
-my $Relu_name = "relu";
-my $accumulator_name = "accumulator"; 
-$module_name = "convb$ARGV[0]_CU";
-
-
-
-$file_name = $full_path . $module_name . ".v";
-open my $fh, '>', $file_name
-  or die "Can't open file : $!";
-  
-my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
-
-  
-print $fh <<"DONATE";
-$module $module_name $parameter
+ convb2_CU #(parameter
 ///////////advanced parameters//////////
-	$ifm_size              = $ARGV[2],                                                
-	$ifm_depth             = $ARGV[3],
-	$kernal_size           = $ARGV[4],
-	$number_of_filters     = $ARGV[5],
+	IFM_SIZE              = 14,                                                
+	IFM_DEPTH             = 6,
+	KERNAL_SIZE           = 5,
+	NUMBER_OF_FILTERS     = 16,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
     ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
-    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS)), //$ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
+    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(3)), //3 is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
     FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE,
     NUMBER_OF_IFM           = 2,
     NUMBER_OF_IFM_NEXT      = NUMBER_OF_FILTERS
@@ -122,7 +47,7 @@ $module $module_name $parameter
     output reg  [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_read_next,
     output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
     output reg start_to_next,
-    output reg [$clog2($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS)-1:0] ifm_sel_next //$ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
+    output reg [$clog2(3)-1:0] ifm_sel_next //3 is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
     );
     
     reg  ifm_start_counter_read_address;
@@ -132,7 +57,7 @@ $module $module_name $parameter
         
     reg  fifo_enable_sig1;
     
-    reg  [$clog2($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS)-1 : 0] filters_counter; //$ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
+    reg  [$clog2(3)-1 : 0] filters_counter; //3 is ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
     wire filters_counter_tick;
     
     reg  [$clog2(IFM_DEPTH)-1 : 0] depth_counter;
@@ -255,12 +180,12 @@ $module $module_name $parameter
     begin
         if(reset)
             ifm_sel_next <= 0;
-        else if (ifm_sel_next == ( $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS -1) & ifm_address_write_next_tick)
+        else if (ifm_sel_next == ( 3 -1) & ifm_address_write_next_tick)
             ifm_sel_next <= 0;
         else if( ifm_sel_en )
             ifm_sel_next <= ifm_sel_next +  1; 
     end
-    assign ifm_sel_next_tick = (ifm_sel_next == ( $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS -1) & ifm_address_write_next_tick);
+    assign ifm_sel_next_tick = (ifm_sel_next == ( 3 -1) & ifm_address_write_next_tick);
     
     always @(posedge clk, posedge reset)
     begin
@@ -301,7 +226,7 @@ $module $module_name $parameter
     begin
         if(reset)
             bm_address_read_current <= 0;
-        else if(bm_address_read_current == ( ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS) -1) & ifm_address_write_next_tick) //$ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS is NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
+        else if(bm_address_read_current == ( (3) -1) & ifm_address_write_next_tick) //3 is NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS
             bm_address_read_current <= 0;
         else if(ifm_address_write_next_tick)
             bm_address_read_current <= bm_address_read_current + 1'b1;      
@@ -311,13 +236,13 @@ $module $module_name $parameter
     begin
         if(reset)
             filters_counter <= 0;
-        else if( filters_counter == (($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS)-1) & ifm_address_read_current_tick )
+        else if( filters_counter == ((3)-1) & ifm_address_read_current_tick )
             filters_counter <= 0;
         else if(ifm_address_read_current_tick)
             filters_counter <= filters_counter + 1'b1;
     end
     
-    assign filters_counter_tick = (filters_counter == (($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS)-1) & ifm_address_read_current_tick);
+    assign filters_counter_tick = (filters_counter == ((3)-1) & ifm_address_read_current_tick);
     
     always @(posedge clk, posedge reset)
     begin
@@ -489,57 +414,18 @@ $module $module_name $parameter
     assign ifm_address_write_next = ifm_address_read_next - 1;
     assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
 
-DONATE
 
-$dummy_level = $ARGV[1]; 
-
-
-#ifm read -1
-$levels_number = ceil(log($dummy_level)/log(2)) +1 -1;
-
-my $delay_cycles = $levels_number;
-
-
-
-
-
-
-
-my $signal_bits = 1;
-chdir "./Modules";
-system("perl delay.pl $delay_cycles $signal_bits $ARGV[7]");
-
-my $delay_name = "delay_$delay_cycles$under_Score$signal_bits";
- 
- 
-print $fh <<"DONATE";   
-
-$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
-	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(conv_enable), 
+delay_5_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(5))
+	DBlock_5_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
 		.Data_Out(ifm_enable_read_next)
 		);
 		
-DONATE
 
-
-$delay_cycles = 1;
-system("perl delay.pl $delay_cycles $signal_bits $ARGV[7]");
-
-$delay_name = "delay_$delay_cycles$under_Score$signal_bits";
- 
- 
-print $fh <<"DONATE";   
-
-$delay_name #(.SIG_DATA_WIDTH($signal_bits), .delay_cycles($delay_cycles))
-	DBlock_$delay_cycles$under_Score$signal_bits (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
+delay_1_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(1))
+	DBlock_1_1 (.clk(clk), .reset(reset), .Data_In(ifm_enable_read_next), 
 		.Data_Out(ifm_enable_write_next)
 		);
 		
-DONATE
-
-
- 
-print $fh <<"DONATE";   
         
     //////////////////////////
     ////// start to next /////
@@ -591,5 +477,3 @@ print $fh <<"DONATE";
     end
     
 endmodule
-DONATE
-close $fh or die "Couldn't Close File : $!";

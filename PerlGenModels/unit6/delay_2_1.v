@@ -2,9 +2,9 @@
 
 
 module 
- delay_6_1 #(parameter
+ delay_2_1 #(parameter
 	SIG_DATA_WIDTH = 1,
-	delay_cycles = 6
+	delay_cycles = 2
 	)(
 	input clk,
 	input reset,
@@ -20,21 +20,13 @@ module
 		begin
 			FIFO[0] <= {SIG_DATA_WIDTH{1'b0}};
 			FIFO[1] <= {SIG_DATA_WIDTH{1'b0}};
-			FIFO[2] <= {SIG_DATA_WIDTH{1'b0}};
-			FIFO[3] <= {SIG_DATA_WIDTH{1'b0}};
-			FIFO[4] <= {SIG_DATA_WIDTH{1'b0}};
-			FIFO[5] <= {SIG_DATA_WIDTH{1'b0}};
 		end
 		else
 		begin
 			FIFO[0] <= Data_In;
 			FIFO[1] <= FIFO[0];
-			FIFO[2] <= FIFO[1];
-			FIFO[3] <= FIFO[2];
-			FIFO[4] <= FIFO[3];
-			FIFO[5] <= FIFO[4];
 		end
 	end
 
-	assign    Data_Out = FIFO[5];
+	assign    Data_Out = FIFO[1];
 endmodule
