@@ -212,7 +212,7 @@ DONATE
 
 if($ARGV[9] == 1){
 	print $fh <<"DONATE";
-	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
+	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE), .NUMBER_OF_UNITS(NUMBER_OF_UNITS)) 
 	convA1_IFM2 (
     .clk(clk),
     

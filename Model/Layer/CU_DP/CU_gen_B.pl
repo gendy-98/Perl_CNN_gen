@@ -343,7 +343,7 @@ $module $module_name $parameter
     assign psums_counter_next_tick = (psums_counter_next == ( IFM_DEPTH - 1 ) & ifm_sel_next_tick);
     
     assign accu_enable = ( psums_counter_next != 0 );
-    assign relu_enable = ( psums_counter_next == (IFM_DEPTH - 1);
+    assign relu_enable = ( psums_counter_next == (IFM_DEPTH - 1));
     
     
     always @(posedge clk)

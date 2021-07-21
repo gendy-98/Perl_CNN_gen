@@ -102,15 +102,15 @@ DONATE
 if($ARGV[5] == 2){
 
 	print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_A,
-	input [DATA_WIDTH-1:0] data_in_B,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous1,
+	input [DATA_WIDTH-1:0] data_in_B_from_previous1,
 DONATE
 
 }
 else{
 
 	print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_A,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous1,
 DONATE
 
 }
@@ -140,7 +140,7 @@ print $fh <<"DONATE";
     input  end_from_next,
     output                             ifm_enable_write_next,     
     output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
-	output [DATA_WIDTH-1 : 0]          data_out,
+	output [DATA_WIDTH-1 : 0]          data_out_for_next1,
 	output 					 		   start_to_next,
 	output 							   ifm_sel_next
 	);
@@ -217,20 +217,20 @@ DONATE
 
 	if($ARGV[5] == 2){
 	print $fh <<"DONATE";
-	.data_in_A(data_in_A),
-	.data_in_B(data_in_B),
+	.data_in_A(data_in_A_from_previous1),
+	.data_in_B(data_in_B_from_previous1),
 DONATE
 }
 else{
 	print $fh <<"DONATE";
-	.data_in_A(data_in_A),
+	.data_in_A(data_in_A_from_previous1),
 DONATE
 }
 
 
 
 print $fh <<"DONATE";
-	.data_out (data_out)
+	.data_out (data_out_for_next1)
 	);
 	
 endmodule

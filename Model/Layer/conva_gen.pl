@@ -138,7 +138,7 @@ else{
 print $fh <<"DONATE";
 	output                        ifm_enable_read_A_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
-		output                        ifm_enable_read_B_current,
+	output                        ifm_enable_read_B_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
 DONATE
 }
@@ -151,7 +151,7 @@ print $fh <<"DONATE";
 	
 	input  [DATA_WIDTH-1:0] data_in_from_next,
 	
-	output [DATA_WIDTH-1:0] data_out_for_next,
+	output [DATA_WIDTH-1:0] data_out_for_next1,
 	
 	output ifm_enable_read_next,
 	output ifm_enable_write_next,
@@ -281,7 +281,7 @@ print $fh <<"DONATE";
     .bm_address_read_current(bm_address_read_current),
 	//////////////////////////////////////////////
 	.data_in_from_next(data_in_from_next),
-	.data_out_for_next(data_out_for_next)
+	.data_out_for_next(data_out_for_next1)
     );
 	
 	

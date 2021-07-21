@@ -124,7 +124,7 @@ $module $module_name $parameter
 	     
 	// next
 	input  end_from_next,
-	output [DATA_WIDTH-1:0] data_out_for_next,
+	output [DATA_WIDTH-1:0] data_out_for_next1,
 	output [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
 	output ifm_enable_write_next,
 	output start_to_next,
@@ -236,7 +236,7 @@ print $fh <<"DONATE";
     .bm_enable_write(bm_enable_write),
     .bm_address_read_current(bm_address_read_current),
 
-	.data_out_for_next(data_out_for_next)
+	.data_out_for_next(data_out_for_next1)
     );
   
       

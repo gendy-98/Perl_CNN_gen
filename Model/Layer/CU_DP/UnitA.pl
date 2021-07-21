@@ -80,7 +80,10 @@ $module $module_name $parameter
 	$kernal_size           = $ARGV[2],
 	$number_of_filters		= $ARGV[6],
 	ARITH_TYPE				= $ARGV[4],
-	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*${\(ceil($ARGV[5]/$ARGV[7]))})      
+	NUMBER_OF_UNITS 		= $ARGV[7],
+	CEIL_DEPTH              = \$rtoi(\$ceil(IFM_DEPTH*1.0/NUMBER_OF_UNITS)),
+
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*CEIL_DEPTH)      
 
 	)(
 	$i_p 							clk,
@@ -112,7 +115,7 @@ for($i = 1; $i <= ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 
  print $fh <<"DONATE";
 
-$single_port_name #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * ${\(ceil($ARGV[5]/$ARGV[7]))} ), .DATA_WIDTH(DATA_WIDTH)) 
+$single_port_name #(.MEM_SIZE ($kernal_size * $kernal_size * $number_of_filters * CEIL_DEPTH ), .DATA_WIDTH(DATA_WIDTH)) 
 	WM 
 	(
 	 .clk(clk),	

@@ -108,15 +108,15 @@ DONATE
 if($ARGV[5] == 2){
     for($i = 1;$i <= $ARGV[4]; $i = $i + 1){
 	    print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_A_unit$i,
-	input [DATA_WIDTH-1:0] data_in_B_unit$i,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous$i,
+	input [DATA_WIDTH-1:0] data_in_B_from_previous$i,
 DONATE
     }
 }
 else{
     for($i = 1;$i <= $ARGV[4]; $i = $i + 1){
 	    print $fh <<"DONATE";
-	input [DATA_WIDTH-1:0] data_in_A_unit$i,
+	input [DATA_WIDTH-1:0] data_in_A_from_previous$i,
 DONATE
     }
 }
@@ -152,7 +152,7 @@ DONATE
 
 for($i = 1;$i <= $ARGV[4]; $i = $i + 1){
 	print $fh <<"DONATE";
-	output [DATA_WIDTH-1 : 0]          data_out_$i,
+	output [DATA_WIDTH-1 : 0]          data_out_for_next$i,
 DONATE
 }
 
@@ -235,25 +235,25 @@ DONATE
 for($i = 1; $i <= $ARGV[4]; $i = $i +1){
 	if($ARGV[5] == 2){
 	print $fh <<"DONATE";
-	.data_in_A_unit$i(data_in_A_unit$i),
-	.data_in_B_unit$i(data_in_B_unit$i),
+	.data_in_A_unit$i(data_in_A_from_previous$i),
+	.data_in_B_unit$i(data_in_B_from_previous$i),
 DONATE
 }
 else{
 	print $fh <<"DONATE";
-	.data_in_A_unit$i(data_in_A_unit$i),
+	.data_in_A_unit$i(data_in_A_from_previous$i),
 DONATE
 }
 }
 
 for($i = 1; $i < $ARGV[4]; $i = $i + 1){
 	print $fh <<"DONATE";
-	.data_out_$i (data_out_$i),
+	.data_out_$i (data_out_for_next$i),
 DONATE
 }
 
 print $fh <<"DONATE";
-	.data_out_$i (data_out_$i)
+	.data_out_$i (data_out_for_next$i)
 	);
 	
 endmodule

@@ -99,7 +99,7 @@ $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
   
-  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[5]/$ARGV[6]);
+  my $ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS = ceil($ARGV[7]/$ARGV[8]);
   
   my $num_outputs = $ARGV[6] * $ARGV[6];
   my $fifo_regs = (($ARGV[6] - 1)*$ARGV[4] + $ARGV[6]);

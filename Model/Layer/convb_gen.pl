@@ -132,7 +132,7 @@ DONATE
             }
 
 print $fh <<"DONATE";
-	input  [DATA_WIDTH-1:0]       data_in_from_previous,
+	input  [DATA_WIDTH-1:0]       data_in_A_from_previous1,
 	output                        end_to_previous,
 	
 	input                        conv_ready, 
@@ -147,7 +147,7 @@ DONATE
 
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
-		input  [DATA_WIDTH-1:0] data_out_for_next$i,
+		output  [DATA_WIDTH-1:0] data_out_for_next$i,
 DONATE
 }	
 	
@@ -235,7 +235,7 @@ print $fh <<"DONATE";
 	.riscv_data(riscv_data),
 	.riscv_address(riscv_address),
 	//////////////////////////////////////////////
-	.data_in_from_previous(data_in_from_previous),
+	.data_in_from_previous(data_in_A_from_previous1),
 	.fifo_enable(fifo_enable),
 	.conv_enable(conv_enable),
     .accu_enable(accu_enable),

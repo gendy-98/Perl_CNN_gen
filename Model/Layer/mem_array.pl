@@ -442,31 +442,7 @@ DONATE
 
 
 for($k = 1;$k <= $ifm_init_number; $k = $k + 1){
-	if($k != $ifm_init_number){
-		print $fh <<"DONATE";
-	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
-	IFM$accu_var (
-    .clk(clk),
 	
-	.Data_Input_A(data_in_from_previous$k),
-	.Data_Input_B('b0),
-	
-	.Address_A ( ifm_address_write_previous_dMuxOut$i | ifm_address_read_A_next_dMuxOut${\($i+1)} ),
-    .Address_B ( ifm_address_read_previous_dMuxOut$i  | ifm_address_read_B_next_dMuxOut${\($i+1)}),  
-	
-	.Enable_Write_A (ifm_enable_write_previous_dMuxOut$i),
-    .Enable_Read_A  (ifm_enable_read_A_next_dMuxOut${\($i+1)}),
-    .Enable_Write_B (1'b0),
-    .Enable_Read_B  (ifm_enable_read_previous_dMuxOut$i | ifm_enable_read_B_next_dMuxOut${\($i+1)}),
-	  
-	
-    .Data_Output_A(Data_Output_A_Mem$accu_var),
-    .Data_Output_B(Data_Output_B_Mem$accu_var)
-	);
-	
-DONATE
-	}
-	else{
 		print $fh <<"DONATE";
 	$dual_port_name #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE(IFM_SIZE*IFM_SIZE)) 
 	IFM$accu_var (
@@ -490,8 +466,7 @@ DONATE
 	
 DONATE
 
-	}
-	$i = $i + 1;	
+		
 $accu_var = $accu_var + 1;
 }
 

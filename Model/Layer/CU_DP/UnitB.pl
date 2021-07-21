@@ -76,16 +76,17 @@ open my $fh, '>', $file_name
  print $fh <<"DONATE";
 $module $module_name $parameter
 ///////////advanced parameters//////////
-	$arith_type               = $ARGV[5],
-	$data_width 			  = $ARGV[0],
+	$arith_type             = $ARGV[5],
+	$data_width 			= $ARGV[0],
 	/////////////////////////////////////  
-	$ifm_depth             = $ARGV[1],
-	$kernal_size           = $ARGV[2],
+	$ifm_depth              = $ARGV[1],
+	$kernal_size            = $ARGV[2],
 	$number_of_filters		= $ARGV[3],
 	$number_of_units 		= $ARGV[4],
 	//////////////////////////////////////
 	
-    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))
+	CEIL_FILTERS            = \$rtoi(\$ceil(NUMBER_OF_FILTERS*1.0/NUMBER_OF_UNITS)),
+    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*CEIL_FILTERS)
 	)
 	(
 	$i_p 							clk,
@@ -132,7 +133,7 @@ for($i = 1; $i <= ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 	wire [$data_width-1:0] accu_data_out;
 	wire [$data_width-1:0] relu_data_out;
 
-single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($kernal_size * $kernal_size * IFM_DEPTH * ($ceil_NUMBER_OF_FILTERS_over_NUMBER_OF_UNITS))) 
+single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE ($kernal_size * $kernal_size * IFM_DEPTH * CEIL_FILTERS)) 
 	WM 
 	(
 	 .clk(clk),	

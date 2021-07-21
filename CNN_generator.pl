@@ -12,8 +12,8 @@ use feature "switch";
 
 
 my $number_of_parameters = 7*2;# param -layer_name -stride ... etc *2 -> two fields 
-my $Architecture_file = 'Architecture.csv';
-my $AdvancedParameters_file = 'AdvancedParameters.csv';
+my $Architecture_file = 'Architecture_2.csv';
+my $AdvancedParameters_file = 'AdvancedParameters_2.csv';
 my @Architecture_info;
 my @AdvancedParameters_info;
 my @dummy_info;

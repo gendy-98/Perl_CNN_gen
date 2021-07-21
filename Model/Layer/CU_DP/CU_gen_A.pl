@@ -65,8 +65,15 @@ my $unit_name = "unitA";
 my $Relu_name = "relu";
 my $accumulator_name = "accumulator"; 
 $module_name = "conva$ARGV[0]_CU";
+my $psums_enable ;
 
 
+if($ARGV[3] == $ARGV[5]){
+     $psums_enable = "ifm_enable_write_next";
+}else{
+     $psums_enable = "address_write_next_tick";
+
+}
 
 
 $file_name = $full_path . $module_name . ".v";
@@ -124,7 +131,8 @@ $module $module_name $parameter
     output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
     output reg start_to_next
     );
-	  reg  ifm_start_counter_read_address;
+	
+    reg  ifm_start_counter_read_address;
     wire ifm_address_read_current_tick;
     reg  ifm_address_read_current_tick_delayed;
     wire no_more_start_flag;
@@ -143,6 +151,7 @@ $module $module_name $parameter
     wire start_internal;
     wire start;
     
+    reg mem-empty;
     wire signal_hold;
 
     assign start = start_from_previous | start_internal;
@@ -203,7 +212,9 @@ $module $module_name $parameter
 		
 		end_to_previous                = 1'b0;
         
-        if(filters_counter_tick)
+        if( (signal-hold) &(~mem_empty) )
+            state_next = HOLD;
+        else if(filters_counter_tick)
             state_next = IDLE;        
 	    else if(ifm_address_read_current_tick)
             state_next = FINISH;
@@ -243,6 +254,9 @@ $module $module_name $parameter
         fifo_enable_sig1               = 1'b0;
         
         end_to_previous                = 1'b0;
+
+        if(mem_empty)
+            state_next = READ;
         
         end
         
@@ -339,12 +353,12 @@ $module $module_name $parameter
     begin
         if(reset)
             psums_counter_next <= 0;
-        else if(psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & ifm_enable_write_next)
+        else if(psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & $psums_enable)
             psums_counter_next <= 0 ;
-        else if(ifm_enable_write_next)
+        else if($psums_enable)
             psums_counter_next <= psums_counter_next + 1'b1;      
     end
-    assign psums_counter_next_tick = (psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & ifm_enable_write_next);
+    assign psums_counter_next_tick = (psums_counter_next == ( ${\(ceil($ARGV[4]/$ARGV[7]))}  -1) & $psums_enable);
     
     assign accu_enable = ( psums_counter_next != 0 );
     assign relu_enable = ( psums_counter_next == ${\(ceil($ARGV[4]/$ARGV[7]))}  -1 );
@@ -493,8 +507,8 @@ $module $module_name $parameter
             ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
         else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
             ifm_address_read_next <= {ADDRESS_SIZE_IFM{1'b0}};      
-        else if(ifm_enable_write_next)
-            ifm_address_read_next <= ifm_address_write_next + 1'b1;
+        else if(ifm_enable_read_next)
+            ifm_address_read_next <= ifm_address_read_next + 1'b1;
     end
     
     assign ifm_address_write_next = ifm_address_read_next - 1;
@@ -581,6 +595,7 @@ print $fh <<"DONATE";
         s0 : 
         begin
             start_to_next = 1'b0;
+            mem_empty     = 1'b1;
             if(psums_counter_next_tick)
                 state_next2 = s1;          
         end
@@ -591,12 +606,14 @@ print $fh <<"DONATE";
             if ( end_from_next )
             begin
                 start_to_next = 1'b1;
+                mem_empty     = 1'b1;
                 state_next2    = s0;
             end
             
             else 
             begin
                 start_to_next = 1'b0;
+                mem_empty     = 1'b0;
                 state_next2    = s1;  
             end      
         end
