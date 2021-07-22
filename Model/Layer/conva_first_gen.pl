@@ -140,9 +140,16 @@ print $fh <<"DONATE";
 	wire fifo_enable;
     wire conv_enable;
 	
-	wire                        ifm_enable_read_current;
-	wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current;
-   
+	wire                        ifm_enable_read_A_current;
+	wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current;
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    wire                        ifm_enable_read_B_current;
+    wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current;
+DONATE
+}
+print $fh <<"DONATE";
     wire wm_addr_sel;
     wire wm_enable_read;
     wire [ADDRESS_SIZE_WM-1:0] wm_address_read_current;
@@ -157,7 +164,7 @@ print $fh <<"DONATE";
 DONATE
 
 chdir "./CU_DP";
-system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
+system("perl CU_gen_First.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[4] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11] $ARGV[10]");
 
 $cu_name = "conva$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -175,8 +182,16 @@ print $fh <<"DONATE";
     .end_from_next(end_from_next),
     .start_from_previous(start_from_previous),
     
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+    .ifm_address_read_A_current(ifm_address_read_A_current),
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .ifm_enable_read_B_current(ifm_enable_read_B_current),
+    .ifm_address_read_B_current(ifm_address_read_B_current),
+DONATE
+}
+print $fh <<"DONATE";
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
     .wm_address_read_current(wm_address_read_current),
@@ -220,11 +235,18 @@ print $fh <<"DONATE";
 	//////////////////////////////////////////////
 	.fifo_enable(fifo_enable),
 	.conv_enable(conv_enable),
-
-    .ifm_enable_read_current(ifm_enable_read_current),
 	.ifm_enable_write_previous(ifm_enable_write_previous),
-	.ifm_address_read_current(ifm_address_read_current),
-    
+	
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+	.ifm_address_read_A_current(ifm_address_read_A_current),
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .ifm_enable_read_B_current(ifm_enable_read_B_current),
+    .ifm_address_read_B_current(ifm_address_read_B_current),
+DONATE
+}
+print $fh <<"DONATE";
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_write(wm_enable_write),
     .wm_enable_read(wm_enable_read),

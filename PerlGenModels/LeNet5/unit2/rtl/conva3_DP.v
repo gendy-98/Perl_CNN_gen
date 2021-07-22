@@ -87,6 +87,7 @@ module
 		.DATA_WIDTH(DATA_WIDTH), 
 		.IFM_SIZE(IFM_SIZE), 
 		.IFM_DEPTH(IFM_DEPTH), 
+		.NUMBER_OF_UNITS(NUMBER_OF_UNITS),
 		.KERNAL_SIZE(KERNAL_SIZE), 
 		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
 		.ARITH_TYPE(ARITH_TYPE))
@@ -95,7 +96,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_A_from_previous1),       
+    .unit_data_in_A(data_in_A_from_previous1),
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -108,6 +109,7 @@ module
 		.DATA_WIDTH(DATA_WIDTH), 
 		.IFM_SIZE(IFM_SIZE), 
 		.IFM_DEPTH(IFM_DEPTH), 
+		.NUMBER_OF_UNITS(NUMBER_OF_UNITS),
 		.KERNAL_SIZE(KERNAL_SIZE), 
 		.NUMBER_OF_FILTERS(NUMBER_OF_FILTERS),
 		.ARITH_TYPE(ARITH_TYPE))
@@ -116,7 +118,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_A_from_previous2),       
+    .unit_data_in_A(data_in_A_from_previous2),
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          

@@ -88,7 +88,7 @@ $levels_number = @levels;
 #	$mul_name = "Float_Multiplier";
 #	}
  
-$module_name = "convolution";
+$module_name = "convolution_S$ARGV[0]";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name

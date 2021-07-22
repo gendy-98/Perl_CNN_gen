@@ -12,7 +12,7 @@ module
 	KERNAL_SIZE           = 5,
 	NUMBER_OF_FILTERS     = 120,
 	NUMBER_OF_UNITS       = 2,
-	ARITH_TYPE 				= 0,
+	ARITH_TYPE 			   = 0,
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -45,7 +45,7 @@ module
 	
 	input  [DATA_WIDTH-1:0] data_in_from_next,
 	
-	output [DATA_WIDTH-1:0] data_out_for_next,
+	output [DATA_WIDTH-1:0] data_out_for_next1,
 	
 	output ifm_enable_read_next,
 	output ifm_enable_write_next,
@@ -90,10 +90,9 @@ module
     .ready(ready),
     
     .ifm_sel_previous(ifm_sel_previous),
-	//it has no stride 2 it need correction in CU.pl
-    .ifm_enable_read_current(ifm_enable_read_A_current),
-    .ifm_address_read_current(ifm_address_read_A_current),
-    
+	
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+    .ifm_address_read_A_current(ifm_address_read_A_current),
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
     .wm_address_read_current(wm_address_read_current),
@@ -150,7 +149,7 @@ module
     .bm_address_read_current(bm_address_read_current),
 	//////////////////////////////////////////////
 	.data_in_from_next(data_in_from_next),
-	.data_out_for_next(data_out_for_next)
+	.data_out_for_next(data_out_for_next1)
     );
 	
 	

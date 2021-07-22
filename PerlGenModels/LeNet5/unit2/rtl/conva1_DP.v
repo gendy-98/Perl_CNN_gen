@@ -27,9 +27,8 @@ module
 	input conv_enable,
     
 	input [NUMBER_OF_IFM-1:0]    ifm_enable_write_previous,            
-	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
-    input                        ifm_enable_read_current,
-    
+	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+    input                        ifm_enable_read_A_current,
     input                       wm_addr_sel,
     input                       wm_enable_read,
     input [NUMBER_OF_UNITS-1:0] wm_enable_write,
@@ -74,9 +73,9 @@ module
     .Enable_Read_A(1'b0), 
   
     .Data_Input_B({DATA_WIDTH{1'b0}}),
-    .Address_B(ifm_address_read_current),
+    .Address_B(ifm_address_read_A_current),
     .Enable_Write_B(1'b0),
-    .Enable_Read_B(ifm_enable_read_current), 
+    .Enable_Read_B(ifm_enable_read_A_current), 
   
     .Data_Output_A(),
     .Data_Output_B(data_read_for_unit1)
@@ -93,7 +92,7 @@ module
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_read_for_unit1),       
+    .unit_data_in_A(data_read_for_unit1),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          

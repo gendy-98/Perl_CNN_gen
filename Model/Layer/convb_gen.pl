@@ -115,6 +115,7 @@ DONATE
 
 if($ARGV[10] == 1){
                 print $fh <<"DONATE";
+    input  [DATA_WIDTH-1:0]       data_in_A_from_previous1,
     output                        ifm_enable_read_A_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
 DONATE
@@ -122,6 +123,8 @@ DONATE
             else
             {
                 print $fh <<"DONATE";
+    input  [DATA_WIDTH-1:0]       data_in_A_from_previous1,
+    input  [DATA_WIDTH-1:0]       data_in_B_from_previous1,
     output                        ifm_enable_read_A_current,
 	output [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
     output                        ifm_enable_read_B_current,
@@ -132,7 +135,7 @@ DONATE
             }
 
 print $fh <<"DONATE";
-	input  [DATA_WIDTH-1:0]       data_in_A_from_previous1,
+	
 	output                        end_to_previous,
 	
 	input                        conv_ready, 
@@ -180,7 +183,7 @@ print $fh <<"DONATE";
 	
 DONATE
 chdir "./CU_DP";
-system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
+system("perl CU_gen_B.pl $ARGV[0] $ARGV[1] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11] $ARGV[10]");
 
 $cu_name = "convb$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -196,9 +199,16 @@ print $fh <<"DONATE";
     .conv_ready(conv_ready),
     //this stride not real dont use stride = 2
     .ifm_sel_next(ifm_sel_next),
-    .ifm_enable_read_current(ifm_enable_read_A_current),
-    .ifm_address_read_current(ifm_address_read_A_current),
-    
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+    .ifm_address_read_A_current(ifm_address_read_A_current),
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .ifm_enable_read_B_current(ifm_enable_read_B_current),
+    .ifm_address_read_B_current(ifm_address_read_B_current),
+DONATE
+}
+print $fh <<"DONATE";
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
     .wm_address_read_current(wm_address_read_current),
@@ -235,7 +245,14 @@ print $fh <<"DONATE";
 	.riscv_data(riscv_data),
 	.riscv_address(riscv_address),
 	//////////////////////////////////////////////
-	.data_in_from_previous(data_in_A_from_previous1),
+	.data_in_A_from_previous(data_in_A_from_previous1),
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .data_in_B_from_previous(data_in_B_from_previous1),
+DONATE
+}
+print $fh <<"DONATE";
 	.fifo_enable(fifo_enable),
 	.conv_enable(conv_enable),
     .accu_enable(accu_enable),
@@ -245,6 +262,8 @@ DONATE
 for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
 	.data_in_from_next$i(data_in_from_next$i),
+DONATE
+    print $fh <<"DONATE";
 	.data_out_for_next$i(data_out_for_next$i),
 DONATE
 }

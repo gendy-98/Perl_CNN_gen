@@ -171,20 +171,20 @@ print $fh <<"DONATE";
     output                              output_ready             
     );
 	
-wire                                    memControl_conva1_start    ;
+	wire	memControl_conva1_start    ;
 DONATE
 
 if($ARGV[9] == 0){
     print $fh <<"DONATE";
 	//1 indicates the input img is grayscale
-wire                   [1-1:0]          memControl_conva1_ifm_enable_write;
+	wire	[1-1:0] memControl_conva1_ifm_enable_write;
 	
 DONATE
 }
 else{
     print $fh <<"DONATE";
 	//3 indicates the input img is RGB
-wire                   [3-1:0]          memControl_conva1_ifm_enable_write;
+	wire	[3-1:0] memControl_conva1_ifm_enable_write;
 	
 DONATE
 }
@@ -192,15 +192,15 @@ DONATE
 for($i = 0; $i <$layers_count; $i = $i + 1){
     if (index($layers_names[$i], "pool") == -1) {
         print $fh <<"DONATE";
-wire                   [$layer_units[$i]-1:0] memControl_$layers_names[$i]_wm_enable_write           ;
+	wire	[$layer_units[$i]-1:0] memControl_$layers_names[$i]_wm_enable_write           ;
 DONATE
     }
 }
 
 print $fh <<"DONATE";
 
-wire                   [DATA_WIDTH-1:0] memControl_riscv_data      ;
-wire                   [ADDRESS_BITS-1:0]memControl_riscv_address   ;
+	wire	[DATA_WIDTH-1:0] memControl_riscv_data      ;
+	wire	[ADDRESS_BITS-1:0]memControl_riscv_address   ;
 	
 DONATE
 
@@ -208,12 +208,14 @@ for($i = 0; $i <$layers_count; $i = $i + 1){
     if (index($layers_names[$i], "pool") == -1) {
         if (index($layers_names[$i], "convb") == -1) {
             print $fh <<"DONATE";
-wire                                    memControl_$layers_names[$i]_bm_enable_write;
+	wire	memControl_$layers_names[$i]_bm_enable_write;
+	
 DONATE
         }
         else{
             print $fh <<"DONATE";
-wire                   [$layer_units[$i]-1:0] memControl_$layers_names[$i]_bm_enable_write           ;
+	wire	[$layer_units[$i]-1:0] memControl_$layers_names[$i]_bm_enable_write;
+	
 DONATE
         }
     }
@@ -236,11 +238,12 @@ for($i = 0; $i < $layers_count; $i = $i + 1){
             print $fh <<"DONATE";
 			
 	// Outputs of layer Conv $i
-wire                   [DATA_WIDTH-1:0]  ${\($layers_names[$i])}_data_out_for_next1       ;
-wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
-wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-wire                                    ${\($layers_names[$i])}_start_to_next;
-wire                                    ${\($layers_names[$i])}_ifm_sel_next;
+	wire    [DATA_WIDTH-1:0]  ${\($layers_names[$i])}_data_out_for_next1       ;
+	wire    [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+	wire    ${\($layers_names[$i])}_ifm_enable_write_next;	
+	wire    ${\($layers_names[$i])}_start_to_next;
+	wire    ${\($layers_names[$i])}_ifm_sel_next;
+	
 DONATE
             $ab_flag = $ab_flag + 1;
             $is_itConvB = 1;
@@ -251,39 +254,39 @@ DONATE
                 print $fh <<"DONATE";
 			
 	// Outputs of layer Conv $i
-wire                                    ${\($layers_names[$i])}_end_to_previous;
-wire                                    ${\($layers_names[$i])}_ready;
+	wire    ${\($layers_names[$i])}_end_to_previous;
+	wire    ${\($layers_names[$i])}_ready;
 
 DONATE
                 if($stride[$i] == 2){
                     print $fh <<"DONATE";
-    wire ${\($layers_names[$i])}_ifm_enable_read_A_current;
-    wire ${\($layers_names[$i])}_ifm_enable_read_B_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
+    wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+    wire	${\($layers_names[$i])}_ifm_enable_read_B_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
 
 DONATE
                 }
                 else{
                     print $fh <<"DONATE";
     
-    wire ${\($layers_names[$i])}_ifm_enable_read_A_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
-
+    wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
 
 DONATE
                 }
               
 
                 print $fh <<"DONATE";
-    wire                   [DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out_for_next1       ;
-    wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_next;
-    wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next;
-    wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-    wire                                    ${\($layers_names[$i])}_ifm_enable_read_next;
-    wire                                    ${\($layers_names[$i])}_start_to_next;
-    wire                   [$clog2(${\(ceil($ifm_depth[$i]/$layer_units[$i]))})-1:0] ${\($layers_names[$i])}_ifm_sel_previous;
-    wire                    ${\($layers_names[$i])}_ifm_sel_next;
+    wire	[DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out_for_next1       ;
+    wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_next;
+    wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next;
+    wire	${\($layers_names[$i])}_ifm_enable_write_next;
+    wire	${\($layers_names[$i])}_ifm_enable_read_next;
+    wire	${\($layers_names[$i])}_start_to_next;
+    wire	[$clog2(${\(ceil($ifm_depth[$i]/$layer_units[$i]))})-1:0] ${\($layers_names[$i])}_ifm_sel_previous;
+    wire	${\($layers_names[$i])}_ifm_sel_next;
+	
 DONATE
                 $is_itConvB = 1;
             }
@@ -291,38 +294,39 @@ DONATE
                 print $fh <<"DONATE";
 			
 	// Outputs of layer Conv $i
-wire                                    ${\($layers_names[$i])}_end_to_previous;
+	wire	${\($layers_names[$i])}_end_to_previous;
 DONATE
-if($stride[$i] == 2){
+				if($stride[$i] == 2){
                     print $fh <<"DONATE";
-    wire ${\($layers_names[$i])}_ifm_enable_read_A_current;
-    wire ${\($layers_names[$i])}_ifm_enable_read_B_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
+    wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+    wire	${\($layers_names[$i])}_ifm_enable_read_B_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
 
 DONATE
                 }
                 else{
                     print $fh <<"DONATE";
     
-    wire ${\($layers_names[$i])}_ifm_enable_read_A_current;
-    wire [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
+    wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+    wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
 
 
 DONATE
                 }
                 print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_ifm_enable_read_next;
-wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_next   ;
-wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+	wire	${\($layers_names[$i])}_ifm_enable_read_next;
+	wire	${\($layers_names[$i])}_ifm_enable_write_next;
+	wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_next   ;
+	wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+	
 DONATE
                 for($j = 1; $j <= $layer_units[$i]; $j = $j + 1){
                     print $fh "\twire [DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out_for_next$j;\n";
                 }
                 print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_start_to_next;//all
-wire                   [$clog2(${\(ceil($ifm_depth[$i+1]/$layer_units[$i]))})-1:0] ${\($layers_names[$i])}_ifm_sel_next            ;// all
+	wire	${\($layers_names[$i])}_start_to_next;//all
+	wire	[$clog2(${\(ceil($ifm_depth[$i+1]/$layer_units[$i]))})-1:0] ${\($layers_names[$i])}_ifm_sel_next;
 				
 DONATE
                 $is_itConvB = 0;
@@ -335,37 +339,37 @@ DONATE
             print $fh <<"DONATE";
 
 	// Outputs of layer Pool $i
-wire                                    ${\($layers_names[$i])}_ifm_enable_read_A_current;
-wire                   [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
+	wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+	wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
 DONATE
-            if($stride[$i] == 2){
-                print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_ifm_enable_read_B_current;
-wire                   [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
+				if($stride[$i] == 2){
+					print $fh <<"DONATE";
+	wire	${\($layers_names[$i])}_ifm_enable_read_B_current;
+	wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
 DONATE
             }
 
             
             print $fh <<"DONATE";
-    wire                   ${\($layers_names[$i])}_end_to_previous;
-    wire                   [DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out_for_next1                ;
-    wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
-    wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-    wire                                    ${\($layers_names[$i])}_start_to_next;
-    wire                                    ${\($layers_names[$i])}_ifm_sel_next;
+    wire	${\($layers_names[$i])}_end_to_previous;
+    wire	[DATA_WIDTH-1:0] ${\($layers_names[$i])}_data_out_for_next1                ;
+    wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+    wire	${\($layers_names[$i])}_ifm_enable_write_next;
+    wire	${\($layers_names[$i])}_start_to_next;
+    wire	${\($layers_names[$i])}_ifm_sel_next;
 DONATE
         }
         else{
             print $fh <<"DONATE";
 			
 	// Outputs of layer Pool $i		
-wire                                    ${\($layers_names[$i])}_ifm_enable_read_A_current;
-wire                   [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
+	wire	${\($layers_names[$i])}_ifm_enable_read_A_current;
+	wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_A_current;
 DONATE
-            if($stride[$i] == 2){
-                print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_ifm_enable_read_B_current;
-wire                   [${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
+				if($stride[$i] == 2){
+					print $fh <<"DONATE";
+	wire	${\($layers_names[$i])}_ifm_enable_read_B_current;
+	wire	[${\(uc $layers_names[$i])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_read_B_current;
 DONATE
             }
             for($j = 1; $j <= $unit_counter; $j = $j + 1){
@@ -374,11 +378,11 @@ DONATE
 DONATE
             }
             print $fh <<"DONATE";
-wire                                    ${\($layers_names[$i])}_end_to_previous;
-wire                   [${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
-wire                                    ${\($layers_names[$i])}_ifm_enable_write_next;
-wire                                    ${\($layers_names[$i])}_start_to_next;
-wire                   [$clog2(${\(ceil($ifm_depth[$i+1]/$layer_units[$i]))})-1:0]${\($layers_names[$i])}_ifm_sel_next;
+	wire	${\($layers_names[$i])}_end_to_previous;
+	wire	[${\(uc $layers_names[$i+1])}_ADDRESS_SIZE_IFM-1:0] ${\($layers_names[$i])}_ifm_address_write_next  ;
+	wire	${\($layers_names[$i])}_ifm_enable_write_next;
+	wire	${\($layers_names[$i])}_start_to_next;
+	wire	[$clog2(${\(ceil($ifm_depth[$i+1]/$layer_units[$i]))})-1:0]${\($layers_names[$i])}_ifm_sel_next;
 DONATE
         }
     }
@@ -621,7 +625,9 @@ DONATE
     .NUMBER_OF_IFM                     (${\(uc $layers_names[$i-1])}_IFM_DEPTH                         ),
     .NUMBER_OF_UNITS                   (${\(uc $layers_names[$i])}_NUMBER_OF_UNITS  )) 
     ${\($top_name)}_inst
-    (.clk (clk),
+    (
+	.clk (clk),
+	
     .ifm_sel                           (${\($layers_names[$i-1])}_ifm_sel_next|${\($layers_names[$i])}_ifm_sel_previous),
     .ifm_enable_write_previous         (${\($layers_names[$i-1])}_ifm_enable_write_next),
     .ifm_address_write_previous        (${\($layers_names[$i-1])}_ifm_address_write_next),
@@ -771,7 +777,9 @@ DONATE
     .NUMBER_OF_IFM                     (2                         ),
     .NUMBER_OF_UNITS                   (${\(uc $layers_names[$i])}_NUMBER_OF_UNITS)          ) 
     ${\($top_name)}_inst
-    (.clk (clk),
+    (
+	.clk (clk),
+	
     .ifm_sel                           (${\($layers_names[$i-1])}_ifm_sel_next),
     .ifm_enable_write_previous         (${\($layers_names[$i-1])}_ifm_enable_write_next),
     
@@ -844,26 +852,40 @@ DONATE
     .bm_enable_write                   (memControl_${\($layers_names[$i])}_bm_enable_write),
     ///////////////////////////////////////////////////
     .start_from_previous (${\($layers_names[$i-1])}_start_to_next), 
-	 .data_in_A_from_previous1 (mem_arr${\($i)}_data_A_out_for_next1),
-     .end_to_previous (${\($layers_names[$i])}_end_to_previous),  
-	 .conv_ready(1'b1),
-	 .end_from_next (${\($layers_names[$i+1])}_end_to_previous),
+	.data_in_A_from_previous1 (mem_arr${\($i)}_data_A_out_for_next1),
+    .end_to_previous (${\($layers_names[$i])}_end_to_previous),  
+	.end_from_next (${\($layers_names[$i+1])}_end_to_previous),
      
 DONATE
+            if($layers_names[$i+1] =~ /conv/ ){#conva 
+                print $fh <<"DONATE";
+    .conv_ready(${\($layers_names[$i+1])}_ready ),
+DONATE
+            }
+            else{#pool
+                print $fh <<"DONATE";
+    .conv_ready(1'b1),
+DONATE
+
+
+            }
+            
+
+
             if($stride[$i] == 1){
                 print $fh <<"DONATE";
-        .ifm_enable_read_A_current(${\($layers_names[$i])}_ifm_enable_read_A_current),
-	    .ifm_address_read_A_current(${\($layers_names[$i])}_ifm_address_read_A_current),
+    .ifm_enable_read_A_current(${\($layers_names[$i])}_ifm_enable_read_A_current),
+	.ifm_address_read_A_current(${\($layers_names[$i])}_ifm_address_read_A_current),
 
 DONATE
             }
             else
             {
                 print $fh <<"DONATE";
-        .ifm_enable_read_A_current(${\($layers_names[$i])}_ifm_enable_read_A_current),
-	    .ifm_address_read_A_current(${\($layers_names[$i])}_ifm_address_read_A_current),
-        .ifm_enable_read_B_current(${\($layers_names[$i])}_ifm_enable_read_B_current),
-	    .ifm_address_read_B_current(${\($layers_names[$i])}_ifm_address_read_B_current),
+    .ifm_enable_read_A_current(${\($layers_names[$i])}_ifm_enable_read_A_current),
+	.ifm_address_read_A_current(${\($layers_names[$i])}_ifm_address_read_A_current),
+    .ifm_enable_read_B_current(${\($layers_names[$i])}_ifm_enable_read_B_current),
+	.ifm_address_read_B_current(${\($layers_names[$i])}_ifm_address_read_B_current),
 
 DONATE
 
@@ -918,7 +940,8 @@ DONATE
     .NUMBER_OF_IFM                     (2                         ),
     .NUMBER_OF_UNITS                   (${\(uc $layers_names[$i])}_NUMBER_OF_UNITS)          ) 
     ${\($top_name)}_inst
-    (.clk (clk),
+    (
+	.clk (clk),
     
     .ifm_sel                           (${\($layers_names[$i-1])}_ifm_sel_next),
     .ifm_enable_write_previous         (${\($layers_names[$i-1])}_ifm_enable_write_next),
@@ -945,7 +968,7 @@ DONATE
 						
                 for($j = 1;$j <= $units; $j = $j + 1){
                 print $fh <<"DONATE";
-	 .data_in_from_previous$j 		   (${\($layers_names[$i-1])}_data_out_for_next$j),
+	.data_in_from_previous$j 		   (${\($layers_names[$i-1])}_data_out_for_next$j),
 DONATE
             }
 
@@ -958,13 +981,13 @@ DONATE
             for($j = 1;$j < $units; $j = $j + 1){
                 print $fh <<"DONATE";
                 //updated
-	 .data_out_A_for_next$j(mem_arr${\($i)}_data_A_out_for_next$j),
-	 .data_out_B_for_next$j(mem_arr${\($i)}_data_B_out_for_next$j),
+	.data_out_A_for_next$j(mem_arr${\($i)}_data_A_out_for_next$j),
+	.data_out_B_for_next$j(mem_arr${\($i)}_data_B_out_for_next$j),
 DONATE
             }
             print $fh <<"DONATE";
-	 .data_out_A_for_next$j(mem_arr${\($i)}_data_A_out_for_next$j),
-	 .data_out_B_for_next$j(mem_arr${\($i)}_data_B_out_for_next$j)
+	.data_out_A_for_next$j(mem_arr${\($i)}_data_A_out_for_next$j),
+	.data_out_B_for_next$j(mem_arr${\($i)}_data_B_out_for_next$j)
      );
 DONATE
 			#########################################################
@@ -992,8 +1015,8 @@ DONATE
             for($j = 1;$j <= $units; $j = $j + 1){
                 if($stride[$i] == 2){
                     print $fh <<"DONATE";
-    .data_in_A                         (mem_arr${\($i)}_data_A_out_for_next$j),
-    .data_in_B                         (mem_arr${\($i)}_data_B_out_for_next$j),
+    .data_in_A_from_previous1                         (mem_arr${\($i)}_data_A_out_for_next$j),
+    .data_in_B_from_previous1                         (mem_arr${\($i)}_data_B_out_for_next$j),
 DONATE
 
 
@@ -1001,7 +1024,7 @@ DONATE
                 }
                 else{
                     print $fh <<"DONATE";
-    .data_in_A                         (mem_arr${\($i)}_data_A_out_for_next$j),
+    .data_in_A_from_previous1                         (mem_arr${\($i)}_data_A_out_for_next$j),
 DONATE
 
                 }
@@ -1025,7 +1048,7 @@ DONATE
     .end_to_previous                   (${\($layers_names[$i])}_end_to_previous),
 
     .end_from_next                     (${\($layers_names[$i+1])}_end_to_previous),
-    .data_out_for_next                          (${\($layers_names[$i])}_data_out_for_next1),
+    .data_out_for_next1                (${\($layers_names[$i])}_data_out_for_next1),
     .ifm_address_write_next            (${\($layers_names[$i])}_ifm_address_write_next),
     .ifm_enable_write_next             (${\($layers_names[$i])}_ifm_enable_write_next),
     .start_to_next                     (${\($layers_names[$i])}_start_to_next),
@@ -1061,7 +1084,9 @@ DONATE
     .NUMBER_OF_IFM                     (2                         ),
     .NUMBER_OF_UNITS                   (${\(uc $layers_names[$i])}_NUMBER_OF_UNITS)          ) 
     ${\($top_name)}_inst
-    (.clk (clk),
+    (
+	.clk (clk),
+	
     .ifm_sel                           (${\($layers_names[$i-1])}_ifm_sel_next),
     .ifm_enable_write_previous         (${\($layers_names[$i-1])}_ifm_enable_write_next),
     .ifm_enable_read_previous          (${\($layers_names[$i-1])}_ifm_enable_read_next),
@@ -1156,7 +1181,6 @@ DONATE
 			print $fh <<"DONATE";
     .end_to_previous                   (${\($layers_names[$i])}_end_to_previous     ),
      
-    .conv_ready                        (${\($layers_names[$i+1])}_ready              ),
     .end_from_next                     (${\($layers_names[$i+1])}_end_to_previous    ),
 DONATE
 
@@ -1166,6 +1190,20 @@ DONATE
 DONATE
 
 			}
+
+            if($layers_names[$i+1] =~ /conv/ ){#conva 
+                print $fh <<"DONATE";
+    .conv_ready(${\($layers_names[$i+1])}_ready ), 
+DONATE
+            }
+            else{#pool
+                print $fh <<"DONATE";
+    .conv_ready(1'b1),
+DONATE
+
+
+            }
+            
 			print $fh <<"DONATE";
 	.ifm_address_write_next            (${\($layers_names[$i])}_ifm_address_write_next),
     .ifm_enable_write_next             (${\($layers_names[$i])}_ifm_enable_write_next),
@@ -1193,17 +1231,17 @@ DONATE
 
             print $fh <<"DONATE";
     reg_array  #(.DATA_WIDTH(DATA_WIDTH)) reg_array_1
-   (
-     .clk(clk),
-	 .reset(reset),
-     .data_in_from_previous(${\($layers_names[$i-1])}_data_out_for_next1),
-     .data_out_for_previous(mem_arr${\($i)}_data_A_out_for_previous1),
-     .enable_write_previous(${\($layers_names[$i-1])}_ifm_enable_write_next),
-     .enable_read_previous(${\($layers_names[$i-1])}_ifm_enable_read_next),
-     .ifm_sel(${\($layers_names[$i-1])}_ifm_sel_next),
-     .enable_read_next(${\($layers_names[$i])}_enable_read_current),
-     .data_out_for_next(reg_arr${\($is_itFCfirst)}_data_out_for_next)
-     );
+    (
+    .clk(clk),
+	.reset(reset),
+    .data_in_from_previous(${\($layers_names[$i-1])}_data_out_for_next1),
+    .data_out_for_previous(mem_arr${\($i)}_data_A_out_for_previous1),
+    .enable_write_previous(${\($layers_names[$i-1])}_ifm_enable_write_next),
+    .enable_read_previous(${\($layers_names[$i-1])}_ifm_enable_read_next),
+    .ifm_sel(${\($layers_names[$i-1])}_ifm_sel_next),
+    .enable_read_next(${\($layers_names[$i])}_enable_read_current),
+    .data_out_for_next(reg_arr${\($is_itFCfirst)}_data_out_for_next)
+    );
 
 
 DONATE
@@ -1232,10 +1270,19 @@ DONATE
         .bias_sel(${\($layers_names[$i])}_bias_sel),
         .enable_write_next (${\($layers_names[$i])}_enable_write_next),
         .start_to_next (${\($layers_names[$i])}_start_to_next ),
-        .end_from_next (${\($layers_names[$i+1])}_end_to_previous),
+        
         .enable_read_current (${\($layers_names[$i])}_enable_read_current),
 
 DONATE
+            if($i == ($layers_count - 1)){
+                print $fh "        .end_from_next (1'b1),\n";
+
+            }
+            else{
+                print $fh "        .end_from_next (${\($layers_names[$i+1])}_end_to_previous),\n";
+
+            }
+
             for($j = 1; $j <= $filter_num[$i]; $j = $j + 1){
                 print $fh "\t.reg_out_FC_$j ( Data_out_FC_${\($is_itFCfirst)}_$j),\n";
             }
@@ -1303,6 +1350,15 @@ DONATE
         .enable_write_next (${\($layers_names[$i])}_enable_write_next),
         .output_ready (output_ready),
 DONATE
+            if($i == ($layers_count - 1)){
+                print $fh "        .end_from_next (1'b1),\n";
+
+            }
+            else{
+                print $fh "        .end_from_next (${\($layers_names[$i+1])}_end_to_previous),\n";
+
+            }
+
             for($j = 1; $j <= $filter_num[$i-1]; $j = $j + 1){
                 print $fh "\t.Data_in_$j ( out_reg_acc${\($is_itFCfirst - 1)}_$j),\n";
             }

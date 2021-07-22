@@ -138,8 +138,12 @@ print $fh <<"DONATE";
 	
 DONATE
 
+system("perl pool.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[4] $ARGV[0] $ARGV[5]");
+
+$module_name_of_fifo = "average_pooling_S${\($ARGV[2]*$ARGV[2])}";
+
 print $fh <<"DONATE";
-	average_pooling #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
+	$module_name_of_fifo #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
 	pool_1 (
 	.clk(clk),
     .reset(reset),

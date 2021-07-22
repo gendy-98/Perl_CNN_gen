@@ -52,7 +52,8 @@ module
     output wire [ADDRESS_SIZE_NEXT_IFM-1:0] ifm_address_write_next,
     output reg start_to_next
     );
-	  reg  ifm_start_counter_read_address;
+	
+    reg  ifm_start_counter_read_address;
     wire ifm_address_read_current_tick;
     reg  ifm_address_read_current_tick_delayed;
     wire no_more_start_flag;
@@ -71,7 +72,7 @@ module
     wire start_internal;
     wire start;
     
-    reg mem_empty; 
+    reg mem_empty;
     wire signal_hold;
 
     assign start = start_from_previous | start_internal;
@@ -132,8 +133,8 @@ module
 		
 		end_to_previous                = 1'b0;
         
-        if( (signal_hold) & (~mem_empty) )
-                state_next = HOLD;
+        if( (signal_hold) &(~mem_empty) )
+            state_next = HOLD;
         else if(filters_counter_tick)
             state_next = IDLE;        
 	    else if(ifm_address_read_current_tick)
@@ -174,8 +175,8 @@ module
         fifo_enable_sig1               = 1'b0;
         
         end_to_previous                = 1'b0;
-        
-        if(mem_empty)  
+
+        if(mem_empty)
             state_next = READ;
         
         end
@@ -273,9 +274,9 @@ module
     begin
         if(reset)
             psums_counter_next <= 0;
-        else if(psums_counter_next == ( 6  -1) & address_write_next_tick) // error
+        else if(psums_counter_next == ( 6  -1) & address_write_next_tick)
             psums_counter_next <= 0 ;
-        else if(address_write_next_tick) // error ifm_enable_write_next
+        else if(address_write_next_tick)
             psums_counter_next <= psums_counter_next + 1'b1;      
     end
     assign psums_counter_next_tick = (psums_counter_next == ( 6  -1) & address_write_next_tick);
@@ -425,15 +426,23 @@ module
     begin
         if(reset)
             ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
-        else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT)
+        else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
             ifm_address_read_next <= {ADDRESS_SIZE_IFM{1'b0}};      
         else if(ifm_enable_read_next)
-            ifm_address_read_next <= ifm_address_read_next + 1'b1; // error
+            ifm_address_read_next <= ifm_address_read_next + 1'b1;
     end
     
-    assign ifm_address_write_next = ifm_address_read_next - 1;
+   // assign ifm_address_write_next = ifm_address_read_next - 1;
     assign address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
      
+
+delay_1_7 #(.SIG_DATA_WIDTH(7), .delay_cycles(1))
+	DBlock_1_7 (.clk(clk), .reset(reset), .Data_In(ifm_address_read_next), 
+		.Data_Out(ifm_address_write_next)
+		);
+
+    assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
+		
 
 delay_7_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(7))
 	DBlock_7_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 

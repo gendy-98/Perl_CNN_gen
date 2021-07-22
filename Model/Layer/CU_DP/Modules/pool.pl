@@ -96,7 +96,7 @@ $levels_number = @levels;
  
 
  
-$module_name = "average_pooling";
+$module_name = "average_pooling_S$ARGV[0]";
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name

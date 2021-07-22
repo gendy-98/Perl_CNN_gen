@@ -11,15 +11,17 @@ module
 	KERNAL_SIZE           = 5,
 	NUMBER_OF_FILTERS		= 6,
 	ARITH_TYPE				= 0,
-	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*1)      
+	NUMBER_OF_UNITS 		= 1,
+	CEIL_DEPTH              = $rtoi($ceil(IFM_DEPTH*1.0/NUMBER_OF_UNITS)),
+
+	ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*CEIL_DEPTH)      
 
 	)(
 	input 							clk,
 	input 							reset,
 	
 	input 	[DATA_WIDTH-1:0]		riscv_data,
-	input 	[DATA_WIDTH-1:0]		unit_data_in,
-	
+	input 	[DATA_WIDTH-1:0]		unit_data_in_A,
 	input 							fifo_enable,
 	input 							conv_enable,
 	
@@ -59,7 +61,7 @@ module
 	wire [DATA_WIDTH-1:0]	signal_if24,	signal_w24;
 	wire [DATA_WIDTH-1:0]	signal_if25,	signal_w25;
 
-single_port_memory #(.MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * NUMBER_OF_FILTERS * 1 ), .DATA_WIDTH(DATA_WIDTH)) 
+single_port_memory #(.MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * NUMBER_OF_FILTERS * CEIL_DEPTH ), .DATA_WIDTH(DATA_WIDTH)) 
 	WM 
 	(
 	 .clk(clk),	
@@ -109,7 +111,7 @@ FIFO_25_1_133 #(.DATA_WIDTH(DATA_WIDTH), .KERNAL_SIZE(KERNAL_SIZE), .IFM_SIZE(IF
 	 .clk(clk),
 	 .reset(reset),
 	 .fifo_enable(fifo_enable),
-	 .fifo_data_in(unit_data_in),	
+	 .fifo_data_in(unit_data_in_A),	
 		.fifo_data_out_1(signal_if1),
 		.fifo_data_out_2(signal_if2),
 		.fifo_data_out_3(signal_if3),
@@ -136,7 +138,7 @@ FIFO_25_1_133 #(.DATA_WIDTH(DATA_WIDTH), .KERNAL_SIZE(KERNAL_SIZE), .IFM_SIZE(IF
 		.fifo_data_out_24(signal_if24),
 		.fifo_data_out_25(signal_if25)
 );
-convolution #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
+convolution_S25 #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
 	conv
 	(
 	 .clk(clk),

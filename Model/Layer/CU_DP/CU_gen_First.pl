@@ -21,6 +21,7 @@ use POSIX;
 #ARGV[7] NUMBER_OF_FILTERS
 #ARGV[8] RGB
 #ARGV[9]
+#ARGV[10] stride
 #
 
 ######################################### CONSTANTS ###################################
@@ -79,6 +80,14 @@ else{#gray
     $dummy_level = 1; 
 }
 
+my $added_value ;
+
+if($ARGV[10] == 1){
+     $added_value = "1'b1";
+}else{
+     $added_value = "2'b10";
+
+}
 
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
@@ -95,8 +104,9 @@ $module $module_name $parameter
 	$number_of_filters      = $ARGV[7],
 	$number_of_units        = $dummy_level,
     ARITH_TYPE              = $ARGV[2],
+    STRIDE                  = $ARGV[10],
 	//////////////////////////////////////
-	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
+	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/STRIDE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
 	ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),
 	ADDRESS_SIZE_WM         = $clog2( KERNAL_SIZE*KERNAL_SIZE*NUMBER_OF_FILTERS*(${\(ceil($ARGV[5]/$dummy_level))}) ),    
@@ -110,9 +120,16 @@ $module $module_name $parameter
     input  end_from_next,
     input  start_from_previous,
     
-    output reg ifm_enable_read_current,
-    output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
-    
+    output reg ifm_enable_read_A_current,
+    output reg [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    output     ifm_enable_read_B_current,
+    output     [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current,
+DONATE
+}
+print $fh <<"DONATE";   
     output reg wm_addr_sel,
     output reg wm_enable_read,
     output reg [ADDRESS_SIZE_WM-1:0] wm_address_read_current,
@@ -177,7 +194,7 @@ $module $module_name $parameter
         IDLE : 
         begin
         
-            ifm_enable_read_current        = 1'b0;
+            ifm_enable_read_A_current        = 1'b0;
             ifm_start_counter_read_address = 1'b0;
     
             wm_addr_sel                    = 1'b0;
@@ -194,7 +211,7 @@ $module $module_name $parameter
  
         READ : 
         begin // Read From Memory 
-            ifm_enable_read_current        = 1'b1;
+            ifm_enable_read_A_current        = 1'b1;
             ifm_start_counter_read_address = 1'b1;
     
             wm_addr_sel                    = 1'b1;
@@ -217,7 +234,7 @@ $module $module_name $parameter
                 
         FINISH : 
         begin 
-            ifm_enable_read_current        = 1'b0;
+            ifm_enable_read_A_current        = 1'b0;
             ifm_start_counter_read_address = 1'b0;
     
             wm_addr_sel                    = 1'b1;
@@ -234,7 +251,7 @@ $module $module_name $parameter
         
         HOLD :
         begin
-            ifm_enable_read_current        = 1'b0;
+            ifm_enable_read_A_current        = 1'b0;
             ifm_start_counter_read_address = 1'b0;
     
             wm_addr_sel                    = 1'b1;
@@ -264,23 +281,30 @@ $module $module_name $parameter
     always @(posedge clk, posedge reset)
     begin
         if(reset)
-            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}};
-        else if(ifm_address_read_current == IFM_SIZE*IFM_SIZE-1)
-            ifm_address_read_current <= {ADDRESS_SIZE_IFM{1'b0}};
+            ifm_address_read_A_current <= {ADDRESS_SIZE_IFM{1'b0}};
+        else if(ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE)
+            ifm_address_read_A_current <= {ADDRESS_SIZE_IFM{1'b0}};
         else if(ifm_start_counter_read_address)
-            ifm_address_read_current <= (ifm_address_read_current + 1'b1);      
+            ifm_address_read_A_current <= (ifm_address_read_A_current + $added_value);      
     end
   
-    assign ifm_address_read_current_tick = (ifm_address_read_current == IFM_SIZE*IFM_SIZE-1);
-    assign signal_hold = ( ifm_address_read_current == FIFO_SIZE-3 );
-    
+    assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE);
+    assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE-${\($ARGV[10]*3)} );
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
+    assign ifm_enable_read_B_current = ifm_enable_read_A_current;
+DONATE
+}
+print $fh <<"DONATE";  
     always @(posedge clk, posedge reset)
     begin
         if(reset)
             wm_enable_read <= 1'b0;
         else if(start)
             wm_enable_read <= 1'b1;
-        else if( (ifm_address_read_current == KERNAL_SIZE*KERNAL_SIZE-1) | (state_reg==IDLE) )
+        else if( (ifm_address_read_A_current == KERNAL_SIZE*KERNAL_SIZE-1) | (state_reg==IDLE) )
             wm_enable_read <= 1'b0;
     end
     
@@ -326,9 +350,9 @@ $module $module_name $parameter
     ///////////////////////
     // FIFO Control Unit //
     ///////////////////////
-    localparam COUNTER_FIFO_SIZE      = $clog2(FIFO_SIZE);
-	localparam COUNTER_READY_SIZE     = $clog2(IFM_SIZE-(KERNAL_SIZE-1));
-	localparam COUNTER_NOT_READY_SIZE = $clog2(KERNAL_SIZE-1);
+    localparam COUNTER_FIFO_SIZE      = $clog2( FIFO_SIZE/STRIDE );
+	localparam COUNTER_READY_SIZE     = $clog2( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 );
+	localparam COUNTER_NOT_READY_SIZE = $clog2( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1));
 	
     reg start_counter_fifo;
     reg [COUNTER_FIFO_SIZE-1:0] counter_fifo;
@@ -418,7 +442,7 @@ $module $module_name $parameter
         else if(fifo_enable & start_counter_fifo)
             counter_fifo <= counter_fifo + 1'b1;
     end
-    assign  counter_fifo_tick = (counter_fifo == FIFO_SIZE-1);
+    assign  counter_fifo_tick = (counter_fifo == ( FIFO_SIZE/STRIDE )-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -429,7 +453,7 @@ $module $module_name $parameter
         else
             counter_ready <= {COUNTER_READY_SIZE{1'b0}}; 
     end
-    assign  counter_ready_tick = (counter_ready == IFM_SIZE-(KERNAL_SIZE-1)-1);
+    assign  counter_ready_tick = (counter_ready == ( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 )-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -441,7 +465,7 @@ $module $module_name $parameter
         else
             counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
-    assign  counter_not_ready_tick = (counter_not_ready == (KERNAL_SIZE-1)-1);
+    assign  counter_not_ready_tick = (counter_not_ready == ( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1))-1);
     
     assign conv_enable = fifo_output_ready;
     

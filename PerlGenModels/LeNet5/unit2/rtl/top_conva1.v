@@ -48,9 +48,8 @@ module
 	wire fifo_enable;
     wire conv_enable;
 	
-	wire                        ifm_enable_read_current;
-	wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current;
-   
+	wire                        ifm_enable_read_A_current;
+	wire [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current;
     wire wm_addr_sel;
     wire wm_enable_read;
     wire [ADDRESS_SIZE_WM-1:0] wm_address_read_current;
@@ -76,8 +75,8 @@ module
     .end_from_next(end_from_next),
     .start_from_previous(start_from_previous),
     
-    .ifm_enable_read_current(ifm_enable_read_current),
-    .ifm_address_read_current(ifm_address_read_current),
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+    .ifm_address_read_A_current(ifm_address_read_A_current),
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
     .wm_address_read_current(wm_address_read_current),
@@ -114,11 +113,10 @@ module
 	//////////////////////////////////////////////
 	.fifo_enable(fifo_enable),
 	.conv_enable(conv_enable),
-
-    .ifm_enable_read_current(ifm_enable_read_current),
 	.ifm_enable_write_previous(ifm_enable_write_previous),
-	.ifm_address_read_current(ifm_address_read_current),
-    
+	
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+	.ifm_address_read_A_current(ifm_address_read_A_current),
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_write(wm_enable_write),
     .wm_enable_read(wm_enable_read),

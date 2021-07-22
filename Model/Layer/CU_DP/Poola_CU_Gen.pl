@@ -41,6 +41,7 @@ my $address_bits = "ADDRESS_BITS";
 my $ifm_size = "IFM_SIZE";                                               
 my $ifm_depth = "IFM_DEPTH";
 my $kernal_size = "KERNAL_SIZE";
+my $stride = "STRIDE";				  
 my $number_of_filters = "NUMBER_OF_FILTERS";
 my $number_of_units = "NUMBER_OF_UNITS";
 my $full_path = "../../../$ARGV[3]/";
@@ -56,6 +57,27 @@ my $module_name;
 
 $module_name = "poola_cu_S$ARGV[2]";
 
+my $tick ;
+
+if($ARGV[0] == $ARGV[1]){
+     $tick = "ifm_enable_write_next";
+}else{
+     $tick = "ifm_address_write_next_tick";
+
+}
+
+
+my $added_value ;
+
+
+if($ARGV[2] == 1){
+     $added_value = "1'b1";
+}else{
+     $added_value = "2'b10";
+
+}
+
+
 $file_name = $full_path . $module_name . ".v";
 open my $fh, '>', $file_name
   or die "Can't open file : $!";
@@ -65,8 +87,9 @@ $module $module_name $parameter
 
 	$ifm_size              = $ARGV[0],                                                
 	$kernal_size           = $ARGV[1],
+	$stride                = $ARGV[2],							   
 	//////////////////////////////////////
-	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
+	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/STRIDE + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
     ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),      
     FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
@@ -146,7 +169,7 @@ output reg fifo_enable,
             
             if ( (signal_hold) & (~mem_empty) )
                 state_next = HOLD;
-            // state_next = IDLE
+				
             if (ifm_address_read_current_tick)
                 state_next = FINISH;        
         end
@@ -158,7 +181,6 @@ output reg fifo_enable,
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0; 
          
-             // state_next = IDLE
             if (start_from_previous)  
                 state_next = READ;        
         end
@@ -171,7 +193,6 @@ output reg fifo_enable,
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0;
 
-			// state_next = IDLE
 			if (mem_empty)  
                 state_next = READ;
         
@@ -197,14 +218,14 @@ output reg fifo_enable,
     begin
         if(reset)
             ifm_address_read_A_current <= 0;
-        else if(ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-2)
+        else if(ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE)
             ifm_address_read_A_current <= 0;
         else if(start_ifm_address_read_current)
-            ifm_address_read_A_current <= ifm_address_read_A_current + 2'b10;      
+            ifm_address_read_A_current <= ifm_address_read_A_current + $added_value;      
     end
 
-	assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-2);
-	assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE-6 );
+	assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE);
+	assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE - ${\($ARGV[2]*3)});
 DONATE
 
 if($ARGV[2] == 2){
@@ -252,9 +273,9 @@ print $fh <<"DONATE";
     ///////////////////////////////
     ///// FIFO control unit///////
     //////////////////////////////
-	localparam COUNTER_FIFO_SIZE = $clog2(FIFO_SIZE/2);
-	localparam COUNTER_READY_SIZE = $clog2(IFM_SIZE/2);
-	localparam COUNTER_NOT_READY_SIZE = $clog2((IFM_SIZE/2)+(KERNAL_SIZE/2-1));
+	localparam COUNTER_FIFO_SIZE      = $clog2( FIFO_SIZE/STRIDE );
+	localparam COUNTER_READY_SIZE     = $clog2( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 );
+	localparam COUNTER_NOT_READY_SIZE = $clog2( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1));
 	
     reg [COUNTER_FIFO_SIZE:0] counter_fifo;
 	reg start_counter_fifo;
@@ -344,7 +365,7 @@ print $fh <<"DONATE";
             counter_fifo <= counter_fifo + 1'b1;
         
     end
-    assign  counter_fifo_tick = (counter_fifo == (FIFO_SIZE/2)-1);
+    assign  counter_fifo_tick = (counter_fifo == (FIFO_SIZE/STRIDE)-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -355,7 +376,7 @@ print $fh <<"DONATE";
         else
             counter_ready <= {COUNTER_READY_SIZE{1'b0}};
     end
-    assign  counter_ready_tick = (counter_ready == IFM_SIZE/2-1);
+    assign  counter_ready_tick = (counter_ready == ( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 )-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -366,7 +387,7 @@ print $fh <<"DONATE";
         else
             counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
-    assign  counter_not_ready_tick = (counter_not_ready == (IFM_SIZE/2)+(KERNAL_SIZE/2-1)-1);
+    assign  counter_not_ready_tick = (counter_not_ready == ( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1))-1);
     
     assign pool_enable = fifo_output_ready;
     
@@ -415,7 +436,7 @@ print $fh <<"DONATE";
         begin
             start_to_next = 1'b0;
             mem_empty     = 1'b1;
-            if(ifm_address_write_next_tick)
+            if($tick)
                 state_next2 = s1;          
         end
         

@@ -6,8 +6,9 @@ module
 
 	IFM_SIZE              = 28,                                                
 	KERNAL_SIZE           = 2,
+	STRIDE                = 2,							   
 	//////////////////////////////////////
-	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/2 + 1,
+	IFM_SIZE_NEXT           = (IFM_SIZE - KERNAL_SIZE)/STRIDE + 1,
     ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
     ADDRESS_SIZE_NEXT_IFM   = $clog2(IFM_SIZE_NEXT*IFM_SIZE_NEXT),      
     FIFO_SIZE               = (KERNAL_SIZE-1)*IFM_SIZE + KERNAL_SIZE)
@@ -77,7 +78,7 @@ output reg fifo_enable,
             
             if ( (signal_hold) & (~mem_empty) )
                 state_next = HOLD;
-            // state_next = IDLE
+				
             if (ifm_address_read_current_tick)
                 state_next = FINISH;        
         end
@@ -89,7 +90,6 @@ output reg fifo_enable,
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0; 
          
-             // state_next = IDLE
             if (start_from_previous)  
                 state_next = READ;        
         end
@@ -102,7 +102,6 @@ output reg fifo_enable,
             fifo_enable_sig1               = 1'b0;    
             start_ifm_address_read_current = 1'b0;
 
-			// state_next = IDLE
 			if (mem_empty)  
                 state_next = READ;
         
@@ -128,14 +127,14 @@ output reg fifo_enable,
     begin
         if(reset)
             ifm_address_read_A_current <= 0;
-        else if(ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-2)
+        else if(ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE)
             ifm_address_read_A_current <= 0;
         else if(start_ifm_address_read_current)
             ifm_address_read_A_current <= ifm_address_read_A_current + 2'b10;      
     end
 
-	assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-2);
-	assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE-6 );
+	assign ifm_address_read_current_tick = (ifm_address_read_A_current == IFM_SIZE*IFM_SIZE-STRIDE);
+	assign signal_hold = ( ifm_address_read_A_current == FIFO_SIZE - 6);
     assign ifm_address_read_B_current = ifm_address_read_A_current + 1'b1;
     assign ifm_enable_read_B_current = ifm_enable_read_A_current;
 delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
@@ -149,9 +148,9 @@ delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
     ///////////////////////////////
     ///// FIFO control unit///////
     //////////////////////////////
-	localparam COUNTER_FIFO_SIZE = $clog2(FIFO_SIZE/2);
-	localparam COUNTER_READY_SIZE = $clog2(IFM_SIZE/2);
-	localparam COUNTER_NOT_READY_SIZE = $clog2((IFM_SIZE/2)+(KERNAL_SIZE/2-1));
+	localparam COUNTER_FIFO_SIZE      = $clog2( FIFO_SIZE/STRIDE );
+	localparam COUNTER_READY_SIZE     = $clog2( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 );
+	localparam COUNTER_NOT_READY_SIZE = $clog2( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1));
 	
     reg [COUNTER_FIFO_SIZE:0] counter_fifo;
 	reg start_counter_fifo;
@@ -241,7 +240,7 @@ delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
             counter_fifo <= counter_fifo + 1'b1;
         
     end
-    assign  counter_fifo_tick = (counter_fifo == (FIFO_SIZE/2)-1);
+    assign  counter_fifo_tick = (counter_fifo == (FIFO_SIZE/STRIDE)-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -252,7 +251,7 @@ delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
         else
             counter_ready <= {COUNTER_READY_SIZE{1'b0}};
     end
-    assign  counter_ready_tick = (counter_ready == IFM_SIZE/2-1);
+    assign  counter_ready_tick = (counter_ready == ( (IFM_SIZE-KERNAL_SIZE)/STRIDE + 1 )-1);
     
     always @(posedge clk, posedge reset)
     begin
@@ -263,7 +262,7 @@ delay_3_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(3))
         else
             counter_not_ready <= {COUNTER_NOT_READY_SIZE{1'b0}};
     end
-    assign  counter_not_ready_tick = (counter_not_ready == (IFM_SIZE/2)+(KERNAL_SIZE/2-1)-1);
+    assign  counter_not_ready_tick = (counter_not_ready == ( (STRIDE-1)*(IFM_SIZE/STRIDE)+(KERNAL_SIZE/STRIDE-1))-1);
     
     assign pool_enable = fifo_output_ready;
     

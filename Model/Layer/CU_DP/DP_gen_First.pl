@@ -105,9 +105,16 @@ $module $module_name $parameter
 	input conv_enable,
     
 	input [NUMBER_OF_IFM-1:0]    ifm_enable_write_previous,            
-	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_current,
-    input                        ifm_enable_read_current,
-    
+	input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_A_current,
+    input                        ifm_enable_read_A_current,
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    input                        ifm_enable_read_B_current;
+    input [ADDRESS_SIZE_IFM-1:0] ifm_address_read_B_current;
+DONATE
+}
+print $fh <<"DONATE";  
     input                       wm_addr_sel,
     input                       wm_enable_read,
     input [NUMBER_OF_UNITS-1:0] wm_enable_write,
@@ -200,9 +207,9 @@ DONATE
     .Enable_Read_A(1'b0), 
   
     .Data_Input_B({DATA_WIDTH{1'b0}}),
-    .Address_B(ifm_address_read_current),
+    .Address_B(ifm_address_read_A_current),
     .Enable_Write_B(1'b0),
-    .Enable_Read_B(ifm_enable_read_current), 
+    .Enable_Read_B(ifm_enable_read_A_current), 
   
     .Data_Output_A(),
     .Data_Output_B(data_read_for_unit1)
@@ -222,9 +229,9 @@ if($ARGV[9] == 1){
     .Enable_Read_A(1'b0), 
   
     .Data_Input_B({DATA_WIDTH{1'b0}}),
-    .Address_B(ifm_address_read_current),
+    .Address_B(ifm_address_read_A_current),
     .Enable_Write_B(1'b0),
-    .Enable_Read_B(ifm_enable_read_current), 
+    .Enable_Read_B(ifm_enable_read_A_current), 
   
     .Data_Output_A(),
     .Data_Output_B(data_read_for_unit2)
@@ -240,9 +247,9 @@ if($ARGV[9] == 1){
     .Enable_Read_A(1'b0), 
   
     .Data_Input_B({DATA_WIDTH{1'b0}}),
-    .Address_B(ifm_address_read_current),
+    .Address_B(ifm_address_read_A_current),
     .Enable_Write_B(1'b0),
-    .Enable_Read_B(ifm_enable_read_current), 
+    .Enable_Read_B(ifm_enable_read_A_current), 
   
     .Data_Output_A(),
     .Data_Output_B(data_read_for_unit3)
@@ -272,7 +279,7 @@ print $fh <<"DONATE";
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_read_for_unit1),       
+    .unit_data_in_A(data_read_for_unit1),       
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -360,10 +367,10 @@ DONATE
 
 if($ARGV[9] == 1){#rgb
 	print $fh <<"DONATE";
-	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit1_data_out), .in2 (unit2_data_out), .out (partial_sum1));
-	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (unit3_data_out), .in2 (data_bias),      .out (partial_sum2));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add1 (.in1 (unit1_data_out), .in2 (unit2_data_out), .out (partial_sum1));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add2 (.in1 (unit3_data_out), .in2 (data_bias),      .out (partial_sum2));
 
-	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add (.in1 (partial_sum1_r), .in2 (partial_sum2_r), .out (full_sum));
+	adder #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE)) Add3 (.in1 (partial_sum1_r), .in2 (partial_sum2_r), .out (full_sum));
 	relu  #(.DATA_WIDTH(DATA_WIDTH)) Active1 (.in(full_sum_r),.out (data_out_for_next), .relu_enable(1'b1)); 
 	
 endmodule

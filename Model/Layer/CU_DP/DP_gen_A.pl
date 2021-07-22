@@ -259,7 +259,15 @@ print $fh <<"DONATE";
     .clk(clk),                                 
     .reset(reset),  
     .riscv_data(riscv_data),                             
-    .unit_data_in(data_in_A_from_previous$i),       
+    .unit_data_in_A(data_in_A_from_previous$i),
+DONATE
+
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .unit_data_in_B(data_in_A_from_previous$i),
+DONATE
+}
+print $fh <<"DONATE";   
     .fifo_enable(fifo_enable),                         
     .conv_enable(conv_enable),
     .wm_enable_read(wm_enable_read),          
@@ -297,6 +305,11 @@ print $fh <<"DONATE";
 
 DONATE
 
+if($ARGV[9] == 1){
+	$dummy_level = 0;
+	push @levels , $dummy_level;
+	
+}
 
 $i = 1;
 	$odd_flag = $odd_flag + ($levels[$i-1] % 2);
@@ -324,6 +337,7 @@ for ($i = 2; $i < $levels_number; $i = $i + 1){
 	}
 	print $fh "\n";
 }
+
 
 print $fh <<"DONATE";  
 	$accumulator_name #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))

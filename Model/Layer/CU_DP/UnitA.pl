@@ -90,8 +90,15 @@ $module $module_name $parameter
 	$i_p 							reset,
 	
 	$i_p 	[$data_width-1:0]		riscv_data,
-	$i_p 	[$data_width-1:0]		unit_data_in,
-	
+	$i_p 	[$data_width-1:0]		unit_data_in_A,
+DONATE
+if($ARGV[3] == 2){
+	print $fh <<"DONATE";
+    $i_p    [$data_width-1:0]       unit_data_in_B,
+DONATE
+}
+
+print $fh <<"DONATE";	
 	$i_p 							fifo_enable,
 	$i_p 							conv_enable,
 	
@@ -168,7 +175,7 @@ $fifo_name #(.$data_width($data_width), .$kernal_size($kernal_size), .IFM_SIZE(I
 	 .clk(clk),
 	 .reset(reset),
 	 .fifo_enable(fifo_enable),
-	 .fifo_data_in(unit_data_in),	
+	 .fifo_data_in(unit_data_in_A),	
 DONATE
 
 for($i = 1; $i < ($ARGV[2]*$ARGV[2]); $i = $i + 1){
@@ -177,10 +184,12 @@ for($i = 1; $i < ($ARGV[2]*$ARGV[2]); $i = $i + 1){
 print $fh "\t\t.fifo_data_out_$i(signal_if$i)\n";
 
 
+system("perl convolution.pl  ${\($ARGV[2]*$ARGV[2])} $ARGV[5] $ARGV[0] $ARGV[8]");
 
+$fifo_name = "convolution_S${\($ARGV[2]*$ARGV[2])}";
  print $fh <<"DONATE";
 );
-convolution #(.$data_width($data_width), .ARITH_TYPE(ARITH_TYPE))
+$fifo_name #(.$data_width($data_width), .ARITH_TYPE(ARITH_TYPE))
 	conv
 	(
 	 .clk(clk),

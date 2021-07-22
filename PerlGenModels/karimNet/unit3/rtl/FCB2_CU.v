@@ -10,9 +10,10 @@ module
 	ADDRESS_SIZE_WM = $clog2(IFM_DEPTH)
 )(
 	input clk,
-    input reset, 
+    input reset,
     ///////////////////////////////////
     input start_from_previous,
+    input end_from_next,
     output reg  end_to_previous, 
     ///////////////////////////////////
     output reg wm_addr_sel,
@@ -83,8 +84,22 @@ module
 			start_wm_counter_read_address = 1'b1;
         
             if (wm_address_read_current_tick)
-				state_next = IDLE;
+				state_next = HOLD;
         end
+
+        HOLD :
+        begin
+            end_to_previous               = 1'b0;
+            bias_sel_sig                  = 1'b1;
+			wm_addr_sel                   = 1'b1;
+			wm_enable_read                = 1'b0;
+			end_to_previous               = 1'b0;        
+			start_wm_counter_read_address = 1'b0;
+
+            if(end_from_next)
+                state_next = IDLE;
+        end
+
         endcase
     end
   

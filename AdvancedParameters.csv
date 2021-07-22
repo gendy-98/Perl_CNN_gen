@@ -4,8 +4,6 @@ address bits,15,,
 operation type,0,,mohem
 mantissa,23,,mohem
 exponent,8,,mohem
-muls in conv,25,,
 divided by,4,,
-pool,4,,
 RGB,0,,mohem
 relative path,PerlGenModels/LeNet5/unit2/rtl,,mohem

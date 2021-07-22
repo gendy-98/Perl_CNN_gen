@@ -125,8 +125,14 @@ $module $module_name $parameter
 	input [DATA_WIDTH-1:0] riscv_data,
 	input [ADDRESS_BITS-1:0] riscv_address,
 	
-	input [DATA_WIDTH-1:0] data_in_from_previous,
-	
+	input [DATA_WIDTH-1:0] data_in_A_from_previous,
+DONATE
+if($ARGV[9] == 2){
+	print $fh <<"DONATE";
+    input [DATA_WIDTH-1:0] data_in_B_from_previous,
+DONATE
+}
+print $fh <<"DONATE";
 	input fifo_enable,
 	input conv_enable,
 	input accu_enable,
@@ -226,7 +232,7 @@ system("perl fifo.pl  $ARGV[9] $ARGV[2] $ARGV[4] $ARGV[6] $ARGV[10]");
 	 .clk(clk),
 	 .reset(reset),
 	 .fifo_enable(fifo_enable),
-	 .fifo_data_in(data_in_from_previous),
+	 .fifo_data_in(data_in_A_from_previous),
 DONATE
 
 for ($i = 1; $i < $ARGV[6]*$ARGV[6]; $i = $i + 1){

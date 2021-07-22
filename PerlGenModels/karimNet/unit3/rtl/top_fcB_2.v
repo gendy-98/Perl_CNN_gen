@@ -25,6 +25,7 @@ module
 	input  bm_enable_write,
     /////////////////////////////////////////////////////	 
     input start_from_previous,
+    input end_from_next,
     output end_to_previous,
     output bias_sel,
     output enable_write_next,
@@ -173,6 +174,7 @@ module
     .wm_enable_read(wm_enable_read),
     .bias_sel(bias_sel),
     /////////////////////////////////////////
+    .end_from_next(end_from_next),
     .enable_read_current(enable_read_current),
     .start_from_previous(start_from_previous),
     .sel_ifm (sel_ifm),

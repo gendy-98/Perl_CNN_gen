@@ -531,7 +531,39 @@ module top_module_tb #(parameter DATA_WIDTH      = 32,
     @(negedge clk)
     initialization_done = 1'b0;      
 
+ 
+    @(posedge ready)
+        
+    for(j = 0; j < 1156 ; j = j + 1)
+    begin
+        riscv_data_bus    = input_image5[j];
+        @(negedge clk);
+        riscv_address_bus = riscv_address_bus + 1;       
+    end 
+        riscv_address_bus = riscv_address_bus & 25'b11111111_00000000000000000;
+    
+    initialization_done = 1'b1;
+    
+    @(negedge clk)
+    initialization_done = 1'b0;      
+ 
+    @(posedge ready)
+        
+    for(j = 0; j < 1156 ; j = j + 1)
+    begin
+        riscv_data_bus    = input_image7[j];
+        @(negedge clk);
+        riscv_address_bus = riscv_address_bus + 1;       
+    end 
+        riscv_address_bus = riscv_address_bus & 25'b11111111_00000000000000000;
+    
+    initialization_done = 1'b1;
+    
+    @(negedge clk)
+    initialization_done = 1'b0;      
+
 end
+
 
 
 initial begin  

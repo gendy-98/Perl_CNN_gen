@@ -1,11 +1,9 @@
 data width ,32,,mohem
-riscv address bus,25,,
-address bits,17,,
+riscv address bus,22,,
+address bits,15,,
 operation type,0,,mohem
 mantissa,23,,mohem
 exponent,8,,mohem
-muls in conv,25,,
 divided by,4,,
-pool,4,,
 RGB,0,,mohem
-relative path,PerlGenModels/karimNet/unit3_unit11/rtl,,mohem
+relative path,PerlGenModels/LeNet5/unit3_updated/rtl,,mohem

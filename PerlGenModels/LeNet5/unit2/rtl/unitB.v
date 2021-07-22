@@ -4,16 +4,17 @@
 module 
  unitB #(parameter
 ///////////advanced parameters//////////
-	ARITH_TYPE               = 0,
-	DATA_WIDTH 			  = 32,
+	ARITH_TYPE             = 0,
+	DATA_WIDTH 			= 32,
 	/////////////////////////////////////  
-	IFM_DEPTH             = 6,
-	KERNAL_SIZE           = 5,
+	IFM_DEPTH              = 6,
+	KERNAL_SIZE            = 5,
 	NUMBER_OF_FILTERS		= 16,
-	NUMBER_OF_UNITS 		= 16,
+	NUMBER_OF_UNITS 		= 2,
 	//////////////////////////////////////
 	
-    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*(1))
+	CEIL_FILTERS            = $rtoi($ceil(NUMBER_OF_FILTERS*1.0/NUMBER_OF_UNITS)),
+    ADDRESS_SIZE_WM         = $clog2(KERNAL_SIZE*KERNAL_SIZE*IFM_DEPTH*CEIL_FILTERS)
 	)
 	(
 	input 							clk,
@@ -94,7 +95,7 @@ module
 	wire [DATA_WIDTH-1:0] accu_data_out;
 	wire [DATA_WIDTH-1:0] relu_data_out;
 
-single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * IFM_DEPTH * (1))) 
+single_port_memory #(.DATA_WIDTH(DATA_WIDTH), .MEM_SIZE (KERNAL_SIZE * KERNAL_SIZE * IFM_DEPTH * CEIL_FILTERS)) 
 	WM 
 	(
 	 .clk(clk),	
@@ -140,7 +141,7 @@ fo_fifo_25 #(.DATA_WIDTH(DATA_WIDTH))
 		.fifo_data_out_25(signal_w25)
 		);
 
-convolution #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
+convolution_S25 #(.DATA_WIDTH(DATA_WIDTH), .ARITH_TYPE(ARITH_TYPE))
 	conv
 	(
 	 .clk(clk),

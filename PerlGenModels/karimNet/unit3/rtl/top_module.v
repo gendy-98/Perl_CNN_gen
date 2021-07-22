@@ -713,9 +713,9 @@ wire                                    conva5_ready;
     .start_from_previous (conva1_start_to_next), 
 	 .data_in_A_from_previous1 (mem_arr1_data_A_out_for_next1),
      .end_to_previous (convb2_end_to_previous),  
-	 .conv_ready(1'b1), 
 	 .end_from_next (pool1_end_to_previous),
      
+    .conv_ready(1'b1),
         .ifm_enable_read_A_current(convb2_ifm_enable_read_A_current),
 	    .ifm_address_read_A_current(convb2_ifm_address_read_A_current),
 
@@ -796,11 +796,11 @@ wire                                    conva5_ready;
     .data_in_B_from_previous3                    (mem_arr2_data_B_out_for_next3),
     .end_to_previous                   (pool1_end_to_previous     ),
      
-    .conv_ready                        (conva3_ready              ),
     .end_from_next                     (conva3_end_to_previous    ),
 	.data_out_for_next1                        (pool1_data_out_for_next1          ),
 	.data_out_for_next2                        (pool1_data_out_for_next2          ),
 	.data_out_for_next3                        (pool1_data_out_for_next3          ),
+    .conv_ready(conva3_ready ), 
 	.ifm_address_write_next            (pool1_ifm_address_write_next),
     .ifm_enable_write_next             (pool1_ifm_enable_write_next),
     .start_to_next                     (pool1_start_to_next       ),
@@ -923,9 +923,9 @@ wire                                    conva5_ready;
     .start_from_previous (conva3_start_to_next), 
 	 .data_in_A_from_previous1 (mem_arr4_data_A_out_for_next1),
      .end_to_previous (convb4_end_to_previous),  
-	 .conv_ready(conva5_ready), // error
 	 .end_from_next (conva5_end_to_previous),
      
+    .conv_ready(conva5_ready ),
         .ifm_enable_read_A_current(convb4_ifm_enable_read_A_current),
 	    .ifm_address_read_A_current(convb4_ifm_address_read_A_current),
 
@@ -1590,6 +1590,7 @@ wire                                    conva5_ready;
         .bias_sel (fc2_bias_sel),
         .enable_write_next (fc2_enable_write_next),
         .output_ready (output_ready),
+        .end_from_next (_end_to_previous),
 	.Data_in_1 ( out_reg_acc1_1),
 	.Data_in_2 ( out_reg_acc1_2),
 	.Data_in_3 ( out_reg_acc1_3),

@@ -91,7 +91,7 @@ $module $module_name $parameter
 	$kernal_size           = $ARGV[7],
 	$number_of_filters     = $ARGV[8],
 	$number_of_units       = $ARGV[9],
-	ARITH_TYPE 				= $ARGV[2],
+	ARITH_TYPE 			   = $ARGV[2],
 	//////////////////////////////////////
 	IFM_SIZE_NEXT           = IFM_SIZE - KERNAL_SIZE + 1,
 	ADDRESS_SIZE_IFM        = $clog2(IFM_SIZE*IFM_SIZE),
@@ -119,13 +119,15 @@ for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 	print $fh <<"DONATE";
 	input [DATA_WIDTH-1:0] data_in_A_from_previous$i,
 DONATE
+
 }
 if($ARGV[10]  == 2){
 	for ($i = 1; $i <= $ARGV[9]; $i = $i + 1){
 		print $fh <<"DONATE";
 	input [DATA_WIDTH-1:0] data_in_B_from_previous$i,
 DONATE
-}
+
+	}
 }
 
 if($ARGV[10] == 1){
@@ -181,9 +183,10 @@ print $fh <<"DONATE";
     
 	
 DONATE
+
 chdir "./CU_DP";
 
-system("perl CU_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11]");
+system("perl CU_gen_A.pl $ARGV[0] $ARGV[1] $ARGV[3] $ARGV[5] $ARGV[6] $ARGV[7] $ARGV[8] $ARGV[9] $ARGV[11] $ARGV[10]");
 
 $cu_name = "conva$ARGV[0]_CU";
 print $fh <<"DONATE";
@@ -203,10 +206,17 @@ print $fh <<"DONATE";
     .ready(ready),
     
     .ifm_sel_previous(ifm_sel_previous),
-	//it has no stride 2 it need correction in CU.pl
-    .ifm_enable_read_current(ifm_enable_read_A_current),
-    .ifm_address_read_current(ifm_address_read_A_current),
-    
+	
+    .ifm_enable_read_A_current(ifm_enable_read_A_current),
+    .ifm_address_read_A_current(ifm_address_read_A_current),
+DONATE
+if($ARGV[10] == 2){
+	print $fh <<"DONATE";
+    .ifm_enable_read_B_current(ifm_enable_read_B_current),
+    .ifm_address_read_B_current(ifm_address_read_B_current),
+DONATE
+}
+print $fh <<"DONATE";
     .wm_addr_sel(wm_addr_sel),
     .wm_enable_read(wm_enable_read),
     .wm_address_read_current(wm_address_read_current),

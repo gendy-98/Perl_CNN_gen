@@ -405,15 +405,23 @@ module
     begin
         if(reset)
             ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}}; 
-        else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT)
-            ifm_address_read_next <= 0;      
+        else if(ifm_address_read_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1)
+            ifm_address_read_next <= {ADDRESS_SIZE_NEXT_IFM{1'b0}};      
         else if(ifm_enable_read_next)
             ifm_address_read_next <= ifm_address_read_next + 1'b1;
     end
 
-    assign ifm_address_write_next = ifm_address_read_next - 1;
-    assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
+   // assign ifm_address_write_next = ifm_address_read_next - 1;
+    
 
+
+delay_1_10 #(.SIG_DATA_WIDTH(10), .delay_cycles(1))
+	DBlock_1_10 (.clk(clk), .reset(reset), .Data_In(ifm_address_read_next), 
+		.Data_Out(ifm_address_write_next)
+		);
+
+    assign ifm_address_write_next_tick = (ifm_address_write_next == IFM_SIZE_NEXT*IFM_SIZE_NEXT-1);
+		
 
 delay_5_1 #(.SIG_DATA_WIDTH(1), .delay_cycles(5))
 	DBlock_5_1 (.clk(clk), .reset(reset), .Data_In(conv_enable), 
