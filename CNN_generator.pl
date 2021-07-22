@@ -12,8 +12,8 @@ use feature "switch";
 
 
 my $number_of_parameters = 7*2;# param -layer_name -stride ... etc *2 -> two fields 
-my $Architecture_file = 'Architecture.csv';
-my $AdvancedParameters_file = 'AdvancedParameters.csv';
+my $Architecture_file = 'Architecture_2.csv';
+my $AdvancedParameters_file = 'AdvancedParameters_2.csv';
 my @Architecture_info;
 my @AdvancedParameters_info;
 my @dummy_info;
@@ -62,7 +62,11 @@ my $M_Mantissa = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $E_Exponent = $AdvancedParameters_info[$i];
 $i = $i + 2;
+my $muls_convolution = $AdvancedParameters_info[$i];
+$i = $i + 2;
 my $divided_by = $AdvancedParameters_info[$i];
+$i = $i + 2;
+my $pool_size = $AdvancedParameters_info[$i];
 $i = $i + 2;
 my $rgb = $AdvancedParameters_info[$i];
 $i = $i + 2;
@@ -80,6 +84,8 @@ system("perl Register.pl $relative_path");
 system("perl Relu.pl $relative_path");
 system("perl singleportmemory.pl $relative_path");
 chdir "../Layer/CU_DP/Modules";
+system("perl convolution.pl $muls_convolution $arith_type $data_width $relative_path");
+system("perl pool.pl  $pool_size  $arith_type $data_width $relative_path");
 chdir "./operations";
 system("perl adder.pl $arith_type $data_width $M_Mantissa $E_Exponent $relative_path");
 system("perl divider.pl $arith_type $data_width $M_Mantissa $E_Exponent $divided_by $relative_path");
@@ -142,6 +148,8 @@ $ifm_depth = join(",", @ifm_depth_r);
 $number_of_filters = join(",", @number_of_filters_r);
 $stride = join(",", @stride_r);
 
-chdir "./Model";
-system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits $rgb $stride $arith_type $relative_path");
+#chdir "./Model";
+#system("perl top_model_generator.pl $layer_name $units_number $kernal_size $number_of_filters $ifm_size $ifm_depth $data_width $riscv_address_bus $address_bits $rgb $stride $arith_type $relative_path");
 
+chdir "..";
+system("perl tb_gen.pl $data_width $arith_type $ifm_size $ifm_depth $kernal_size $number_of_filters $units_number $riscv_address_bus $address_bits $layer_name");
